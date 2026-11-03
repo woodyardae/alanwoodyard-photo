@@ -1,24 +1,19 @@
 ﻿---
 // src/components/Header.astro
 ---
-<header class="w-full border-b gallery-hairline py-6 px-6 md:px-16 flex justify-between items-center bg-[#0e0c0a]/90 backdrop-blur-md sticky top-0 z-40 transition-all">
-  <div class="flex items-baseline gap-4">
-    <a href="/" class="text-xl md:text-2xl font-serif tracking-[0.1em] uppercase text-[#f7f4ee] hover:text-[#dfb872] transition-colors">
-      Alan Woodyard
-    </a>
-    <span class="text-[9px] tracking-[0.25em] uppercase text-[#c5a059] font-mono hidden sm:inline">
-      Fine Art
-    </span>
-  </div>
+<header class="w-full border-b border-white/[0.06] py-6 px-6 md:px-16 flex justify-between items-center bg-[#0d0c0a]/95 backdrop-blur-md sticky top-0 z-40">
+  <a href="/" class="text-xl md:text-2xl font-serif tracking-[0.14em] uppercase text-[#f7f4ee] hover:text-[#dfb872] transition-colors">
+    Alan Woodyard
+  </a>
   
-  <nav class="flex items-center gap-6 md:gap-10 text-[11px] tracking-[0.22em] uppercase text-[#a89f91] font-sans font-medium">
-    <a href="/" class="hover:text-[#f7f4ee] transition-colors">Exhibitions</a>
+  <nav class="flex items-center gap-6 md:gap-10 text-[11px] tracking-[0.22em] uppercase text-[#8e8577] font-sans font-medium">
+    <a href="/" class="hover:text-[#f7f4ee] transition-colors">Work</a>
     <a href="/about" class="hover:text-[#f7f4ee] transition-colors">Provenance</a>
-    <a href="https://faa.alanwoodyard.photo" target="_blank" rel="noopener noreferrer" class="text-[#c5a059] hover:text-[#dfb872] transition-colors hidden md:inline">
-      FAA Catalog &nearr;
+    <a href="https://faa.alanwoodyard.photo" target="_blank" rel="noopener noreferrer" class="text-[#a89f91] hover:text-[#f7f4ee] transition-colors hidden md:inline">
+      FAA Archive &nearr;
     </a>
-    <button id="cart-toggle" class="text-[#a89f91] hover:text-[#f7f4ee] flex items-center gap-2 font-mono text-[11px] border brass-hairline px-3 py-1.5 rounded-sm hover:border-[#c5a059] transition-all">
-      <span>COLLECTION</span>
+    <button id="cart-toggle" class="text-[#8e8577] hover:text-[#f7f4ee] flex items-center gap-2 font-mono text-[11px] border border-white/[0.08] px-3 py-1.5 rounded-sm hover:border-[#c5a059] transition-all">
+      <span>CART</span>
       <span id="cart-badge" class="text-[10px] text-[#c5a059] font-bold">(0)</span>
     </button>
   </nav>
