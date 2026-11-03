@@ -1,0 +1,1308 @@
+[
+  {
+    "id": "01a19f88-519d-70ee-a3b8-885955d63316",
+    "title": "Dawn Shell on Lady Bird Lake",
+    "slug": "austin-skyline-rowing-dawn",
+    "description": "A solitary single scull cuts through glass-still water beneath the First Street and Congress Avenue bridges as dawn twilight illuminates the Austin downtown skyline. Captured with high dynamic range in native ProPhoto RGB to preserve delicate specular morning light and amber skyscraper reflections.",
+    "capture": {
+      "date": "2026-03-22",
+      "location": {
+        "name": "Lady Bird Lake, Austin",
+        "region": "Texas, USA",
+        "coordinates": {
+          "lat": 30.2625,
+          "lon": -97.7475
+        }
+      },
+      "camera": "Fujifilm GFX 100 II Medium Format",
+      "lens": "Fujinon GF 45-100mm f/4 R LM OIS WR",
+      "focalLength": "68mm",
+      "aperture": "f/8.0",
+      "shutterSpeed": "1/60s",
+      "iso": 100
+    },
+    "colorScience": {
+      "colorSpace": "ProPhoto RGB",
+      "dominantHex": [
+        "#182838",
+        "#f97316",
+        "#38bdf8"
+      ],
+      "whitePoint": "D65"
+    },
+    "dimensions": {
+      "widthPx": 6000,
+      "heightPx": 4000,
+      "aspectRatio": "2:3",
+      "orientation": "landscape"
+    },
+    "collections": [
+      "austin-skyline",
+      "minimalist",
+      "limited-edition"
+    ],
+    "limitedEdition": {
+      "isLimited": true,
+      "editionSize": 50,
+      "certificateOfAuthenticity": true
+    },
+    "masterAsset": {
+      "sourcePath": "/assets/source-images/austin-skyline-rowing-dawn.png",
+      "tiffMasterPath": "/assets/masters/austin-skyline-rowing-dawn-master-300dpi-bleed.tiff",
+      "maxDpiPaperWidthInches": 20,
+      "maxDpiPaperHeightInches": 13.33,
+      "maxDpiMetalWidthInches": 33.33,
+      "maxDpiMetalHeightInches": 22.22
+    },
+    "previewImage": "/images/artworks/austin-skyline-rowing-dawn.webp",
+    "framedMockup": "/images/mockups/austin-skyline-rowing-dawn-framed.webp",
+    "variants": [
+      {
+        "sku": "AWP-AUSTIN-S-HAG-1624",
+        "substrate": "hahnemuhle-rag",
+        "substrateName": "Hahnemühle Photo Rag 308gsm Fine-Art Giclée",
+        "size": "16x24",
+        "widthInches": 24,
+        "heightInches": 16,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-FAP-16x24",
+        "baseCostUsd": 34,
+        "retailPriceUsd": 125,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-AUSTIN-S-HAG-2436",
+        "substrate": "hahnemuhle-rag",
+        "substrateName": "Hahnemühle Photo Rag 308gsm Fine-Art Giclée (Large Format)",
+        "size": "24x36",
+        "widthInches": 36,
+        "heightInches": 24,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-FAP-24x36",
+        "baseCostUsd": 58,
+        "retailPriceUsd": 210,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-AUSTIN-S-MET-1624",
+        "substrate": "aluminum-panel",
+        "substrateName": "ChromaLuxe Direct Aluminum Panel (Float Mount)",
+        "size": "16x24",
+        "widthInches": 24,
+        "heightInches": 16,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-MET-16x24",
+        "baseCostUsd": 48,
+        "retailPriceUsd": 185,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-AUSTIN-S-ACR-2436",
+        "substrate": "acrylic-float",
+        "substrateName": "Optical HD Acrylic Panel (Polished Beveled Edges)",
+        "size": "24x36",
+        "widthInches": 36,
+        "heightInches": 24,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-ACR-24x36",
+        "baseCostUsd": 92,
+        "retailPriceUsd": 340,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-AUSTIN-S-FRM-1624",
+        "substrate": "framed-print",
+        "substrateName": "Matted Satin Black Hardwood Frame & Archival Mat",
+        "size": "16x24",
+        "widthInches": 24,
+        "heightInches": 16,
+        "lab": "printify",
+        "supplierSku": "printify:FRAMED-POSTER-1624",
+        "baseCostUsd": 42,
+        "retailPriceUsd": 145,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-AUSTIN-S-CNV-1624",
+        "substrate": "stretched-canvas",
+        "substrateName": "Museum Heavyweight Stretched Canvas Wrap (1.5\")",
+        "size": "16x24",
+        "widthInches": 24,
+        "heightInches": 16,
+        "lab": "printful",
+        "supplierSku": "printful:CANVAS-WRAP-1624",
+        "baseCostUsd": 38,
+        "retailPriceUsd": 135,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-AUSTIN-S-CRD-A6",
+        "substrate": "linen-art-cards",
+        "substrateName": "Collector Box of 8 Archival Linen Art Cards (A6)",
+        "size": "A6 Pack (4.1\" x 5.8\")",
+        "widthInches": 5.8,
+        "heightInches": 4.1,
+        "lab": "gelato",
+        "supplierSku": "gelato:CARDS-A6-BOX8",
+        "baseCostUsd": 6.5,
+        "retailPriceUsd": 28,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-AUSTIN-S-DSK-3515",
+        "substrate": "desk-mat",
+        "substrateName": "Studio Neoprene Desk Mat (35.4\" x 15.7\" Stitched Edges)",
+        "size": "35.4\" x 15.7\"",
+        "widthInches": 35.4,
+        "heightInches": 15.7,
+        "lab": "printify",
+        "supplierSku": "printify:DESK-MAT-900400",
+        "baseCostUsd": 12,
+        "retailPriceUsd": 42,
+        "inStock": true
+      }
+    ]
+  },
+  {
+    "id": "01a19f88-51a0-7301-9632-f38a9ff854de",
+    "title": "Tangier Sound Deadrise at Ebb Tide",
+    "slug": "chesapeake-oyster-skiff-limited",
+    "description": "Low tide along the muddy shallows of Tangier Sound. A hand-built wooden deadrise workboat rests on mud flats under an amber coastal sunset. Master numbered gallery release.",
+    "capture": {
+      "date": "2025-10-18",
+      "location": {
+        "name": "Tangier Sound, Crisfield",
+        "region": "Maryland, USA",
+        "coordinates": {
+          "lat": 37.9829,
+          "lon": -75.8566
+        }
+      },
+      "camera": "Fujifilm GFX 100 II Medium Format",
+      "lens": "Fujinon GF 32-64mm f/4 R LM WR",
+      "focalLength": "38mm",
+      "aperture": "f/8.0",
+      "shutterSpeed": "1/10s (tripod)",
+      "iso": 80
+    },
+    "colorScience": {
+      "colorSpace": "ProPhoto RGB",
+      "dominantHex": [
+        "#181828",
+        "#4b5563",
+        "#d97706"
+      ],
+      "whitePoint": "D50"
+    },
+    "dimensions": {
+      "widthPx": 6000,
+      "heightPx": 4000,
+      "aspectRatio": "2:3",
+      "orientation": "landscape"
+    },
+    "collections": [
+      "chesapeake-heritage",
+      "limited-edition",
+      "maritime"
+    ],
+    "limitedEdition": {
+      "isLimited": true,
+      "editionSize": 30,
+      "certificateOfAuthenticity": true
+    },
+    "masterAsset": {
+      "sourcePath": "/assets/source-images/chesapeake-oyster-skiff-limited.png",
+      "tiffMasterPath": "/assets/masters/chesapeake-oyster-skiff-limited-master-300dpi-bleed.tiff",
+      "maxDpiPaperWidthInches": 20,
+      "maxDpiPaperHeightInches": 13.33,
+      "maxDpiMetalWidthInches": 33.33,
+      "maxDpiMetalHeightInches": 22.22
+    },
+    "previewImage": "/images/artworks/chesapeake-oyster-skiff-limited.webp",
+    "framedMockup": "/images/mockups/chesapeake-oyster-skiff-limited-framed.webp",
+    "variants": [
+      {
+        "sku": "AWP-CHESAPEA-HAG-1624",
+        "substrate": "hahnemuhle-rag",
+        "substrateName": "Hahnemühle Photo Rag 308gsm Fine-Art Giclée",
+        "size": "16x24",
+        "widthInches": 24,
+        "heightInches": 16,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-FAP-16x24",
+        "baseCostUsd": 34,
+        "retailPriceUsd": 125,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-CHESAPEA-HAG-2436",
+        "substrate": "hahnemuhle-rag",
+        "substrateName": "Hahnemühle Photo Rag 308gsm Fine-Art Giclée (Large Format)",
+        "size": "24x36",
+        "widthInches": 36,
+        "heightInches": 24,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-FAP-24x36",
+        "baseCostUsd": 58,
+        "retailPriceUsd": 210,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-CHESAPEA-MET-1624",
+        "substrate": "aluminum-panel",
+        "substrateName": "ChromaLuxe Direct Aluminum Panel (Float Mount)",
+        "size": "16x24",
+        "widthInches": 24,
+        "heightInches": 16,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-MET-16x24",
+        "baseCostUsd": 48,
+        "retailPriceUsd": 185,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-CHESAPEA-ACR-2436",
+        "substrate": "acrylic-float",
+        "substrateName": "Optical HD Acrylic Panel (Polished Beveled Edges)",
+        "size": "24x36",
+        "widthInches": 36,
+        "heightInches": 24,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-ACR-24x36",
+        "baseCostUsd": 92,
+        "retailPriceUsd": 340,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-CHESAPEA-FRM-1624",
+        "substrate": "framed-print",
+        "substrateName": "Matted Satin Black Hardwood Frame & Archival Mat",
+        "size": "16x24",
+        "widthInches": 24,
+        "heightInches": 16,
+        "lab": "printify",
+        "supplierSku": "printify:FRAMED-POSTER-1624",
+        "baseCostUsd": 42,
+        "retailPriceUsd": 145,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-CHESAPEA-CNV-1624",
+        "substrate": "stretched-canvas",
+        "substrateName": "Museum Heavyweight Stretched Canvas Wrap (1.5\")",
+        "size": "16x24",
+        "widthInches": 24,
+        "heightInches": 16,
+        "lab": "printful",
+        "supplierSku": "printful:CANVAS-WRAP-1624",
+        "baseCostUsd": 38,
+        "retailPriceUsd": 135,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-CHESAPEA-CRD-A6",
+        "substrate": "linen-art-cards",
+        "substrateName": "Collector Box of 8 Archival Linen Art Cards (A6)",
+        "size": "A6 Pack (4.1\" x 5.8\")",
+        "widthInches": 5.8,
+        "heightInches": 4.1,
+        "lab": "gelato",
+        "supplierSku": "gelato:CARDS-A6-BOX8",
+        "baseCostUsd": 6.5,
+        "retailPriceUsd": 28,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-CHESAPEA-DSK-3515",
+        "substrate": "desk-mat",
+        "substrateName": "Studio Neoprene Desk Mat (35.4\" x 15.7\" Stitched Edges)",
+        "size": "35.4\" x 15.7\"",
+        "widthInches": 35.4,
+        "heightInches": 15.7,
+        "lab": "printify",
+        "supplierSku": "printify:DESK-MAT-900400",
+        "baseCostUsd": 12,
+        "retailPriceUsd": 42,
+        "inStock": true
+      }
+    ]
+  },
+  {
+    "id": "01a19f88-519e-751c-bf2e-f26df2a7978f",
+    "title": "Chesapeake Skipjack at Low Mist",
+    "slug": "chesapeake-skipjack-twilight",
+    "description": "A historic oyster-dredging wooden skipjack ghosting on light airs through morning ground fog off Tilghman Island. Rendered in wide-gamut Adobe RGB 1998 calibrated to D50 museum viewing conditions for faithful silver-toned sea mist and weathered cedar planking.",
+    "capture": {
+      "date": "2025-10-14",
+      "location": {
+        "name": "Tilghman Island, Chesapeake Bay",
+        "region": "Maryland, USA",
+        "coordinates": {
+          "lat": 38.7093,
+          "lon": -76.338
+        }
+      },
+      "camera": "Leica SL3 Full Frame",
+      "lens": "Leica Vario-Elmarit-SL 24-90mm f/2.8-4 ASPH",
+      "focalLength": "50mm",
+      "aperture": "f/5.6",
+      "shutterSpeed": "1/320s",
+      "iso": 64
+    },
+    "colorScience": {
+      "colorSpace": "Adobe RGB 1998",
+      "dominantHex": [
+        "#282828",
+        "#78716c",
+        "#0284c7"
+      ],
+      "whitePoint": "D50"
+    },
+    "dimensions": {
+      "widthPx": 6000,
+      "heightPx": 4000,
+      "aspectRatio": "2:3",
+      "orientation": "landscape"
+    },
+    "collections": [
+      "chesapeake-heritage",
+      "maritime",
+      "limited-edition"
+    ],
+    "limitedEdition": {
+      "isLimited": true,
+      "editionSize": 25,
+      "certificateOfAuthenticity": true
+    },
+    "masterAsset": {
+      "sourcePath": "/assets/source-images/chesapeake-skipjack-twilight.png",
+      "tiffMasterPath": "/assets/masters/chesapeake-skipjack-twilight-master-300dpi-bleed.tiff",
+      "maxDpiPaperWidthInches": 20,
+      "maxDpiPaperHeightInches": 13.33,
+      "maxDpiMetalWidthInches": 33.33,
+      "maxDpiMetalHeightInches": 22.22
+    },
+    "previewImage": "/images/artworks/chesapeake-skipjack-twilight.webp",
+    "framedMockup": "/images/mockups/chesapeake-skipjack-twilight-framed.webp",
+    "variants": [
+      {
+        "sku": "AWP-CHESAPEA-HAG-1624",
+        "substrate": "hahnemuhle-rag",
+        "substrateName": "Hahnemühle Photo Rag 308gsm Fine-Art Giclée",
+        "size": "16x24",
+        "widthInches": 24,
+        "heightInches": 16,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-FAP-16x24",
+        "baseCostUsd": 34,
+        "retailPriceUsd": 125,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-CHESAPEA-HAG-2436",
+        "substrate": "hahnemuhle-rag",
+        "substrateName": "Hahnemühle Photo Rag 308gsm Fine-Art Giclée (Large Format)",
+        "size": "24x36",
+        "widthInches": 36,
+        "heightInches": 24,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-FAP-24x36",
+        "baseCostUsd": 58,
+        "retailPriceUsd": 210,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-CHESAPEA-MET-1624",
+        "substrate": "aluminum-panel",
+        "substrateName": "ChromaLuxe Direct Aluminum Panel (Float Mount)",
+        "size": "16x24",
+        "widthInches": 24,
+        "heightInches": 16,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-MET-16x24",
+        "baseCostUsd": 48,
+        "retailPriceUsd": 185,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-CHESAPEA-ACR-2436",
+        "substrate": "acrylic-float",
+        "substrateName": "Optical HD Acrylic Panel (Polished Beveled Edges)",
+        "size": "24x36",
+        "widthInches": 36,
+        "heightInches": 24,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-ACR-24x36",
+        "baseCostUsd": 92,
+        "retailPriceUsd": 340,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-CHESAPEA-FRM-1624",
+        "substrate": "framed-print",
+        "substrateName": "Matted Satin Black Hardwood Frame & Archival Mat",
+        "size": "16x24",
+        "widthInches": 24,
+        "heightInches": 16,
+        "lab": "printify",
+        "supplierSku": "printify:FRAMED-POSTER-1624",
+        "baseCostUsd": 42,
+        "retailPriceUsd": 145,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-CHESAPEA-CNV-1624",
+        "substrate": "stretched-canvas",
+        "substrateName": "Museum Heavyweight Stretched Canvas Wrap (1.5\")",
+        "size": "16x24",
+        "widthInches": 24,
+        "heightInches": 16,
+        "lab": "printful",
+        "supplierSku": "printful:CANVAS-WRAP-1624",
+        "baseCostUsd": 38,
+        "retailPriceUsd": 135,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-CHESAPEA-CRD-A6",
+        "substrate": "linen-art-cards",
+        "substrateName": "Collector Box of 8 Archival Linen Art Cards (A6)",
+        "size": "A6 Pack (4.1\" x 5.8\")",
+        "widthInches": 5.8,
+        "heightInches": 4.1,
+        "lab": "gelato",
+        "supplierSku": "gelato:CARDS-A6-BOX8",
+        "baseCostUsd": 6.5,
+        "retailPriceUsd": 28,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-CHESAPEA-DSK-3515",
+        "substrate": "desk-mat",
+        "substrateName": "Studio Neoprene Desk Mat (35.4\" x 15.7\" Stitched Edges)",
+        "size": "35.4\" x 15.7\"",
+        "widthInches": 35.4,
+        "heightInches": 15.7,
+        "lab": "printify",
+        "supplierSku": "printify:DESK-MAT-900400",
+        "baseCostUsd": 12,
+        "retailPriceUsd": 42,
+        "inStock": true
+      }
+    ]
+  },
+  {
+    "id": "01a19f88-519f-703d-9c1d-5dd8e2c75233",
+    "title": "Galveston Pleasure Pier Geometry",
+    "slug": "coastal-geometry-concrete-pier",
+    "description": "Rhythmic reinforced concrete pilings marching into the Gulf surf. The low tidal angle casts long geometric shadows across wet sand, isolating the relentless mathematical cadence of marine civil engineering.",
+    "capture": {
+      "date": "2025-09-08",
+      "location": {
+        "name": "25th Street Seawall & Pier",
+        "region": "Galveston Island, Texas",
+        "coordinates": {
+          "lat": 29.2856,
+          "lon": -94.7901
+        }
+      },
+      "camera": "Hasselblad 907X & CFV 100C",
+      "lens": "XCD 45mm f/4 P",
+      "focalLength": "45mm (35mm equivalent)",
+      "aperture": "f/11",
+      "shutterSpeed": "2.5s (ND filter)",
+      "iso": 64
+    },
+    "colorScience": {
+      "colorSpace": "Adobe RGB 1998",
+      "dominantHex": [
+        "#282828",
+        "#a1a1aa",
+        "#f4f4f5"
+      ],
+      "whitePoint": "D50"
+    },
+    "dimensions": {
+      "widthPx": 4800,
+      "heightPx": 4800,
+      "aspectRatio": "1:1",
+      "orientation": "square"
+    },
+    "collections": [
+      "coastal-geometry",
+      "minimalist",
+      "black-and-white"
+    ],
+    "limitedEdition": {
+      "isLimited": false,
+      "certificateOfAuthenticity": false
+    },
+    "masterAsset": {
+      "sourcePath": "/assets/source-images/coastal-geometry-concrete-pier.png",
+      "tiffMasterPath": "/assets/masters/coastal-geometry-concrete-pier-master-300dpi-bleed.tiff",
+      "maxDpiPaperWidthInches": 16,
+      "maxDpiPaperHeightInches": 16,
+      "maxDpiMetalWidthInches": 26.67,
+      "maxDpiMetalHeightInches": 26.67
+    },
+    "previewImage": "/images/artworks/coastal-geometry-concrete-pier.webp",
+    "framedMockup": "/images/mockups/coastal-geometry-concrete-pier-framed.webp",
+    "variants": [
+      {
+        "sku": "AWP-COASTAL--HAG-1624",
+        "substrate": "hahnemuhle-rag",
+        "substrateName": "Hahnemühle Photo Rag 308gsm Fine-Art Giclée",
+        "size": "16x16",
+        "widthInches": 16,
+        "heightInches": 16,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-FAP-16x24",
+        "baseCostUsd": 34,
+        "retailPriceUsd": 125,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-COASTAL--HAG-2436",
+        "substrate": "hahnemuhle-rag",
+        "substrateName": "Hahnemühle Photo Rag 308gsm Fine-Art Giclée (Large Format)",
+        "size": "24x24",
+        "widthInches": 24,
+        "heightInches": 24,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-FAP-24x36",
+        "baseCostUsd": 58,
+        "retailPriceUsd": 210,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-COASTAL--MET-1624",
+        "substrate": "aluminum-panel",
+        "substrateName": "ChromaLuxe Direct Aluminum Panel (Float Mount)",
+        "size": "16x16",
+        "widthInches": 16,
+        "heightInches": 16,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-MET-16x24",
+        "baseCostUsd": 48,
+        "retailPriceUsd": 185,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-COASTAL--ACR-2436",
+        "substrate": "acrylic-float",
+        "substrateName": "Optical HD Acrylic Panel (Polished Beveled Edges)",
+        "size": "24x24",
+        "widthInches": 24,
+        "heightInches": 24,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-ACR-24x36",
+        "baseCostUsd": 92,
+        "retailPriceUsd": 340,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-COASTAL--FRM-1624",
+        "substrate": "framed-print",
+        "substrateName": "Matted Satin Black Hardwood Frame & Archival Mat",
+        "size": "16x16",
+        "widthInches": 16,
+        "heightInches": 16,
+        "lab": "printify",
+        "supplierSku": "printify:FRAMED-POSTER-1624",
+        "baseCostUsd": 42,
+        "retailPriceUsd": 145,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-COASTAL--CNV-1624",
+        "substrate": "stretched-canvas",
+        "substrateName": "Museum Heavyweight Stretched Canvas Wrap (1.5\")",
+        "size": "16x16",
+        "widthInches": 16,
+        "heightInches": 16,
+        "lab": "printful",
+        "supplierSku": "printful:CANVAS-WRAP-1624",
+        "baseCostUsd": 38,
+        "retailPriceUsd": 135,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-COASTAL--CRD-A6",
+        "substrate": "linen-art-cards",
+        "substrateName": "Collector Box of 8 Archival Linen Art Cards (A6)",
+        "size": "A6 Pack (4.1\" x 5.8\")",
+        "widthInches": 5.8,
+        "heightInches": 4.1,
+        "lab": "gelato",
+        "supplierSku": "gelato:CARDS-A6-BOX8",
+        "baseCostUsd": 6.5,
+        "retailPriceUsd": 28,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-COASTAL--DSK-3515",
+        "substrate": "desk-mat",
+        "substrateName": "Studio Neoprene Desk Mat (35.4\" x 15.7\" Stitched Edges)",
+        "size": "35.4\" x 15.7\"",
+        "widthInches": 35.4,
+        "heightInches": 15.7,
+        "lab": "printify",
+        "supplierSku": "printify:DESK-MAT-900400",
+        "baseCostUsd": 12,
+        "retailPriceUsd": 42,
+        "inStock": true
+      }
+    ]
+  },
+  {
+    "id": "01a19f88-519f-703d-9c1d-57733cfab7a4",
+    "title": "Houston Ship Channel Pushboat at Dusk",
+    "slug": "gulf-coast-pushboat-twilight",
+    "description": "A commercial twin-screw pushboat holding station against heavy chemical barges in the lower San Jacinto reach. Sodium vapor deck lights cast fiery orange reflections against deep obsidian river water, showcasing the raw industrial pulse of the Texas working waterfront.",
+    "capture": {
+      "date": "2025-11-28",
+      "location": {
+        "name": "Houston Ship Channel / San Jacinto",
+        "region": "Texas, USA",
+        "coordinates": {
+          "lat": 29.7495,
+          "lon": -95.0932
+        }
+      },
+      "camera": "Sony Alpha 1 Mirrorless",
+      "lens": "Sony FE 70-200mm f/2.8 GM OSS II",
+      "focalLength": "135mm",
+      "aperture": "f/4.0",
+      "shutterSpeed": "1/15s (stabilized)",
+      "iso": 800
+    },
+    "colorScience": {
+      "colorSpace": "ProPhoto RGB",
+      "dominantHex": [
+        "#181818",
+        "#ea580c",
+        "#3b82f6"
+      ],
+      "whitePoint": "D65"
+    },
+    "dimensions": {
+      "widthPx": 6400,
+      "heightPx": 3600,
+      "aspectRatio": "16:9",
+      "orientation": "landscape"
+    },
+    "collections": [
+      "gulf-coast",
+      "coastal-geometry"
+    ],
+    "limitedEdition": {
+      "isLimited": false,
+      "certificateOfAuthenticity": false
+    },
+    "masterAsset": {
+      "sourcePath": "/assets/source-images/gulf-coast-pushboat-twilight.png",
+      "tiffMasterPath": "/assets/masters/gulf-coast-pushboat-twilight-master-300dpi-bleed.tiff",
+      "maxDpiPaperWidthInches": 21.33,
+      "maxDpiPaperHeightInches": 12,
+      "maxDpiMetalWidthInches": 35.56,
+      "maxDpiMetalHeightInches": 20
+    },
+    "previewImage": "/images/artworks/gulf-coast-pushboat-twilight.webp",
+    "framedMockup": "/images/mockups/gulf-coast-pushboat-twilight-framed.webp",
+    "variants": [
+      {
+        "sku": "AWP-GULF-COA-HAG-1624",
+        "substrate": "hahnemuhle-rag",
+        "substrateName": "Hahnemühle Photo Rag 308gsm Fine-Art Giclée",
+        "size": "12x24",
+        "widthInches": 24,
+        "heightInches": 12,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-FAP-16x24",
+        "baseCostUsd": 34,
+        "retailPriceUsd": 125,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-GULF-COA-HAG-2436",
+        "substrate": "hahnemuhle-rag",
+        "substrateName": "Hahnemühle Photo Rag 308gsm Fine-Art Giclée (Large Format)",
+        "size": "16x32",
+        "widthInches": 32,
+        "heightInches": 16,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-FAP-24x36",
+        "baseCostUsd": 58,
+        "retailPriceUsd": 210,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-GULF-COA-MET-1624",
+        "substrate": "aluminum-panel",
+        "substrateName": "ChromaLuxe Direct Aluminum Panel (Float Mount)",
+        "size": "12x24",
+        "widthInches": 24,
+        "heightInches": 12,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-MET-16x24",
+        "baseCostUsd": 48,
+        "retailPriceUsd": 185,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-GULF-COA-ACR-2436",
+        "substrate": "acrylic-float",
+        "substrateName": "Optical HD Acrylic Panel (Polished Beveled Edges)",
+        "size": "16x32",
+        "widthInches": 32,
+        "heightInches": 16,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-ACR-24x36",
+        "baseCostUsd": 92,
+        "retailPriceUsd": 340,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-GULF-COA-FRM-1624",
+        "substrate": "framed-print",
+        "substrateName": "Matted Satin Black Hardwood Frame & Archival Mat",
+        "size": "12x24",
+        "widthInches": 24,
+        "heightInches": 12,
+        "lab": "printify",
+        "supplierSku": "printify:FRAMED-POSTER-1624",
+        "baseCostUsd": 42,
+        "retailPriceUsd": 145,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-GULF-COA-CNV-1624",
+        "substrate": "stretched-canvas",
+        "substrateName": "Museum Heavyweight Stretched Canvas Wrap (1.5\")",
+        "size": "12x24",
+        "widthInches": 24,
+        "heightInches": 12,
+        "lab": "printful",
+        "supplierSku": "printful:CANVAS-WRAP-1624",
+        "baseCostUsd": 38,
+        "retailPriceUsd": 135,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-GULF-COA-CRD-A6",
+        "substrate": "linen-art-cards",
+        "substrateName": "Collector Box of 8 Archival Linen Art Cards (A6)",
+        "size": "A6 Pack (4.1\" x 5.8\")",
+        "widthInches": 5.8,
+        "heightInches": 4.1,
+        "lab": "gelato",
+        "supplierSku": "gelato:CARDS-A6-BOX8",
+        "baseCostUsd": 6.5,
+        "retailPriceUsd": 28,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-GULF-COA-DSK-3515",
+        "substrate": "desk-mat",
+        "substrateName": "Studio Neoprene Desk Mat (35.4\" x 15.7\" Stitched Edges)",
+        "size": "35.4\" x 15.7\"",
+        "widthInches": 35.4,
+        "heightInches": 15.7,
+        "lab": "printify",
+        "supplierSku": "printify:DESK-MAT-900400",
+        "baseCostUsd": 12,
+        "retailPriceUsd": 42,
+        "inStock": true
+      }
+    ]
+  },
+  {
+    "id": "01a19f88-519f-703d-9c1d-582748cbe010",
+    "title": "Offshore Cutter Under Full Spinnaker",
+    "slug": "maritime-carbon-cutter-regatta",
+    "description": "High-speed offshore ocean racing: an IRC 52-foot carbon cutter charging downwind in 24 knots of breeze with bow spray exploding over the pulpit. Saturated deep ocean cobalt and spinnaker nylon glow with pristine color purity.",
+    "capture": {
+      "date": "2026-02-17",
+      "location": {
+        "name": "Galveston Offshore Racing Circuit",
+        "region": "Gulf of Mexico, USA",
+        "coordinates": {
+          "lat": 29.281,
+          "lon": -94.755
+        }
+      },
+      "camera": "Sony A7R V Mirrorless",
+      "lens": "Sony FE 24-70mm f/2.8 GM II",
+      "focalLength": "35mm",
+      "aperture": "f/6.3",
+      "shutterSpeed": "1/2000s",
+      "iso": 250
+    },
+    "colorScience": {
+      "colorSpace": "ProPhoto RGB",
+      "dominantHex": [
+        "#0888c8",
+        "#082f49",
+        "#f8fafc"
+      ],
+      "whitePoint": "D65"
+    },
+    "dimensions": {
+      "widthPx": 4800,
+      "heightPx": 6000,
+      "aspectRatio": "4:5",
+      "orientation": "portrait"
+    },
+    "collections": [
+      "maritime",
+      "limited-edition"
+    ],
+    "limitedEdition": {
+      "isLimited": true,
+      "editionSize": 75,
+      "certificateOfAuthenticity": true
+    },
+    "masterAsset": {
+      "sourcePath": "/assets/source-images/maritime-carbon-cutter-regatta.png",
+      "tiffMasterPath": "/assets/masters/maritime-carbon-cutter-regatta-master-300dpi-bleed.tiff",
+      "maxDpiPaperWidthInches": 16,
+      "maxDpiPaperHeightInches": 20,
+      "maxDpiMetalWidthInches": 26.67,
+      "maxDpiMetalHeightInches": 33.33
+    },
+    "previewImage": "/images/artworks/maritime-carbon-cutter-regatta.webp",
+    "framedMockup": "/images/mockups/maritime-carbon-cutter-regatta-framed.webp",
+    "variants": [
+      {
+        "sku": "AWP-MARITIME-HAG-1624",
+        "substrate": "hahnemuhle-rag",
+        "substrateName": "Hahnemühle Photo Rag 308gsm Fine-Art Giclée",
+        "size": "16x24",
+        "widthInches": 24,
+        "heightInches": 16,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-FAP-16x24",
+        "baseCostUsd": 34,
+        "retailPriceUsd": 125,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-MARITIME-HAG-2436",
+        "substrate": "hahnemuhle-rag",
+        "substrateName": "Hahnemühle Photo Rag 308gsm Fine-Art Giclée (Large Format)",
+        "size": "24x36",
+        "widthInches": 36,
+        "heightInches": 24,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-FAP-24x36",
+        "baseCostUsd": 58,
+        "retailPriceUsd": 210,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-MARITIME-MET-1624",
+        "substrate": "aluminum-panel",
+        "substrateName": "ChromaLuxe Direct Aluminum Panel (Float Mount)",
+        "size": "16x24",
+        "widthInches": 24,
+        "heightInches": 16,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-MET-16x24",
+        "baseCostUsd": 48,
+        "retailPriceUsd": 185,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-MARITIME-ACR-2436",
+        "substrate": "acrylic-float",
+        "substrateName": "Optical HD Acrylic Panel (Polished Beveled Edges)",
+        "size": "24x36",
+        "widthInches": 36,
+        "heightInches": 24,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-ACR-24x36",
+        "baseCostUsd": 92,
+        "retailPriceUsd": 340,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-MARITIME-FRM-1624",
+        "substrate": "framed-print",
+        "substrateName": "Matted Satin Black Hardwood Frame & Archival Mat",
+        "size": "16x24",
+        "widthInches": 24,
+        "heightInches": 16,
+        "lab": "printify",
+        "supplierSku": "printify:FRAMED-POSTER-1624",
+        "baseCostUsd": 42,
+        "retailPriceUsd": 145,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-MARITIME-CNV-1624",
+        "substrate": "stretched-canvas",
+        "substrateName": "Museum Heavyweight Stretched Canvas Wrap (1.5\")",
+        "size": "16x24",
+        "widthInches": 24,
+        "heightInches": 16,
+        "lab": "printful",
+        "supplierSku": "printful:CANVAS-WRAP-1624",
+        "baseCostUsd": 38,
+        "retailPriceUsd": 135,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-MARITIME-CRD-A6",
+        "substrate": "linen-art-cards",
+        "substrateName": "Collector Box of 8 Archival Linen Art Cards (A6)",
+        "size": "A6 Pack (4.1\" x 5.8\")",
+        "widthInches": 5.8,
+        "heightInches": 4.1,
+        "lab": "gelato",
+        "supplierSku": "gelato:CARDS-A6-BOX8",
+        "baseCostUsd": 6.5,
+        "retailPriceUsd": 28,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-MARITIME-DSK-3515",
+        "substrate": "desk-mat",
+        "substrateName": "Studio Neoprene Desk Mat (35.4\" x 15.7\" Stitched Edges)",
+        "size": "35.4\" x 15.7\"",
+        "widthInches": 35.4,
+        "heightInches": 15.7,
+        "lab": "printify",
+        "supplierSku": "printify:DESK-MAT-900400",
+        "baseCostUsd": 12,
+        "retailPriceUsd": 42,
+        "inStock": true
+      }
+    ]
+  },
+  {
+    "id": "01a19f88-51a0-7301-9632-ef5af042f244",
+    "title": "Solitary Channel Marker No. 14",
+    "slug": "minimalist-fog-isolated-beacon",
+    "description": "A solitary green piling beacon suspended in dense coastal pea-soup fog over West Galveston Bay. Complete elimination of horizon divides transforms the bay into an ethereal, meditative spatial void.",
+    "capture": {
+      "date": "2025-12-04",
+      "location": {
+        "name": "West Galveston Bay",
+        "region": "Texas, USA",
+        "coordinates": {
+          "lat": 29.214,
+          "lon": -94.956
+        }
+      },
+      "camera": "Fujifilm GFX 100 II Medium Format",
+      "lens": "Fujinon GF 110mm f/2 R LM WR",
+      "focalLength": "110mm",
+      "aperture": "f/5.6",
+      "shutterSpeed": "1/125s",
+      "iso": 100
+    },
+    "colorScience": {
+      "colorSpace": "Adobe RGB 1998",
+      "dominantHex": [
+        "#283848",
+        "#475569",
+        "#cbd5e1"
+      ],
+      "whitePoint": "D50"
+    },
+    "dimensions": {
+      "widthPx": 4800,
+      "heightPx": 4800,
+      "aspectRatio": "1:1",
+      "orientation": "square"
+    },
+    "collections": [
+      "minimalist",
+      "gulf-coast",
+      "coastal-geometry"
+    ],
+    "limitedEdition": {
+      "isLimited": false,
+      "certificateOfAuthenticity": false
+    },
+    "masterAsset": {
+      "sourcePath": "/assets/source-images/minimalist-fog-isolated-beacon.png",
+      "tiffMasterPath": "/assets/masters/minimalist-fog-isolated-beacon-master-300dpi-bleed.tiff",
+      "maxDpiPaperWidthInches": 16,
+      "maxDpiPaperHeightInches": 16,
+      "maxDpiMetalWidthInches": 26.67,
+      "maxDpiMetalHeightInches": 26.67
+    },
+    "previewImage": "/images/artworks/minimalist-fog-isolated-beacon.webp",
+    "framedMockup": "/images/mockups/minimalist-fog-isolated-beacon-framed.webp",
+    "variants": [
+      {
+        "sku": "AWP-MINIMALI-HAG-1624",
+        "substrate": "hahnemuhle-rag",
+        "substrateName": "Hahnemühle Photo Rag 308gsm Fine-Art Giclée",
+        "size": "16x16",
+        "widthInches": 16,
+        "heightInches": 16,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-FAP-16x24",
+        "baseCostUsd": 34,
+        "retailPriceUsd": 125,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-MINIMALI-HAG-2436",
+        "substrate": "hahnemuhle-rag",
+        "substrateName": "Hahnemühle Photo Rag 308gsm Fine-Art Giclée (Large Format)",
+        "size": "24x24",
+        "widthInches": 24,
+        "heightInches": 24,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-FAP-24x36",
+        "baseCostUsd": 58,
+        "retailPriceUsd": 210,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-MINIMALI-MET-1624",
+        "substrate": "aluminum-panel",
+        "substrateName": "ChromaLuxe Direct Aluminum Panel (Float Mount)",
+        "size": "16x16",
+        "widthInches": 16,
+        "heightInches": 16,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-MET-16x24",
+        "baseCostUsd": 48,
+        "retailPriceUsd": 185,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-MINIMALI-ACR-2436",
+        "substrate": "acrylic-float",
+        "substrateName": "Optical HD Acrylic Panel (Polished Beveled Edges)",
+        "size": "24x24",
+        "widthInches": 24,
+        "heightInches": 24,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-ACR-24x36",
+        "baseCostUsd": 92,
+        "retailPriceUsd": 340,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-MINIMALI-FRM-1624",
+        "substrate": "framed-print",
+        "substrateName": "Matted Satin Black Hardwood Frame & Archival Mat",
+        "size": "16x16",
+        "widthInches": 16,
+        "heightInches": 16,
+        "lab": "printify",
+        "supplierSku": "printify:FRAMED-POSTER-1624",
+        "baseCostUsd": 42,
+        "retailPriceUsd": 145,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-MINIMALI-CNV-1624",
+        "substrate": "stretched-canvas",
+        "substrateName": "Museum Heavyweight Stretched Canvas Wrap (1.5\")",
+        "size": "16x16",
+        "widthInches": 16,
+        "heightInches": 16,
+        "lab": "printful",
+        "supplierSku": "printful:CANVAS-WRAP-1624",
+        "baseCostUsd": 38,
+        "retailPriceUsd": 135,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-MINIMALI-CRD-A6",
+        "substrate": "linen-art-cards",
+        "substrateName": "Collector Box of 8 Archival Linen Art Cards (A6)",
+        "size": "A6 Pack (4.1\" x 5.8\")",
+        "widthInches": 5.8,
+        "heightInches": 4.1,
+        "lab": "gelato",
+        "supplierSku": "gelato:CARDS-A6-BOX8",
+        "baseCostUsd": 6.5,
+        "retailPriceUsd": 28,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-MINIMALI-DSK-3515",
+        "substrate": "desk-mat",
+        "substrateName": "Studio Neoprene Desk Mat (35.4\" x 15.7\" Stitched Edges)",
+        "size": "35.4\" x 15.7\"",
+        "widthInches": 35.4,
+        "heightInches": 15.7,
+        "lab": "printify",
+        "supplierSku": "printify:DESK-MAT-900400",
+        "baseCostUsd": 12,
+        "retailPriceUsd": 42,
+        "inStock": true
+      }
+    ]
+  },
+  {
+    "id": "01a19f88-519f-703d-9c1d-612d5fd144ab",
+    "title": "Foredeck Shroud & Bronze Turnbuckle",
+    "slug": "nautical-turnbuckle-rigging-bw",
+    "description": "High-contrast macro study of a 5/8-inch bronze and 316-marine-grade stainless turnbuckle holding standing rigging tension on an ocean cruising sloop. Silver gelatin tonal curve applied for deep obsidian shadows and micro-faceted chrome highlights.",
+    "capture": {
+      "date": "2026-01-19",
+      "location": {
+        "name": "Annapolis Yacht Basin",
+        "region": "Maryland, USA",
+        "coordinates": {
+          "lat": 38.9754,
+          "lon": -76.4851
+        }
+      },
+      "camera": "Leica M11 Monochrom",
+      "lens": "Leica APO-Summicron-M 50mm f/2 ASPH",
+      "focalLength": "50mm",
+      "aperture": "f/4.0",
+      "shutterSpeed": "1/500s",
+      "iso": 125
+    },
+    "colorScience": {
+      "colorSpace": "sRGB",
+      "dominantHex": [
+        "#181818",
+        "#737373",
+        "#ffffff"
+      ],
+      "whitePoint": "D65"
+    },
+    "dimensions": {
+      "widthPx": 4000,
+      "heightPx": 6000,
+      "aspectRatio": "2:3",
+      "orientation": "portrait"
+    },
+    "collections": [
+      "black-and-white",
+      "maritime",
+      "minimalist"
+    ],
+    "limitedEdition": {
+      "isLimited": false,
+      "certificateOfAuthenticity": false
+    },
+    "masterAsset": {
+      "sourcePath": "/assets/source-images/nautical-turnbuckle-rigging-bw.png",
+      "tiffMasterPath": "/assets/masters/nautical-turnbuckle-rigging-bw-master-300dpi-bleed.tiff",
+      "maxDpiPaperWidthInches": 13.33,
+      "maxDpiPaperHeightInches": 20,
+      "maxDpiMetalWidthInches": 22.22,
+      "maxDpiMetalHeightInches": 33.33
+    },
+    "previewImage": "/images/artworks/nautical-turnbuckle-rigging-bw.webp",
+    "framedMockup": "/images/mockups/nautical-turnbuckle-rigging-bw-framed.webp",
+    "variants": [
+      {
+        "sku": "AWP-NAUTICAL-HAG-1624",
+        "substrate": "hahnemuhle-rag",
+        "substrateName": "Hahnemühle Photo Rag 308gsm Fine-Art Giclée",
+        "size": "16x24",
+        "widthInches": 24,
+        "heightInches": 16,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-FAP-16x24",
+        "baseCostUsd": 34,
+        "retailPriceUsd": 125,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-NAUTICAL-HAG-2436",
+        "substrate": "hahnemuhle-rag",
+        "substrateName": "Hahnemühle Photo Rag 308gsm Fine-Art Giclée (Large Format)",
+        "size": "24x36",
+        "widthInches": 36,
+        "heightInches": 24,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-FAP-24x36",
+        "baseCostUsd": 58,
+        "retailPriceUsd": 210,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-NAUTICAL-MET-1624",
+        "substrate": "aluminum-panel",
+        "substrateName": "ChromaLuxe Direct Aluminum Panel (Float Mount)",
+        "size": "16x24",
+        "widthInches": 24,
+        "heightInches": 16,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-MET-16x24",
+        "baseCostUsd": 48,
+        "retailPriceUsd": 185,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-NAUTICAL-ACR-2436",
+        "substrate": "acrylic-float",
+        "substrateName": "Optical HD Acrylic Panel (Polished Beveled Edges)",
+        "size": "24x36",
+        "widthInches": 36,
+        "heightInches": 24,
+        "lab": "prodigi",
+        "supplierSku": "prodigi:GLOBAL-ACR-24x36",
+        "baseCostUsd": 92,
+        "retailPriceUsd": 340,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-NAUTICAL-FRM-1624",
+        "substrate": "framed-print",
+        "substrateName": "Matted Satin Black Hardwood Frame & Archival Mat",
+        "size": "16x24",
+        "widthInches": 24,
+        "heightInches": 16,
+        "lab": "printify",
+        "supplierSku": "printify:FRAMED-POSTER-1624",
+        "baseCostUsd": 42,
+        "retailPriceUsd": 145,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-NAUTICAL-CNV-1624",
+        "substrate": "stretched-canvas",
+        "substrateName": "Museum Heavyweight Stretched Canvas Wrap (1.5\")",
+        "size": "16x24",
+        "widthInches": 24,
+        "heightInches": 16,
+        "lab": "printful",
+        "supplierSku": "printful:CANVAS-WRAP-1624",
+        "baseCostUsd": 38,
+        "retailPriceUsd": 135,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-NAUTICAL-CRD-A6",
+        "substrate": "linen-art-cards",
+        "substrateName": "Collector Box of 8 Archival Linen Art Cards (A6)",
+        "size": "A6 Pack (4.1\" x 5.8\")",
+        "widthInches": 5.8,
+        "heightInches": 4.1,
+        "lab": "gelato",
+        "supplierSku": "gelato:CARDS-A6-BOX8",
+        "baseCostUsd": 6.5,
+        "retailPriceUsd": 28,
+        "inStock": true
+      },
+      {
+        "sku": "AWP-NAUTICAL-DSK-3515",
+        "substrate": "desk-mat",
+        "substrateName": "Studio Neoprene Desk Mat (35.4\" x 15.7\" Stitched Edges)",
+        "size": "35.4\" x 15.7\"",
+        "widthInches": 35.4,
+        "heightInches": 15.7,
+        "lab": "printify",
+        "supplierSku": "printify:DESK-MAT-900400",
+        "baseCostUsd": 12,
+        "retailPriceUsd": 42,
+        "inStock": true
+      }
+    ]
+  }
+]

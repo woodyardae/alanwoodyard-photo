@@ -1,0 +1,149 @@
+---
+// src/pages/fulfillment.astro
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Print Fulfillment Architecture & Color Science &bull; Alan Woodyard"
+  description="Technical specification of the multi-provider print fulfillment engine, split-cart multi-package shipping calculation, and color science standards for alanwoodyard.photo."
+>
+  <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-16 space-y-16">
+    <!-- Header -->
+    <div class="space-y-4 border-b border-[#222538] pb-10">
+      <div class="inline-flex items-center gap-2 rounded bg-sky-500/10 px-3 py-1 text-xs font-mono font-semibold text-sky-400 border border-sky-500/30">
+        <span>ENGINEERING &bull; COLOR SCIENCE &bull; POD ROUTING</span>
+      </div>
+      <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-white">
+        Print Fulfillment &amp; Color Pipeline
+      </h1>
+      <p class="text-base text-slate-300 leading-relaxed max-w-3xl">
+        This document outlines the sovereign edge fulfillment router, split-cart parcel shipping logic, and precision color transforms powering Alan Woodyard Fine-Art Photography.
+      </p>
+    </div>
+
+    <!-- Section 1: The Top 5 Print Labs Matrix -->
+    <section class="space-y-6">
+      <h2 class="text-2xl font-bold text-white tracking-tight">1. Multi-Provider Lab Specialization Matrix</h2>
+      <p class="text-sm text-slate-400 leading-relaxed">
+        Fine art photography demands medium-specific equipment: giclée cotton rag requires 12-color archival pigment printers, whereas direct metal demands high-temperature dye sublimation presses. Orders are programmatically split and routed across the top 5 global facilities:
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Prodigi -->
+        <div class="rounded-xl border border-[#24283e] bg-[#12131d] p-5 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-white text-base">Prodigi API v4.0</span>
+            <span class="text-[10px] font-mono bg-sky-950 text-sky-300 border border-sky-800 px-2 py-0.5 rounded">Fine-Art Lead</span>
+          </div>
+          <div class="text-xs text-sky-400 font-mono">POST https://api.prodigi.com/v4.0/Orders</div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Fulfills museum-grade Hahnemühle Photo Rag 308gsm, archival cotton rag, and diamond-polished optical acrylic float mounts. Requires 300 DPI masters with 0.125" bleed.
+          </p>
+        </div>
+
+        <!-- Printify -->
+        <div class="rounded-xl border border-[#24283e] bg-[#12131d] p-5 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-white text-base">Printify API v1</span>
+            <span class="text-[10px] font-mono bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded">Frames &amp; Merch</span>
+          </div>
+          <div class="text-xs text-indigo-400 font-mono">POST /v1/shops/&#123;shop_id&#125;/orders.json</div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Fulfills matted satin black hardwood framed exhibition prints and studio-grade 35.4" x 15.7" stitched neoprene desk mats via Spoke Custom workshops.
+          </p>
+        </div>
+
+        <!-- Printful -->
+        <div class="rounded-xl border border-[#24283e] bg-[#12131d] p-5 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-white text-base">Printful API v2</span>
+            <span class="text-[10px] font-mono bg-emerald-950 text-emerald-300 border border-emerald-800 px-2 py-0.5 rounded">Canvas Wraps</span>
+          </div>
+          <div class="text-xs text-emerald-400 font-mono">POST https://api.printful.com/v2/orders</div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Fulfills heavyweight 1.5" deep gallery-wrapped museum canvas prints with reinforced corner brackets and archival satin UV protection.
+          </p>
+        </div>
+
+        <!-- Gelato -->
+        <div class="rounded-xl border border-[#24283e] bg-[#12131d] p-5 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-white text-base">Gelato API v2</span>
+            <span class="text-[10px] font-mono bg-purple-950 text-purple-300 border border-purple-800 px-2 py-0.5 rounded">Global Int'l</span>
+          </div>
+          <div class="text-xs text-purple-400 font-mono">POST https://order.gelatoapis.com/v2/orders</div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Fulfills localized international print orders across 32 countries and limited-edition boxed linen art cards (A6 format).
+          </p>
+        </div>
+
+        <!-- Gooten -->
+        <div class="rounded-xl border border-[#24283e] bg-[#12131d] p-5 space-y-2.5 md:col-span-2">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-white text-base">Gooten API v1</span>
+            <span class="text-[10px] font-mono bg-amber-950 text-amber-300 border border-amber-800 px-2 py-0.5 rounded">Specialty Acrylic Blocks</span>
+          </div>
+          <div class="text-xs text-amber-400 font-mono">POST https://api.gooten.com/v1/orders/</div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Specialized fulfillment for free-standing solid acrylic blocks, desktop paperweights, and custom ceramic studio goods.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Split-Cart Multi-Package Shipping Calculation -->
+    <section class="space-y-6">
+      <h2 class="text-2xl font-bold text-white tracking-tight">2. Split-Cart Multi-Package Shipping Calculation</h2>
+      <p class="text-sm text-slate-400 leading-relaxed">
+        When an art patron orders across multiple substrates (for instance, a large Hahnemühle giclée print, a framed exhibition print, and an acrylic block), these items originate from distinct specialized production facilities.
+      </p>
+
+      <div class="rounded-xl border border-[#23273d] bg-[#10111a] p-6 space-y-4">
+        <h4 class="text-sm font-bold text-white">Eliminating Seller Freight Subsidization</h4>
+        <p class="text-xs text-slate-300 leading-relaxed">
+          Standard single-rate e-commerce shipping models force the artist to absorb 60–80% of secondary freight costs. Our router (<code class="text-sky-400 font-mono">src/lib/fulfillment.ts</code>) enforces discrete parcel isolation:
+        </p>
+        <div class="rounded bg-[#0a0a0f] border border-[#1e202e] p-4 font-mono text-xs text-slate-300 overflow-x-auto">
+          <code>
+            Total Shipping = &Sigma; Parcel_Cost(Lab_i, Substrate_i, Destination)<br>
+            Parcel_Prodigi: $12.50 (Rigid Heavy-Duty Art Tube)<br>
+            Parcel_Printify: $7.50 (Corner-Protected Flat Pack)<br>
+            Parcel_Gooten: $9.50 (Shock-Absorbent Foam Crate)<br>
+            Total Calculated Freight: $29.50 &bull; Zero Seller Margin Erosion
+          </code>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Color Science & Archival Standards -->
+    <section class="space-y-6">
+      <h2 class="text-2xl font-bold text-white tracking-tight">3. Color Science &amp; Pre-Flight Engine Standards</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-400 leading-relaxed">
+        <div class="rounded-xl border border-[#202334] bg-[#11121a] p-5 space-y-2">
+          <h4 class="font-bold text-white text-sm">Wide-Gamut Mastery</h4>
+          <p>
+            Master captures are preserved in native <strong>ProPhoto RGB</strong> and <strong>Adobe RGB 1998</strong>. During pre-flight (<code class="text-sky-400 font-mono">scripts/preflight-prints.ts</code>), Sharp applies perceptual intent transforms to sRGB exclusively for web preview delivery, preserving 16-bit master print TIFFs with zero gamut clipping.
+          </p>
+        </div>
+        <div class="rounded-xl border border-[#202334] bg-[#11121a] p-5 space-y-2">
+          <h4 class="font-bold text-white text-sm">D50 &amp; D65 Illuminant Calibration</h4>
+          <p>
+            All maritime and landscape captures are graded under calibrated 5000K (D50) standard museum viewing lighting conditions to ensure absolute tonal fidelity when prints are exhibited under gallery track lighting.
+          </p>
+        </div>
+        <div class="rounded-xl border border-[#202334] bg-[#11121a] p-5 space-y-2">
+          <h4 class="font-bold text-white text-sm">Density &amp; Bleed Invariants</h4>
+          <p>
+            Paper and canvas prints require an immutable <strong>300 DPI minimum</strong>. Large-format metal panels enforce <strong>180 DPI minimum</strong>. Every master file features a <strong>0.125-inch (38 px) mirrored bleed margin</strong> to prevent unprinted borders upon guillotine cutting.
+          </p>
+        </div>
+        <div class="rounded-xl border border-[#202334] bg-[#11121a] p-5 space-y-2">
+          <h4 class="font-bold text-white text-sm">Fine Art America Subdomain</h4>
+          <p>
+            The dedicated subdomain <a href="https://faa.alanwoodyard.photo" target="_blank" rel="noopener noreferrer" class="text-sky-400 hover:underline">faa.alanwoodyard.photo</a> is mapped via CNAME to Pixels.com to provide legacy collector access to custom framers worldwide.
+          </p>
+        </div>
+      </div>
+    </section>
+  </div>
+</Layout>

@@ -1,0 +1,69 @@
+---
+// src/components/CollectionFilter.astro
+const tags = [
+  { slug: 'all', label: 'All Works' },
+  { slug: 'maritime', label: 'Maritime & Regatta' },
+  { slug: 'coastal-geometry', label: 'Coastal Geometry' },
+  { slug: 'austin-skyline', label: 'Austin Skyline' },
+  { slug: 'chesapeake-heritage', label: 'Chesapeake Heritage' },
+  { slug: 'gulf-coast', label: 'Gulf Coast Industrial' },
+  { slug: 'minimalist', label: 'Minimalist Horizons' },
+  { slug: 'black-and-white', label: 'Black & White' },
+  { slug: 'limited-edition', label: 'Limited Edition' }
+];
+---
+
+<nav id="collection-tabs" class="w-full overflow-x-auto py-2 scrollbar-none" aria-label="Filter Collection by Theme">
+  <div class="flex items-center gap-2 min-w-max pb-1">
+    {tags.map((t, idx) => (
+      <button
+        type="button"
+        class={`filter-tab rounded-full px-4 py-1.5 text-xs font-semibold tracking-wide transition-all cursor-pointer ${
+          idx === 0
+            ? 'active-tab bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20'
+            : 'bg-[#151622] text-slate-400 hover:bg-[#1f2233] hover:text-white border border-[#23263b]'
+        }`}
+        data-collection={t.slug}
+      >
+        {t.label}
+      </button>
+    ))}
+  </div>
+</nav>
+
+<script>
+  import { trackFilterCollection } from '../lib/analytics';
+
+  const tabs = document.querySelectorAll<HTMLButtonElement>('.filter-tab');
+  const cards = document.querySelectorAll<HTMLElement>('article[data-collections]');
+
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const selected = tab.getAttribute('data-collection') || 'all';
+
+      // Update active styles
+      tabs.forEach((t) => {
+        t.classList.remove('bg-sky-500', 'text-slate-950', 'shadow-md', 'shadow-sky-500/20');
+        t.classList.add('bg-[#151622]', 'text-slate-400', 'border', 'border-[#23263b]');
+      });
+      tab.classList.remove('bg-[#151622]', 'text-slate-400', 'border', 'border-[#23263b]');
+      tab.classList.add('bg-sky-500', 'text-slate-950', 'shadow-md', 'shadow-sky-500/20');
+
+      let visibleCount = 0;
+      cards.forEach((card) => {
+        const collections = card.getAttribute('data-collections')?.split(' ') || [];
+        if (selected === 'all' || collections.includes(selected)) {
+          card.style.display = 'flex';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      trackFilterCollection({
+        collection: selected,
+        artworkCount: visibleCount
+      });
+    });
+  });
+</script>

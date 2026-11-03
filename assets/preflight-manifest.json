@@ -1,0 +1,170 @@
+[
+  {
+    "file": "austin-skyline-rowing-dawn.png",
+    "slug": "austin-skyline-rowing-dawn",
+    "nativeWidth": 6000,
+    "nativeHeight": 4000,
+    "nativeSpace": "srgb",
+    "nativeDensity": 72,
+    "maxPaperWidthInches": 20,
+    "maxPaperHeightInches": 13.33,
+    "maxMetalWidthInches": 33.33,
+    "maxMetalHeightInches": 22.22,
+    "bleedPixels": 38,
+    "tiffMasterWidth": 6076,
+    "tiffMasterHeight": 4076,
+    "tiffMasterPath": "/assets/masters/austin-skyline-rowing-dawn-master-300dpi-bleed.tiff",
+    "previewWebpPath": "/images/artworks/austin-skyline-rowing-dawn.webp",
+    "mockupWebpPath": "/images/mockups/austin-skyline-rowing-dawn-framed.webp",
+    "dominantHexColors": [
+      "#182838"
+    ]
+  },
+  {
+    "file": "chesapeake-oyster-skiff-limited.png",
+    "slug": "chesapeake-oyster-skiff-limited",
+    "nativeWidth": 6000,
+    "nativeHeight": 4000,
+    "nativeSpace": "srgb",
+    "nativeDensity": 72,
+    "maxPaperWidthInches": 20,
+    "maxPaperHeightInches": 13.33,
+    "maxMetalWidthInches": 33.33,
+    "maxMetalHeightInches": 22.22,
+    "bleedPixels": 38,
+    "tiffMasterWidth": 6076,
+    "tiffMasterHeight": 4076,
+    "tiffMasterPath": "/assets/masters/chesapeake-oyster-skiff-limited-master-300dpi-bleed.tiff",
+    "previewWebpPath": "/images/artworks/chesapeake-oyster-skiff-limited.webp",
+    "mockupWebpPath": "/images/mockups/chesapeake-oyster-skiff-limited-framed.webp",
+    "dominantHexColors": [
+      "#181828"
+    ]
+  },
+  {
+    "file": "chesapeake-skipjack-twilight.png",
+    "slug": "chesapeake-skipjack-twilight",
+    "nativeWidth": 6000,
+    "nativeHeight": 4000,
+    "nativeSpace": "srgb",
+    "nativeDensity": 72,
+    "maxPaperWidthInches": 20,
+    "maxPaperHeightInches": 13.33,
+    "maxMetalWidthInches": 33.33,
+    "maxMetalHeightInches": 22.22,
+    "bleedPixels": 38,
+    "tiffMasterWidth": 6076,
+    "tiffMasterHeight": 4076,
+    "tiffMasterPath": "/assets/masters/chesapeake-skipjack-twilight-master-300dpi-bleed.tiff",
+    "previewWebpPath": "/images/artworks/chesapeake-skipjack-twilight.webp",
+    "mockupWebpPath": "/images/mockups/chesapeake-skipjack-twilight-framed.webp",
+    "dominantHexColors": [
+      "#282828"
+    ]
+  },
+  {
+    "file": "coastal-geometry-concrete-pier.png",
+    "slug": "coastal-geometry-concrete-pier",
+    "nativeWidth": 4800,
+    "nativeHeight": 4800,
+    "nativeSpace": "srgb",
+    "nativeDensity": 72,
+    "maxPaperWidthInches": 16,
+    "maxPaperHeightInches": 16,
+    "maxMetalWidthInches": 26.67,
+    "maxMetalHeightInches": 26.67,
+    "bleedPixels": 38,
+    "tiffMasterWidth": 4876,
+    "tiffMasterHeight": 4876,
+    "tiffMasterPath": "/assets/masters/coastal-geometry-concrete-pier-master-300dpi-bleed.tiff",
+    "previewWebpPath": "/images/artworks/coastal-geometry-concrete-pier.webp",
+    "mockupWebpPath": "/images/mockups/coastal-geometry-concrete-pier-framed.webp",
+    "dominantHexColors": [
+      "#282828"
+    ]
+  },
+  {
+    "file": "gulf-coast-pushboat-twilight.png",
+    "slug": "gulf-coast-pushboat-twilight",
+    "nativeWidth": 6400,
+    "nativeHeight": 3600,
+    "nativeSpace": "srgb",
+    "nativeDensity": 72,
+    "maxPaperWidthInches": 21.33,
+    "maxPaperHeightInches": 12,
+    "maxMetalWidthInches": 35.56,
+    "maxMetalHeightInches": 20,
+    "bleedPixels": 38,
+    "tiffMasterWidth": 6476,
+    "tiffMasterHeight": 3676,
+    "tiffMasterPath": "/assets/masters/gulf-coast-pushboat-twilight-master-300dpi-bleed.tiff",
+    "previewWebpPath": "/images/artworks/gulf-coast-pushboat-twilight.webp",
+    "mockupWebpPath": "/images/mockups/gulf-coast-pushboat-twilight-framed.webp",
+    "dominantHexColors": [
+      "#181818"
+    ]
+  },
+  {
+    "file": "maritime-carbon-cutter-regatta.png",
+    "slug": "maritime-carbon-cutter-regatta",
+    "nativeWidth": 4800,
+    "nativeHeight": 6000,
+    "nativeSpace": "srgb",
+    "nativeDensity": 72,
+    "maxPaperWidthInches": 16,
+    "maxPaperHeightInches": 20,
+    "maxMetalWidthInches": 26.67,
+    "maxMetalHeightInches": 33.33,
+    "bleedPixels": 38,
+    "tiffMasterWidth": 4876,
+    "tiffMasterHeight": 6076,
+    "tiffMasterPath": "/assets/masters/maritime-carbon-cutter-regatta-master-300dpi-bleed.tiff",
+    "previewWebpPath": "/images/artworks/maritime-carbon-cutter-regatta.webp",
+    "mockupWebpPath": "/images/mockups/maritime-carbon-cutter-regatta-framed.webp",
+    "dominantHexColors": [
+      "#0888c8"
+    ]
+  },
+  {
+    "file": "minimalist-fog-isolated-beacon.png",
+    "slug": "minimalist-fog-isolated-beacon",
+    "nativeWidth": 4800,
+    "nativeHeight": 4800,
+    "nativeSpace": "srgb",
+    "nativeDensity": 72,
+    "maxPaperWidthInches": 16,
+    "maxPaperHeightInches": 16,
+    "maxMetalWidthInches": 26.67,
+    "maxMetalHeightInches": 26.67,
+    "bleedPixels": 38,
+    "tiffMasterWidth": 4876,
+    "tiffMasterHeight": 4876,
+    "tiffMasterPath": "/assets/masters/minimalist-fog-isolated-beacon-master-300dpi-bleed.tiff",
+    "previewWebpPath": "/images/artworks/minimalist-fog-isolated-beacon.webp",
+    "mockupWebpPath": "/images/mockups/minimalist-fog-isolated-beacon-framed.webp",
+    "dominantHexColors": [
+      "#283848"
+    ]
+  },
+  {
+    "file": "nautical-turnbuckle-rigging-bw.png",
+    "slug": "nautical-turnbuckle-rigging-bw",
+    "nativeWidth": 4000,
+    "nativeHeight": 6000,
+    "nativeSpace": "srgb",
+    "nativeDensity": 72,
+    "maxPaperWidthInches": 13.33,
+    "maxPaperHeightInches": 20,
+    "maxMetalWidthInches": 22.22,
+    "maxMetalHeightInches": 33.33,
+    "bleedPixels": 38,
+    "tiffMasterWidth": 4076,
+    "tiffMasterHeight": 6076,
+    "tiffMasterPath": "/assets/masters/nautical-turnbuckle-rigging-bw-master-300dpi-bleed.tiff",
+    "previewWebpPath": "/images/artworks/nautical-turnbuckle-rigging-bw.webp",
+    "mockupWebpPath": "/images/mockups/nautical-turnbuckle-rigging-bw-framed.webp",
+    "dominantHexColors": [
+      "#080808"
+    ]
+  }
+]

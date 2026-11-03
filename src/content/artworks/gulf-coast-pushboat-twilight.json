@@ -1,0 +1,162 @@
+{
+  "id": "01a19f88-519f-703d-9c1d-57733cfab7a4",
+  "title": "Houston Ship Channel Pushboat at Dusk",
+  "slug": "gulf-coast-pushboat-twilight",
+  "description": "A commercial twin-screw pushboat holding station against heavy chemical barges in the lower San Jacinto reach. Sodium vapor deck lights cast fiery orange reflections against deep obsidian river water, showcasing the raw industrial pulse of the Texas working waterfront.",
+  "capture": {
+    "date": "2025-11-28",
+    "location": {
+      "name": "Houston Ship Channel / San Jacinto",
+      "region": "Texas, USA",
+      "coordinates": {
+        "lat": 29.7495,
+        "lon": -95.0932
+      }
+    },
+    "camera": "Sony Alpha 1 Mirrorless",
+    "lens": "Sony FE 70-200mm f/2.8 GM OSS II",
+    "focalLength": "135mm",
+    "aperture": "f/4.0",
+    "shutterSpeed": "1/15s (stabilized)",
+    "iso": 800
+  },
+  "colorScience": {
+    "colorSpace": "ProPhoto RGB",
+    "dominantHex": [
+      "#181818",
+      "#ea580c",
+      "#3b82f6"
+    ],
+    "whitePoint": "D65"
+  },
+  "dimensions": {
+    "widthPx": 6400,
+    "heightPx": 3600,
+    "aspectRatio": "16:9",
+    "orientation": "landscape"
+  },
+  "collections": [
+    "gulf-coast",
+    "coastal-geometry"
+  ],
+  "limitedEdition": {
+    "isLimited": false,
+    "certificateOfAuthenticity": false
+  },
+  "masterAsset": {
+    "sourcePath": "/assets/source-images/gulf-coast-pushboat-twilight.png",
+    "tiffMasterPath": "/assets/masters/gulf-coast-pushboat-twilight-master-300dpi-bleed.tiff",
+    "maxDpiPaperWidthInches": 21.33,
+    "maxDpiPaperHeightInches": 12,
+    "maxDpiMetalWidthInches": 35.56,
+    "maxDpiMetalHeightInches": 20
+  },
+  "previewImage": "/images/artworks/gulf-coast-pushboat-twilight.webp",
+  "framedMockup": "/images/mockups/gulf-coast-pushboat-twilight-framed.webp",
+  "variants": [
+    {
+      "sku": "AWP-GULF-COA-HAG-1624",
+      "substrate": "hahnemuhle-rag",
+      "substrateName": "Hahnemühle Photo Rag 308gsm Fine-Art Giclée",
+      "size": "12x24",
+      "widthInches": 24,
+      "heightInches": 12,
+      "lab": "prodigi",
+      "supplierSku": "prodigi:GLOBAL-FAP-16x24",
+      "baseCostUsd": 34,
+      "retailPriceUsd": 125,
+      "inStock": true
+    },
+    {
+      "sku": "AWP-GULF-COA-HAG-2436",
+      "substrate": "hahnemuhle-rag",
+      "substrateName": "Hahnemühle Photo Rag 308gsm Fine-Art Giclée (Large Format)",
+      "size": "16x32",
+      "widthInches": 32,
+      "heightInches": 16,
+      "lab": "prodigi",
+      "supplierSku": "prodigi:GLOBAL-FAP-24x36",
+      "baseCostUsd": 58,
+      "retailPriceUsd": 210,
+      "inStock": true
+    },
+    {
+      "sku": "AWP-GULF-COA-MET-1624",
+      "substrate": "aluminum-panel",
+      "substrateName": "ChromaLuxe Direct Aluminum Panel (Float Mount)",
+      "size": "12x24",
+      "widthInches": 24,
+      "heightInches": 12,
+      "lab": "prodigi",
+      "supplierSku": "prodigi:GLOBAL-MET-16x24",
+      "baseCostUsd": 48,
+      "retailPriceUsd": 185,
+      "inStock": true
+    },
+    {
+      "sku": "AWP-GULF-COA-ACR-2436",
+      "substrate": "acrylic-float",
+      "substrateName": "Optical HD Acrylic Panel (Polished Beveled Edges)",
+      "size": "16x32",
+      "widthInches": 32,
+      "heightInches": 16,
+      "lab": "prodigi",
+      "supplierSku": "prodigi:GLOBAL-ACR-24x36",
+      "baseCostUsd": 92,
+      "retailPriceUsd": 340,
+      "inStock": true
+    },
+    {
+      "sku": "AWP-GULF-COA-FRM-1624",
+      "substrate": "framed-print",
+      "substrateName": "Matted Satin Black Hardwood Frame & Archival Mat",
+      "size": "12x24",
+      "widthInches": 24,
+      "heightInches": 12,
+      "lab": "printify",
+      "supplierSku": "printify:FRAMED-POSTER-1624",
+      "baseCostUsd": 42,
+      "retailPriceUsd": 145,
+      "inStock": true
+    },
+    {
+      "sku": "AWP-GULF-COA-CNV-1624",
+      "substrate": "stretched-canvas",
+      "substrateName": "Museum Heavyweight Stretched Canvas Wrap (1.5\")",
+      "size": "12x24",
+      "widthInches": 24,
+      "heightInches": 12,
+      "lab": "printful",
+      "supplierSku": "printful:CANVAS-WRAP-1624",
+      "baseCostUsd": 38,
+      "retailPriceUsd": 135,
+      "inStock": true
+    },
+    {
+      "sku": "AWP-GULF-COA-CRD-A6",
+      "substrate": "linen-art-cards",
+      "substrateName": "Collector Box of 8 Archival Linen Art Cards (A6)",
+      "size": "A6 Pack (4.1\" x 5.8\")",
+      "widthInches": 5.8,
+      "heightInches": 4.1,
+      "lab": "gelato",
+      "supplierSku": "gelato:CARDS-A6-BOX8",
+      "baseCostUsd": 6.5,
+      "retailPriceUsd": 28,
+      "inStock": true
+    },
+    {
+      "sku": "AWP-GULF-COA-DSK-3515",
+      "substrate": "desk-mat",
+      "substrateName": "Studio Neoprene Desk Mat (35.4\" x 15.7\" Stitched Edges)",
+      "size": "35.4\" x 15.7\"",
+      "widthInches": 35.4,
+      "heightInches": 15.7,
+      "lab": "printify",
+      "supplierSku": "printify:DESK-MAT-900400",
+      "baseCostUsd": 12,
+      "retailPriceUsd": 42,
+      "inStock": true
+    }
+  ]
+}

@@ -1,0 +1,163 @@
+{
+  "id": "01a19f88-51a0-7301-9632-ef5af042f244",
+  "title": "Solitary Channel Marker No. 14",
+  "slug": "minimalist-fog-isolated-beacon",
+  "description": "A solitary green piling beacon suspended in dense coastal pea-soup fog over West Galveston Bay. Complete elimination of horizon divides transforms the bay into an ethereal, meditative spatial void.",
+  "capture": {
+    "date": "2025-12-04",
+    "location": {
+      "name": "West Galveston Bay",
+      "region": "Texas, USA",
+      "coordinates": {
+        "lat": 29.214,
+        "lon": -94.956
+      }
+    },
+    "camera": "Fujifilm GFX 100 II Medium Format",
+    "lens": "Fujinon GF 110mm f/2 R LM WR",
+    "focalLength": "110mm",
+    "aperture": "f/5.6",
+    "shutterSpeed": "1/125s",
+    "iso": 100
+  },
+  "colorScience": {
+    "colorSpace": "Adobe RGB 1998",
+    "dominantHex": [
+      "#283848",
+      "#475569",
+      "#cbd5e1"
+    ],
+    "whitePoint": "D50"
+  },
+  "dimensions": {
+    "widthPx": 4800,
+    "heightPx": 4800,
+    "aspectRatio": "1:1",
+    "orientation": "square"
+  },
+  "collections": [
+    "minimalist",
+    "gulf-coast",
+    "coastal-geometry"
+  ],
+  "limitedEdition": {
+    "isLimited": false,
+    "certificateOfAuthenticity": false
+  },
+  "masterAsset": {
+    "sourcePath": "/assets/source-images/minimalist-fog-isolated-beacon.png",
+    "tiffMasterPath": "/assets/masters/minimalist-fog-isolated-beacon-master-300dpi-bleed.tiff",
+    "maxDpiPaperWidthInches": 16,
+    "maxDpiPaperHeightInches": 16,
+    "maxDpiMetalWidthInches": 26.67,
+    "maxDpiMetalHeightInches": 26.67
+  },
+  "previewImage": "/images/artworks/minimalist-fog-isolated-beacon.webp",
+  "framedMockup": "/images/mockups/minimalist-fog-isolated-beacon-framed.webp",
+  "variants": [
+    {
+      "sku": "AWP-MINIMALI-HAG-1624",
+      "substrate": "hahnemuhle-rag",
+      "substrateName": "Hahnemühle Photo Rag 308gsm Fine-Art Giclée",
+      "size": "16x16",
+      "widthInches": 16,
+      "heightInches": 16,
+      "lab": "prodigi",
+      "supplierSku": "prodigi:GLOBAL-FAP-16x24",
+      "baseCostUsd": 34,
+      "retailPriceUsd": 125,
+      "inStock": true
+    },
+    {
+      "sku": "AWP-MINIMALI-HAG-2436",
+      "substrate": "hahnemuhle-rag",
+      "substrateName": "Hahnemühle Photo Rag 308gsm Fine-Art Giclée (Large Format)",
+      "size": "24x24",
+      "widthInches": 24,
+      "heightInches": 24,
+      "lab": "prodigi",
+      "supplierSku": "prodigi:GLOBAL-FAP-24x36",
+      "baseCostUsd": 58,
+      "retailPriceUsd": 210,
+      "inStock": true
+    },
+    {
+      "sku": "AWP-MINIMALI-MET-1624",
+      "substrate": "aluminum-panel",
+      "substrateName": "ChromaLuxe Direct Aluminum Panel (Float Mount)",
+      "size": "16x16",
+      "widthInches": 16,
+      "heightInches": 16,
+      "lab": "prodigi",
+      "supplierSku": "prodigi:GLOBAL-MET-16x24",
+      "baseCostUsd": 48,
+      "retailPriceUsd": 185,
+      "inStock": true
+    },
+    {
+      "sku": "AWP-MINIMALI-ACR-2436",
+      "substrate": "acrylic-float",
+      "substrateName": "Optical HD Acrylic Panel (Polished Beveled Edges)",
+      "size": "24x24",
+      "widthInches": 24,
+      "heightInches": 24,
+      "lab": "prodigi",
+      "supplierSku": "prodigi:GLOBAL-ACR-24x36",
+      "baseCostUsd": 92,
+      "retailPriceUsd": 340,
+      "inStock": true
+    },
+    {
+      "sku": "AWP-MINIMALI-FRM-1624",
+      "substrate": "framed-print",
+      "substrateName": "Matted Satin Black Hardwood Frame & Archival Mat",
+      "size": "16x16",
+      "widthInches": 16,
+      "heightInches": 16,
+      "lab": "printify",
+      "supplierSku": "printify:FRAMED-POSTER-1624",
+      "baseCostUsd": 42,
+      "retailPriceUsd": 145,
+      "inStock": true
+    },
+    {
+      "sku": "AWP-MINIMALI-CNV-1624",
+      "substrate": "stretched-canvas",
+      "substrateName": "Museum Heavyweight Stretched Canvas Wrap (1.5\")",
+      "size": "16x16",
+      "widthInches": 16,
+      "heightInches": 16,
+      "lab": "printful",
+      "supplierSku": "printful:CANVAS-WRAP-1624",
+      "baseCostUsd": 38,
+      "retailPriceUsd": 135,
+      "inStock": true
+    },
+    {
+      "sku": "AWP-MINIMALI-CRD-A6",
+      "substrate": "linen-art-cards",
+      "substrateName": "Collector Box of 8 Archival Linen Art Cards (A6)",
+      "size": "A6 Pack (4.1\" x 5.8\")",
+      "widthInches": 5.8,
+      "heightInches": 4.1,
+      "lab": "gelato",
+      "supplierSku": "gelato:CARDS-A6-BOX8",
+      "baseCostUsd": 6.5,
+      "retailPriceUsd": 28,
+      "inStock": true
+    },
+    {
+      "sku": "AWP-MINIMALI-DSK-3515",
+      "substrate": "desk-mat",
+      "substrateName": "Studio Neoprene Desk Mat (35.4\" x 15.7\" Stitched Edges)",
+      "size": "35.4\" x 15.7\"",
+      "widthInches": 35.4,
+      "heightInches": 15.7,
+      "lab": "printify",
+      "supplierSku": "printify:DESK-MAT-900400",
+      "baseCostUsd": 12,
+      "retailPriceUsd": 42,
+      "inStock": true
+    }
+  ]
+}

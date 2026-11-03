@@ -1,0 +1,164 @@
+{
+  "id": "01a19f88-519e-751c-bf2e-f26df2a7978f",
+  "title": "Chesapeake Skipjack at Low Mist",
+  "slug": "chesapeake-skipjack-twilight",
+  "description": "A historic oyster-dredging wooden skipjack ghosting on light airs through morning ground fog off Tilghman Island. Rendered in wide-gamut Adobe RGB 1998 calibrated to D50 museum viewing conditions for faithful silver-toned sea mist and weathered cedar planking.",
+  "capture": {
+    "date": "2025-10-14",
+    "location": {
+      "name": "Tilghman Island, Chesapeake Bay",
+      "region": "Maryland, USA",
+      "coordinates": {
+        "lat": 38.7093,
+        "lon": -76.338
+      }
+    },
+    "camera": "Leica SL3 Full Frame",
+    "lens": "Leica Vario-Elmarit-SL 24-90mm f/2.8-4 ASPH",
+    "focalLength": "50mm",
+    "aperture": "f/5.6",
+    "shutterSpeed": "1/320s",
+    "iso": 64
+  },
+  "colorScience": {
+    "colorSpace": "Adobe RGB 1998",
+    "dominantHex": [
+      "#282828",
+      "#78716c",
+      "#0284c7"
+    ],
+    "whitePoint": "D50"
+  },
+  "dimensions": {
+    "widthPx": 6000,
+    "heightPx": 4000,
+    "aspectRatio": "2:3",
+    "orientation": "landscape"
+  },
+  "collections": [
+    "chesapeake-heritage",
+    "maritime",
+    "limited-edition"
+  ],
+  "limitedEdition": {
+    "isLimited": true,
+    "editionSize": 25,
+    "certificateOfAuthenticity": true
+  },
+  "masterAsset": {
+    "sourcePath": "/assets/source-images/chesapeake-skipjack-twilight.png",
+    "tiffMasterPath": "/assets/masters/chesapeake-skipjack-twilight-master-300dpi-bleed.tiff",
+    "maxDpiPaperWidthInches": 20,
+    "maxDpiPaperHeightInches": 13.33,
+    "maxDpiMetalWidthInches": 33.33,
+    "maxDpiMetalHeightInches": 22.22
+  },
+  "previewImage": "/images/artworks/chesapeake-skipjack-twilight.webp",
+  "framedMockup": "/images/mockups/chesapeake-skipjack-twilight-framed.webp",
+  "variants": [
+    {
+      "sku": "AWP-CHESAPEA-HAG-1624",
+      "substrate": "hahnemuhle-rag",
+      "substrateName": "Hahnemühle Photo Rag 308gsm Fine-Art Giclée",
+      "size": "16x24",
+      "widthInches": 24,
+      "heightInches": 16,
+      "lab": "prodigi",
+      "supplierSku": "prodigi:GLOBAL-FAP-16x24",
+      "baseCostUsd": 34,
+      "retailPriceUsd": 125,
+      "inStock": true
+    },
+    {
+      "sku": "AWP-CHESAPEA-HAG-2436",
+      "substrate": "hahnemuhle-rag",
+      "substrateName": "Hahnemühle Photo Rag 308gsm Fine-Art Giclée (Large Format)",
+      "size": "24x36",
+      "widthInches": 36,
+      "heightInches": 24,
+      "lab": "prodigi",
+      "supplierSku": "prodigi:GLOBAL-FAP-24x36",
+      "baseCostUsd": 58,
+      "retailPriceUsd": 210,
+      "inStock": true
+    },
+    {
+      "sku": "AWP-CHESAPEA-MET-1624",
+      "substrate": "aluminum-panel",
+      "substrateName": "ChromaLuxe Direct Aluminum Panel (Float Mount)",
+      "size": "16x24",
+      "widthInches": 24,
+      "heightInches": 16,
+      "lab": "prodigi",
+      "supplierSku": "prodigi:GLOBAL-MET-16x24",
+      "baseCostUsd": 48,
+      "retailPriceUsd": 185,
+      "inStock": true
+    },
+    {
+      "sku": "AWP-CHESAPEA-ACR-2436",
+      "substrate": "acrylic-float",
+      "substrateName": "Optical HD Acrylic Panel (Polished Beveled Edges)",
+      "size": "24x36",
+      "widthInches": 36,
+      "heightInches": 24,
+      "lab": "prodigi",
+      "supplierSku": "prodigi:GLOBAL-ACR-24x36",
+      "baseCostUsd": 92,
+      "retailPriceUsd": 340,
+      "inStock": true
+    },
+    {
+      "sku": "AWP-CHESAPEA-FRM-1624",
+      "substrate": "framed-print",
+      "substrateName": "Matted Satin Black Hardwood Frame & Archival Mat",
+      "size": "16x24",
+      "widthInches": 24,
+      "heightInches": 16,
+      "lab": "printify",
+      "supplierSku": "printify:FRAMED-POSTER-1624",
+      "baseCostUsd": 42,
+      "retailPriceUsd": 145,
+      "inStock": true
+    },
+    {
+      "sku": "AWP-CHESAPEA-CNV-1624",
+      "substrate": "stretched-canvas",
+      "substrateName": "Museum Heavyweight Stretched Canvas Wrap (1.5\")",
+      "size": "16x24",
+      "widthInches": 24,
+      "heightInches": 16,
+      "lab": "printful",
+      "supplierSku": "printful:CANVAS-WRAP-1624",
+      "baseCostUsd": 38,
+      "retailPriceUsd": 135,
+      "inStock": true
+    },
+    {
+      "sku": "AWP-CHESAPEA-CRD-A6",
+      "substrate": "linen-art-cards",
+      "substrateName": "Collector Box of 8 Archival Linen Art Cards (A6)",
+      "size": "A6 Pack (4.1\" x 5.8\")",
+      "widthInches": 5.8,
+      "heightInches": 4.1,
+      "lab": "gelato",
+      "supplierSku": "gelato:CARDS-A6-BOX8",
+      "baseCostUsd": 6.5,
+      "retailPriceUsd": 28,
+      "inStock": true
+    },
+    {
+      "sku": "AWP-CHESAPEA-DSK-3515",
+      "substrate": "desk-mat",
+      "substrateName": "Studio Neoprene Desk Mat (35.4\" x 15.7\" Stitched Edges)",
+      "size": "35.4\" x 15.7\"",
+      "widthInches": 35.4,
+      "heightInches": 15.7,
+      "lab": "printify",
+      "supplierSku": "printify:DESK-MAT-900400",
+      "baseCostUsd": 12,
+      "retailPriceUsd": 42,
+      "inStock": true
+    }
+  ]
+}

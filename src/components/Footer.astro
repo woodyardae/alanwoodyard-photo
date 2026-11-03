@@ -1,0 +1,73 @@
+---
+// src/components/Footer.astro
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-[#222538] bg-[#07080c] py-14 text-slate-400 text-xs">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 pb-12 border-b border-[#1c1e2d]">
+      <!-- Column 1: Studio Identity -->
+      <div class="space-y-3">
+        <h3 class="text-sm font-bold tracking-wider text-white">ALAN WOODYARD</h3>
+        <p class="leading-relaxed text-slate-400">
+          Fine-art photography exploring maritime heritage, coastal civil geometry, and industrial waterfronts. Archival giclée, direct metal panels, and optical acrylics.
+        </p>
+        <div class="pt-2 text-[11px] text-slate-500 font-mono">
+          OPERATOR: Strictly Alan Woodyard (woodyardae)<br>
+          LOCATION: Austin, TX &bull; Chesapeake &bull; Gulf Coast
+        </div>
+      </div>
+
+      <!-- Column 2: Color Science & Archival Standards -->
+      <div class="space-y-3">
+        <h3 class="text-sm font-bold tracking-wider text-white">COLOR SCIENCE</h3>
+        <ul class="space-y-1.5 text-slate-400">
+          <li>&bull; Wide-Gamut ProPhoto RGB &amp; Adobe RGB 1998</li>
+          <li>&bull; D50 / D65 Museum Standard White Points</li>
+          <li>&bull; 300 DPI Pre-Flight Masters with 0.125" Mirrored Bleed</li>
+          <li>&bull; Hahnemühle Photo Rag 308gsm 100% Cotton Rag</li>
+          <li>&bull; ChromaLuxe Dye-Sublimation Direct Metal Panels</li>
+        </ul>
+      </div>
+
+      <!-- Column 3: Multi-Provider Fulfillment Engine -->
+      <div class="space-y-3">
+        <h3 class="text-sm font-bold tracking-wider text-white">FULFILLMENT LABS</h3>
+        <ul class="space-y-1.5 text-slate-400">
+          <li><strong class="text-slate-300">Prodigi API v4:</strong> Hahnemühle rag &amp; acrylic float mounts</li>
+          <li><strong class="text-slate-300">Printify API v1:</strong> Satin hardwood frames &amp; studio desk mats</li>
+          <li><strong class="text-slate-300">Printful API v2:</strong> Museum-wrap stretched canvas</li>
+          <li><strong class="text-slate-300">Gelato API v2:</strong> International local fine-art production</li>
+          <li><strong class="text-slate-300">Gooten API:</strong> Optical acrylic blocks &amp; decor</li>
+        </ul>
+      </div>
+
+      <!-- Column 4: Infrastructure & Routing -->
+      <div class="space-y-3">
+        <h3 class="text-sm font-bold tracking-wider text-white">EDGE &amp; NETWORK</h3>
+        <p class="leading-relaxed">
+          Apex <code class="text-sky-400">alanwoodyard.photo</code> deployed on Cloudflare Pages.
+        </p>
+        <p class="leading-relaxed">
+          Subdomain <a href="https://faa.alanwoodyard.photo" target="_blank" rel="noopener noreferrer" class="text-sky-400 hover:underline">faa.alanwoodyard.photo</a> routes via CNAME to Pixels.com (Fine Art America).
+        </p>
+        <div class="pt-2 text-slate-500">
+          Telemetry: Sovereign Umami at <code class="text-slate-400">chantecler-01:3008</code><br>
+          Proofing: <a href="mailto:printing@alanwoodyard.photo" class="hover:text-sky-400 text-slate-300">printing@alanwoodyard.photo</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="flex flex-col sm:flex-row items-center justify-between pt-8 text-[11px] text-slate-500">
+      <div>
+        &copy; {year} Alan Woodyard. All rights reserved. Strict Fine-Art Photography Scope Boundary.
+      </div>
+      <div class="flex items-center space-x-6 mt-4 sm:mt-0">
+        <a href="/fulfillment" class="hover:text-slate-300 transition-colors">Lab Routing Specs</a>
+        <a href="/about" class="hover:text-slate-300 transition-colors">Artist Statement</a>
+        <a href="https://faa.alanwoodyard.photo" target="_blank" rel="noopener noreferrer" class="hover:text-slate-300 transition-colors">FAA Mirror</a>
+      </div>
+    </div>
+  </div>
+</footer>
