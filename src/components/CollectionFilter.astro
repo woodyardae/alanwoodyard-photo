@@ -9,15 +9,15 @@ const moods = [
   { id: 'monochrome', label: 'Monochrome' }
 ];
 ---
-<div class="w-full max-w-7xl mx-auto px-6 md:px-12 pt-12 pb-8 flex flex-col md:flex-row justify-between items-start md:items-baseline gap-4 border-b gallery-hairline">
-  <div class="text-[11px] font-mono uppercase tracking-widest text-zinc-500">
-    Curated Portfolio &mdash; Coastal & Maritime Plates
+<div class="w-full max-w-7xl mx-auto px-6 md:px-12 pt-12 pb-8 flex flex-col md:flex-row justify-between items-start md:items-baseline gap-6 border-b brass-border">
+  <div class="text-[10px] font-mono uppercase tracking-[0.25em] text-[#c89346]">
+    Architectural & Maritime Plates &mdash; Studio Editions
   </div>
   
-  <div class="flex flex-wrap gap-x-6 gap-y-2 text-xs tracking-wider">
+  <div class="flex flex-wrap gap-2 text-xs tracking-wider">
     {moods.map((m) => (
       <button 
-        class="mood-trigger text-zinc-500 hover:text-zinc-200 transition-colors cursor-pointer capitalize data-[active=true]:text-zinc-100 data-[active=true]:underline underline-offset-8"
+        class="mood-trigger text-[#9e9382] hover:text-[#f5f0e6] px-3.5 py-1.5 rounded-sm border border-transparent transition-all cursor-pointer text-xs font-sans tracking-widest uppercase data-[active=true]:border-[#c89346]/60 data-[active=true]:bg-[#c89346]/10 data-[active=true]:text-[#f5f0e6]"
         data-mood={m.id}
         data-active={m.id === 'all' ? 'true' : 'false'}
       >

@@ -7,98 +7,109 @@ import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
   const artworks = await getCollection('artworks');
-  return artworks.map(entry => ({
-    params: { slug: entry.slug },
-    props: { artwork: entry }
-  }));
+  return artworks.map(entry => {
+    const slug = entry.data?.slug || (entry as any).slug || entry.id.replace(/\.[^/.]+$/, '');
+    return {
+      params: { slug: String(slug) },
+      props: { artwork: entry }
+    };
+  });
 }
 
 const { artwork } = Astro.props;
 const data = artwork.data;
+const slug = data.slug || artwork.slug || artwork.id.replace(/\.[^/.]+$/, '');
+const locationName = typeof data.capture?.location === 'object' ? data.capture.location.name : (data.capture?.location || 'Studio Archive');
+const variants = data.print_variants || data.variants || [];
+const colorSpace = data.colorScience?.colorSpace || data.color_science?.native_space || 'Adobe RGB (1998)';
 ---
 <Layout title={`${data.title} | Alan Woodyard`}>
   <Header />
 
   <article class="w-full max-w-[1700px] mx-auto px-4 md:px-12 py-10 md:py-16">
-    <!-- Main Print Frame (Floats with Generous Negative Space) -->
-    <div class="w-full flex items-center justify-center p-4 md:p-16 border gallery-hairline bg-[#08080a]">
+    <!-- Main Print Frame (Floats on Smoked Teak Canvas) -->
+    <div class="w-full flex items-center justify-center p-4 md:p-16 border brass-border bg-[#181411] shadow-2xl">
       <img 
-        src={`/images/artworks/${artwork.slug}.webp`} 
+        src={`/images/artworks/${slug}.webp`} 
         alt={data.title}
         class="max-w-full max-h-[82vh] object-contain shadow-2xl"
       />
     </div>
 
-    <!-- Versace Gallery Placard & Collector Purchase Console -->
-    <div class="mt-12 md:mt-20 grid grid-cols-1 lg:grid-cols-12 gap-12 border-t gallery-hairline pt-12">
+    <!-- Mid-Century Provenance Placard & Acquisition Console -->
+    <div class="mt-12 md:mt-20 grid grid-cols-1 lg:grid-cols-12 gap-12 border-t brass-border pt-12">
       
       <!-- Left: Curatorial & Technical Provenance -->
       <div class="lg:col-span-7 space-y-6">
         <div>
-          <span class="text-[10px] font-mono uppercase tracking-widest text-zinc-500">Fine Art Photographic Print</span>
-          <h1 class="font-serif text-3xl md:text-4xl text-zinc-100 mt-1">{data.title}</h1>
-          <p class="text-sm text-zinc-400 mt-2 font-light">{data.capture.location} &bull; {new Date(data.capture.date).getFullYear()}</p>
+          <span class="text-[9px] font-mono uppercase tracking-[0.25em] text-[#c89346]">Fine Art Photographic Plate</span>
+          <h1 class="font-serif text-3xl md:text-4xl text-[#f5f0e6] mt-1">{data.title}</h1>
+          <p class="text-sm text-[#9e9382] mt-2 font-light">{locationName} &bull; {new Date(data.capture.date).getFullYear()}</p>
         </div>
 
-        <p class="text-zinc-300 font-light leading-relaxed text-sm md:text-base max-w-2xl">
+        <p class="text-[#ded8cc] font-light leading-relaxed text-sm md:text-base max-w-2xl">
           {data.description}
         </p>
 
-        <!-- Technical Capture Placard -->
-        <div class="pt-6 border-t gallery-hairline">
-          <h3 class="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mb-3">Capture & Exposure Specifications</h3>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-mono text-zinc-400">
+        <!-- Technical Exposure Placard -->
+        <div class="pt-6 border-t brass-border">
+          <h3 class="text-[9px] font-mono uppercase tracking-[0.25em] text-[#c89346] mb-3">Capture & Exposure Specifications</h3>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-mono text-[#9e9382]">
             <div>
-              <span class="block text-zinc-600 text-[10px]">CAMERA</span>
+              <span class="block text-[#6e6456] text-[9px] uppercase tracking-widest">CAMERA</span>
               {data.capture.camera || 'Medium Format'}
             </div>
             <div>
-              <span class="block text-zinc-600 text-[10px]">LENS</span>
+              <span class="block text-[#6e6456] text-[9px] uppercase tracking-widest">LENS</span>
               {data.capture.lens || 'Prime'}
             </div>
             <div>
-              <span class="block text-zinc-600 text-[10px]">SETTINGS</span>
+              <span class="block text-[#6e6456] text-[9px] uppercase tracking-widest">SETTINGS</span>
               {data.capture.settings?.aperture || 'f/8'} &bull; {data.capture.settings?.shutter_speed || '1/125s'}
             </div>
             <div>
-              <span class="block text-zinc-600 text-[10px]">COLOR SPACE</span>
-              {data.color_science?.native_space || 'Adobe RGB'}
+              <span class="block text-[#6e6456] text-[9px] uppercase tracking-widest">COLOR SPACE</span>
+              {colorSpace}
             </div>
           </div>
         </div>
       </div>
 
       <!-- Right: Substrate & Acquisition Console -->
-      <div class="lg:col-span-5 bg-[#0f0f12] border gallery-hairline p-8 space-y-6">
+      <div class="lg:col-span-5 bg-[#1b1714] border brass-border p-8 space-y-6 shadow-xl">
         <div>
-          <span class="text-[10px] font-mono uppercase tracking-widest text-zinc-500 block mb-2">Acquire Edition</span>
-          <h2 class="font-serif text-xl text-zinc-100">Select Substrate & Dimensions</h2>
+          <span class="text-[9px] font-mono uppercase tracking-[0.25em] text-[#c89346] block mb-2">Acquire Edition</span>
+          <h2 class="font-serif text-xl text-[#f5f0e6]">Select Substrate & Dimensions</h2>
         </div>
 
         <!-- Substrate Options -->
         <div class="space-y-3">
-          <label class="block text-xs font-mono uppercase tracking-wider text-zinc-400">Print Medium</label>
+          <label class="block text-xs font-mono uppercase tracking-[0.2em] text-[#9e9382]">Print Medium</label>
           <div class="grid grid-cols-1 gap-2 text-xs">
-            {data.print_variants.map((v: any, i: number) => (
-              <label class="flex items-center justify-between p-3 border gallery-hairline bg-[#09090b] hover:border-zinc-500 cursor-pointer transition-colors">
-                <div class="flex items-center gap-3">
-                  <input type="radio" name="substrate" value={v.sku} checked={i === 0} class="accent-zinc-100" />
-                  <span class="text-zinc-200 capitalize">{v.substrate.replace(/-/g, ' ')}</span>
-                </div>
-                <span class="font-mono text-zinc-400">${v.price_usd_cents / 100}</span>
-              </label>
-            ))}
+            {variants.map((v: any, i: number) => {
+              const substrateLabel = (v.substrate || v.label || 'Fine Art Giclée').replace(/-/g, ' ');
+              const price = (v.price_usd_cents || v.priceCents || 18500) / 100;
+              return (
+                <label class="flex items-center justify-between p-3 border brass-border bg-[#14110f] hover:border-[#c89346]/60 cursor-pointer transition-colors">
+                  <div class="flex items-center gap-3">
+                    <input type="radio" name="substrate" value={v.sku} checked={i === 0} class="accent-[#c89346]" />
+                    <span class="text-[#f5f0e6] capitalize font-sans">{substrateLabel}</span>
+                  </div>
+                  <span class="font-mono text-[#dfa85b]">${price}</span>
+                </label>
+              );
+            })}
           </div>
         </div>
 
         <button 
           id="buy-btn"
-          class="w-full py-4 border border-zinc-100 text-zinc-100 text-xs font-mono uppercase tracking-widest hover:bg-white hover:text-black transition-all duration-300"
+          class="w-full py-4 border border-[#c89346] text-[#f5f0e6] text-xs font-mono uppercase tracking-[0.25em] bg-[#c89346]/10 hover:bg-[#c89346] hover:text-[#12100e] transition-all duration-300 font-bold"
         >
-          Add to Private Collection &rarr;
+          Acquire Archival Print &rarr;
         </button>
 
-        <p class="text-[11px] text-zinc-500 font-light text-center leading-normal">
+        <p class="text-[11px] text-[#6e6456] font-light text-center leading-normal">
           Each fine-art giclée is custom printed to 300 DPI archival museum standards on 100% cotton rag with pigmented mineral inks. Insured art freight calculated at checkout.
         </p>
       </div>

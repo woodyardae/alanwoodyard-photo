@@ -8,16 +8,22 @@ interface Props {
 
 const { artwork, spanFull = false } = Astro.props;
 const data = artwork.data;
+const slug = data.slug || artwork.slug || artwork.id.replace(/\.[^/.]+$/, '');
+const locationName = typeof data.capture?.location === 'object' ? data.capture.location.name : (data.capture?.location || 'Studio Archive');
+const variants = data.print_variants || data.variants || [];
+const minPrice = variants.length > 0 
+  ? Math.min(...variants.map((v: any) => v.price_usd_cents || v.priceCents || 18500)) / 100 
+  : 185;
+const moods = data.taxonomies?.mood?.join(',') || (data.taxonomies?.moods || []).join(',') || '';
 ---
 <article 
-  class={`gallery-item group relative mb-20 md:mb-32 ${spanFull ? 'col-span-full' : ''}`}
-  data-moods={data.taxonomies?.mood?.join(',') || ''}
-  data-collections={data.taxonomies?.collections?.join(',') || ''}
+  class={`gallery-item group relative mb-20 md:mb-28 ${spanFull ? 'col-span-full' : ''}`}
+  data-moods={moods}
 >
-  <a href={`/artwork/${artwork.slug}`} class="block overflow-hidden bg-black/40">
-    <div class="relative w-full flex items-center justify-center p-2 md:p-8 border gallery-hairline bg-[#09090b]/50 group-hover:border-white/20 transition-all duration-700">
+  <a href={`/artwork/${slug}`} class="block overflow-hidden bg-[#120f0d]">
+    <div class="relative w-full flex items-center justify-center p-3 md:p-8 border brass-border bg-[#191512]/90 group-hover:border-[#c89346]/60 transition-all duration-700 shadow-xl">
       <img 
-        src={`/images/artworks/${artwork.slug}.webp`} 
+        src={`/images/artworks/${slug}.webp`} 
         alt={data.title}
         loading="lazy"
         class="w-full h-auto object-contain max-h-[85vh] transition-transform duration-1000 ease-out group-hover:scale-[1.01]"
@@ -25,25 +31,25 @@ const data = artwork.data;
     </div>
   </a>
 
-  <!-- Museum Placard Label -->
-  <div class="mt-6 flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-2 px-1">
+  <!-- Mid-Century Museum Placard -->
+  <div class="mt-5 flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-2 px-1">
     <div>
-      <h2 class="font-serif text-lg md:text-xl text-zinc-100 tracking-wide">
-        <a href={`/artwork/${artwork.slug}`} class="hover:underline underline-offset-4">
+      <h2 class="font-serif text-lg md:text-xl text-[#f5f0e6] tracking-wide">
+        <a href={`/artwork/${slug}`} class="hover:text-[#dfa85b] transition-colors">
           {data.title}
         </a>
       </h2>
-      <p class="text-xs text-zinc-400 font-light mt-1">
-        {data.capture.location} &bull; {new Date(data.capture.date).getFullYear()}
+      <p class="text-xs text-[#9e9382] font-light mt-1">
+        {locationName} &bull; {new Date(data.capture.date).getFullYear()}
       </p>
     </div>
 
     <div class="text-left sm:text-right">
-      <p class="text-[11px] font-mono tracking-wider text-zinc-400">
-        From ${Math.min(...data.print_variants.map((v: any) => v.price_usd_cents)) / 100}
+      <p class="text-xs font-mono tracking-widest text-[#dfa85b]">
+        From ${minPrice}
       </p>
-      <p class="text-[10px] font-mono uppercase tracking-widest text-zinc-600 mt-0.5">
-        Archival Giclée &bull; Acrylic &bull; Aluminum
+      <p class="text-[9px] font-mono uppercase tracking-[0.2em] text-[#6e6456] mt-0.5">
+        Hahnemühle &bull; Acrylic Float &bull; Aluminum
       </p>
     </div>
   </div>

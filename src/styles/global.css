@@ -4,16 +4,22 @@
 
 @layer base {
   :root {
-    --bg-gallery: #0c0c0e;
-    --text-primary: #f4f4f5;
-    --text-muted: #71717a;
-    --border-subtle: rgba(255, 255, 255, 0.07);
+    --bg-walnut-dark: #12100e;
+    --bg-walnut-base: #161311;
+    --bg-teak-surface: #1e1915;
+    --border-brass-subtle: rgba(200, 147, 70, 0.18);
+    --border-teak-subtle: rgba(245, 240, 230, 0.07);
+    --color-brass: #c89346;
+    --color-brass-hover: #dfa85b;
+    --text-linen: #f5f0e6;
+    --text-sand: #9e9382;
+    --text-teak-dim: #6e6456;
   }
 
   body {
-    background-color: var(--bg-gallery);
-    color: var(--text-primary);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-walnut-base);
+    color: var(--text-linen);
+    font-family: -apple-system, BlinkMacSystemFont, "Futura", "Avenir Next", "Century Gothic", sans-serif;
     letter-spacing: -0.01em;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
@@ -24,14 +30,18 @@
   }
 }
 
-.gallery-hairline {
-  border-color: var(--border-subtle);
+.mcm-border {
+  border-color: var(--border-teak-subtle);
 }
 
-.img-fade-in {
-  opacity: 0;
-  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+.brass-border {
+  border-color: var(--border-brass-subtle);
 }
-.img-fade-in.loaded {
-  opacity: 1;
+
+.brass-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.brass-hover:hover {
+  color: var(--color-brass-hover);
+  border-color: var(--color-brass);
 }

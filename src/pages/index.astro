@@ -8,29 +8,33 @@ import ArtworkCard from '../components/ArtworkCard.astro';
 import { getCollection } from 'astro:content';
 
 const artworks = await getCollection('artworks');
+const getSlug = (art: any) => art.data?.slug || art.slug || art.id.replace(/\.[^/.]+$/, '');
+const hero = artworks.length > 0 ? artworks[0] : null;
+const heroSlug = hero ? getSlug(hero) : '';
+const heroLoc = hero ? (typeof hero.data.capture?.location === 'object' ? hero.data.capture.location.name : hero.data.capture?.location) : '';
 ---
 <Layout title="Alan Woodyard | Fine Art Photography">
   <Header />
 
-  <!-- Hero Anchor Plate (Peter Lik Style: Expansive Horizon) -->
-  {artworks.length > 0 && (
-    <section class="w-full px-4 md:px-12 pt-8 pb-16 max-w-[1600px] mx-auto">
-      <a href={`/artwork/${artworks[0].slug}`} class="block group relative">
-        <div class="w-full overflow-hidden border gallery-hairline bg-[#09090b] flex items-center justify-center p-3 md:p-10 group-hover:border-white/20 transition-all duration-700">
+  <!-- Hero Plate (Expansive Horizon with Smoked Walnut Border) -->
+  {hero && (
+    <section class="w-full px-4 md:px-12 pt-8 pb-14 max-w-[1650px] mx-auto">
+      <a href={`/artwork/${heroSlug}`} class="block group relative">
+        <div class="w-full overflow-hidden border brass-border bg-[#181411] flex items-center justify-center p-3 md:p-10 group-hover:border-[#c89346]/60 transition-all duration-700 shadow-2xl">
           <img 
-            src={`/images/artworks/${artworks[0].slug}.webp`} 
-            alt={artworks[0].data.title}
-            class="w-full max-h-[80vh] object-contain transition-transform duration-1000 ease-out group-hover:scale-[1.008]"
+            src={`/images/artworks/${heroSlug}.webp`} 
+            alt={hero.data.title}
+            class="w-full max-h-[82vh] object-contain transition-transform duration-1000 ease-out group-hover:scale-[1.008]"
           />
         </div>
         <div class="mt-6 flex flex-col md:flex-row md:justify-between md:items-baseline gap-2">
           <div>
-            <span class="text-[10px] font-mono uppercase tracking-widest text-zinc-500">Exhibition Hero &mdash; Limited Edition</span>
-            <h1 class="font-serif text-2xl md:text-3xl text-zinc-100 mt-1">{artworks[0].data.title}</h1>
-            <p class="text-xs text-zinc-400 mt-1 font-light">{artworks[0].data.capture.location} &bull; {new Date(artworks[0].data.capture.date).getFullYear()}</p>
+            <span class="text-[9px] font-mono uppercase tracking-[0.25em] text-[#c89346]">Exhibition Hero &mdash; Limited Edition</span>
+            <h1 class="font-serif text-2xl md:text-3xl text-[#f5f0e6] mt-1">{hero.data.title}</h1>
+            <p class="text-xs text-[#9e9382] mt-1 font-light">{heroLoc} &bull; {new Date(hero.data.capture.date).getFullYear()}</p>
           </div>
           <div class="text-left md:text-right">
-            <span class="text-xs font-mono tracking-widest text-zinc-300">View Master Exhibition Plate &rarr;</span>
+            <span class="text-xs font-mono tracking-[0.2em] text-[#dfa85b] uppercase">Inspect Exhibition Plate &rarr;</span>
           </div>
         </div>
       </a>
@@ -39,11 +43,10 @@ const artworks = await getCollection('artworks');
 
   <CollectionFilter />
 
-  <!-- Gallery Body: 2-Column Rhythm with Full-Width Breaks -->
-  <main class="w-full max-w-[1600px] mx-auto px-4 md:px-12 py-16">
+  <!-- Curated Gallery: 2-Column Rhythm with Panoramic Interrupters -->
+  <main class="w-full max-w-[1650px] mx-auto px-4 md:px-12 py-16">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 lg:gap-x-20">
       {artworks.slice(1).map((art, idx) => {
-        // Every 3rd item breaks out to span the full width (Interrupter)
         const isInterrupter = (idx % 3 === 2);
         return <ArtworkCard artwork={art} spanFull={isInterrupter} />;
       })}

@@ -23,3 +23,5 @@ assets/masters/*.tif
 assets/masters/*.tiff
 public/masters/*.tif
 public/masters/*.tiff
+.wrangler/
+.wrangler
