@@ -20,8 +20,8 @@ const moods = data.taxonomies?.mood?.join(',') || (data.taxonomies?.moods || [])
   class={`gallery-item group relative mb-20 md:mb-28 ${spanFull ? 'col-span-full' : ''}`}
   data-moods={moods}
 >
-  <a href={`/artwork/${slug}`} class="block overflow-hidden bg-[#120f0d]">
-    <div class="relative w-full flex items-center justify-center p-3 md:p-8 border brass-border bg-[#191512]/90 group-hover:border-[#c89346]/60 transition-all duration-700 shadow-xl">
+  <a href={`/artwork/${slug}`} class="block overflow-hidden bg-[#100d0b]">
+    <div class="relative w-full flex items-center justify-center p-3 md:p-8 border brass-border bg-[#181411] group-hover:border-[#c89346]/60 transition-all duration-700 shadow-2xl">
       <img 
         src={`/images/artworks/${slug}.webp`} 
         alt={data.title}
@@ -31,25 +31,25 @@ const moods = data.taxonomies?.mood?.join(',') || (data.taxonomies?.moods || [])
     </div>
   </a>
 
-  <!-- Mid-Century Museum Placard -->
-  <div class="mt-5 flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-2 px-1">
+  <!-- Mid-Century Museum Placard Label -->
+  <div class="mt-6 flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-2 px-1">
     <div>
-      <h2 class="font-serif text-lg md:text-xl text-[#f5f0e6] tracking-wide">
+      <h2 class="font-serif text-2xl md:text-3xl text-[#f5f0e6] font-light tracking-wide">
         <a href={`/artwork/${slug}`} class="hover:text-[#dfa85b] transition-colors">
           {data.title}
         </a>
       </h2>
-      <p class="text-xs text-[#9e9382] font-light mt-1">
+      <p class="text-[13px] text-[#a69c8d] font-light mt-1 tracking-wide">
         {locationName} &bull; {new Date(data.capture.date).getFullYear()}
       </p>
     </div>
 
     <div class="text-left sm:text-right">
-      <p class="text-xs font-mono tracking-widest text-[#dfa85b]">
-        From ${minPrice}
+      <p class="text-xs font-mono tracking-widest text-[#dfa85b] font-medium">
+        Edition From ${minPrice}
       </p>
-      <p class="text-[9px] font-mono uppercase tracking-[0.2em] text-[#6e6456] mt-0.5">
-        Hahnemühle &bull; Acrylic Float &bull; Aluminum
+      <p class="text-[10px] font-mono uppercase tracking-[0.2em] text-[#706556] mt-0.5">
+        Hahnemühle &bull; Acrylic &bull; Aluminum
       </p>
     </div>
   </div>

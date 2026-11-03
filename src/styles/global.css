@@ -4,44 +4,40 @@
 
 @layer base {
   :root {
-    --bg-walnut-dark: #12100e;
-    --bg-walnut-base: #161311;
-    --bg-teak-surface: #1e1915;
-    --border-brass-subtle: rgba(200, 147, 70, 0.18);
-    --border-teak-subtle: rgba(245, 240, 230, 0.07);
+    --bg-walnut-base: #14110f;
+    --bg-teak-surface: #1b1714;
     --color-brass: #c89346;
     --color-brass-hover: #dfa85b;
     --text-linen: #f5f0e6;
-    --text-sand: #9e9382;
-    --text-teak-dim: #6e6456;
+    --text-sand: #a69c8d;
+    --text-teak-dim: #706556;
+    --border-brass: rgba(200, 147, 70, 0.22);
+    --border-teak: rgba(245, 240, 230, 0.08);
   }
 
   body {
     background-color: var(--bg-walnut-base);
     color: var(--text-linen);
-    font-family: -apple-system, BlinkMacSystemFont, "Futura", "Avenir Next", "Century Gothic", sans-serif;
-    letter-spacing: -0.01em;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, .font-serif {
-    font-family: "Didot", "Bodoni MT", "Cinzel", "Cormorant Garamond", Georgia, serif;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-feature-settings: "lnum", "liga";
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', monospace;
   }
 }
 
-.mcm-border {
-  border-color: var(--border-teak-subtle);
-}
-
 .brass-border {
-  border-color: var(--border-brass-subtle);
+  border-color: var(--border-brass);
 }
 
-.brass-hover {
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.brass-hover:hover {
-  color: var(--color-brass-hover);
-  border-color: var(--color-brass);
+.teak-border {
+  border-color: var(--border-teak);
 }

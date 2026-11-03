@@ -1,219 +1,38 @@
----
+﻿---
 // src/layouts/Layout.astro
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import CartDrawer from '../components/CartDrawer.astro';
-import '../styles/global.css';
-
 interface Props {
-  title?: string;
+  title: string;
   description?: string;
-  image?: string;
 }
 
-const {
-  title = 'Alan Woodyard &bull; Fine Art Photography & Archival Prints',
-  description = 'Fine-art photography by Alan Woodyard. Archival giclée on Hahnemühle Photo Rag, ChromaLuxe metal panels, and optical acrylic float mounts.',
-  image = '/images/artworks/austin-skyline-rowing-dawn.webp'
-} = Astro.props;
-
-const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://alanwoodyard.photo');
+const { title, description = "Alan Woodyard Fine Art Photography. Limited edition archival giclée prints, direct metal, and acrylic float mounts." } = Astro.props;
 ---
-
 <!doctype html>
-<html lang="en" class="dark scroll-smooth">
+<html lang="en" class="scroll-smooth bg-[#12100e]">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="canonical" href={canonicalURL} />
     <meta name="generator" content={Astro.generator} />
-
-    <!-- SEO Metadata -->
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="author" content="Alan Woodyard" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:image" content={image} />
-    <meta property="og:url" content={canonicalURL} />
-    <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={image} />
 
-    <!-- Sovereign Umami Analytics Telemetry (chantecler-01:3008) -->
-    <script
-      defer
-      src="http://chantecler-01:3008/script.js"
-      data-website-id="alanwoodyard-photo-prod"
+    <!-- Google Web Fonts: Cormorant Garamond, Plus Jakarta Sans, JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link 
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=JetBrains+Mono:wght@300;400;500&family=Plus+Jakarta+Sans:wght@200;300;400;500;600&display=swap" 
+      rel="stylesheet" 
+    />
+
+    <!-- Umami Sovereign Telemetry -->
+    <script 
+      defer 
+      src="http://chantecler-01:3008/script.js" 
+      data-website-id="alanwoodyard-photo"
     ></script>
   </head>
-  <body class="min-h-screen flex flex-col bg-[#08090d] text-slate-100 antialiased selection:bg-sky-500 selection:text-slate-950">
-    <Header />
-
-    <main class="flex-1">
-      <slot />
-    </main>
-
-    <Footer />
-
-    <!-- Persistent Slide-Over Cart Drawer -->
-    <CartDrawer />
-
-    <!-- 4K Wallpaper Lead Capture Modal -->
-    <div
-      id="wallpaper-modal"
-      class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-    >
-      <div class="relative w-full max-w-lg rounded-xl border border-[#2b2f45] bg-[#12131b] p-6 shadow-2xl sm:p-8">
-        <button
-          type="button"
-          id="close-wallpaper-modal-btn"
-          class="absolute top-4 right-4 text-slate-400 hover:text-white"
-          aria-label="Close modal"
-        >
-          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-
-        <div class="text-xs font-mono font-semibold tracking-wider text-sky-400 uppercase">
-          Archival Collector Drop
-        </div>
-        <h2 class="mt-1 text-2xl font-bold text-white tracking-tight">
-          Receive Your 4K Wallpaper Pack
-        </h2>
-        <p class="mt-2 text-sm text-slate-400 leading-relaxed">
-          Sign up to receive instantaneous download links for two full 4K Ultra-HD (3840&times;2160) desktop wallpapers: <em class="text-slate-200">Dawn Shell on Lady Bird Lake</em> and <em class="text-slate-200">Chesapeake Skipjack at Low Mist</em>, plus 15% off your first fine-art print.
-        </p>
-
-        <form id="lead-subscribe-form" class="mt-6 space-y-4">
-          <div>
-            <label for="subscriber-name" class="block text-xs font-medium text-slate-300">Your Name (Optional)</label>
-            <input
-              type="text"
-              id="subscriber-name"
-              placeholder="Alan Woodyard"
-              class="mt-1 w-full rounded border border-[#2d3148] bg-[#181924] px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
-            />
-          </div>
-          <div>
-            <label for="subscriber-email" class="block text-xs font-medium text-slate-300">Email Address</label>
-            <input
-              type="email"
-              id="subscriber-email"
-              required
-              placeholder="collector@example.com"
-              class="mt-1 w-full rounded border border-[#2d3148] bg-[#181924] px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
-            />
-          </div>
-
-          <button
-            type="submit"
-            id="subscribe-submit-btn"
-            class="w-full rounded bg-sky-500 py-2.5 text-sm font-semibold text-slate-950 hover:bg-sky-400 transition-colors cursor-pointer"
-          >
-            Dispatch 4K Wallpaper Package
-          </button>
-        </form>
-
-        <div id="subscribe-status" class="mt-3 text-xs hidden"></div>
-
-        <div class="mt-4 border-t border-[#1f2233] pt-3 text-[11px] text-slate-500">
-          Dispatched via Resend API. Strictly for fine-art collector notices; zero spam.
-        </div>
-      </div>
-    </div>
-
-    <!-- Global Client Script for Modals & Checkout Navigation -->
-    <script>
-      // Lead Capture Modal Logic
-      const modal = document.getElementById('wallpaper-modal');
-      const openBtn = document.getElementById('open-wallpaper-modal-btn');
-      const closeBtn = document.getElementById('close-wallpaper-modal-btn');
-      const form = document.getElementById('lead-subscribe-form');
-      const statusDiv = document.getElementById('subscribe-status');
-      const submitBtn = document.getElementById('subscribe-submit-btn');
-
-      if (openBtn && modal) {
-        openBtn.addEventListener('click', () => {
-          modal.classList.remove('hidden');
-          modal.classList.add('flex');
-        });
-      }
-
-      if (closeBtn && modal) {
-        closeBtn.addEventListener('click', () => {
-          modal.classList.add('hidden');
-          modal.classList.remove('flex');
-        });
-      }
-
-      // Close on backdrop click
-      if (modal) {
-        modal.addEventListener('click', (e) => {
-          if (e.target === modal) {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-          }
-        });
-      }
-
-      if (form) {
-        form.addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const emailInput = document.getElementById('subscriber-email') as HTMLInputElement;
-          const nameInput = document.getElementById('subscriber-name') as HTMLInputElement;
-          if (!emailInput || !statusDiv || !submitBtn) return;
-
-          const email = emailInput.value.trim();
-          const name = nameInput?.value.trim() || 'Collector';
-
-          submitBtn.setAttribute('disabled', 'true');
-          submitBtn.textContent = 'Dispatching Master Files...';
-
-          try {
-            const res = await fetch('/api/subscribe', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email, name })
-            });
-
-            const data = await res.json();
-            statusDiv.classList.remove('hidden');
-
-            if (res.ok) {
-              statusDiv.className = 'mt-3 text-xs text-emerald-400 bg-emerald-950/40 border border-emerald-800 p-2.5 rounded';
-              statusDiv.innerHTML = `<strong>Success!</strong> ${data.message || 'Check your inbox for your 4K wallpapers.'}`;
-              form.reset();
-            } else {
-              statusDiv.className = 'mt-3 text-xs text-rose-400 bg-rose-950/40 border border-rose-800 p-2.5 rounded';
-              statusDiv.textContent = data.error || 'Failed to dispatch email. Please try again.';
-            }
-          } catch (err) {
-            statusDiv.classList.remove('hidden');
-            statusDiv.className = 'mt-3 text-xs text-rose-400 bg-rose-950/40 border border-rose-800 p-2.5 rounded';
-            statusDiv.textContent = 'Network error contacting dispatch worker.';
-          } finally {
-            submitBtn.removeAttribute('disabled');
-            submitBtn.textContent = 'Dispatch 4K Wallpaper Package';
-          }
-        });
-      }
-
-      // Checkout Success / Cancel hash handler
-      window.addEventListener('load', () => {
-        const hash = window.location.hash;
-        if (hash.includes('checkout-success')) {
-          localStorage.removeItem('awp_cart_v1');
-          window.dispatchEvent(new Event('cart-updated'));
-          alert('Thank you for your fine-art order! Your print fulfillment has been queued with our pro labs.');
-        } else if (hash.includes('checkout-cancel')) {
-          alert('Checkout cancelled. Your cart inventory has been preserved.');
-        }
-      });
-    </script>
+  <body class="bg-[#14110f] text-[#f5f0e6] antialiased selection:bg-[#c89346]/30 selection:text-[#f5f0e6] min-h-screen flex flex-col justify-between">
+    <slot />
   </body>
 </html>
