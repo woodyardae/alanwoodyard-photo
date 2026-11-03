@@ -15,7 +15,7 @@ const minPrice = variants.length > 0
 const moods = data.taxonomies?.mood?.join(',') || (data.taxonomies?.moods || []).join(',') || '';
 ---
 <article 
-  class="gallery-item group relative mb-20 md:mb-28"
+  class="gallery-item group relative mb-24 md:mb-32"
   data-moods={moods}
 >
   <a href={`/artwork/${slug}`} class="block overflow-hidden">
@@ -24,25 +24,25 @@ const moods = data.taxonomies?.mood?.join(',') || (data.taxonomies?.moods || [])
         src={`/images/artworks/${slug}.webp`} 
         alt={data.title}
         loading="lazy"
-        class="w-full h-auto object-contain max-h-[75vh] transition-transform duration-700 ease-out group-hover:scale-[1.01]"
+        class="w-full h-auto object-contain max-h-[78vh] transition-transform duration-700 ease-out group-hover:scale-[1.012]"
       />
     </div>
   </a>
 
-  <div class="mt-5 flex justify-between items-baseline gap-4">
+  <div class="mt-6 flex justify-between items-baseline gap-4">
     <div>
-      <h2 class="font-serif text-xl md:text-2xl text-[#f7f4ee] font-light">
+      <h2 class="font-serif text-2xl md:text-3xl text-[#f7f4ee] font-light">
         <a href={`/artwork/${slug}`} class="hover:text-[#dfb872] transition-colors">
           {data.title}
         </a>
       </h2>
-      <p class="text-xs text-[#8e8577] mt-1 font-sans">
+      <p class="text-sm text-[#a89f91] mt-1.5 font-sans tracking-wide">
         {locationName}{locationName && ' — '}{new Date(data.capture.date).getFullYear()}
       </p>
     </div>
 
     <div class="text-right">
-      <span class="text-xs font-mono text-[#c5a059]">From ${minPrice}</span>
+      <span class="text-sm font-mono text-[#c5a059] font-medium">From ${minPrice}</span>
     </div>
   </div>
 </article>
