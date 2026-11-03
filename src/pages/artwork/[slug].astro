@@ -26,49 +26,49 @@ const colorSpace = data.colorScience?.colorSpace || data.color_science?.native_s
 <Layout title={`${data.title} | Alan Woodyard`}>
   <Header />
 
-  <article class="w-full max-w-[1700px] mx-auto px-4 md:px-12 py-10 md:py-16">
-    <!-- Main Print Frame (Floats on Smoked Teak Canvas) -->
-    <div class="w-full flex items-center justify-center p-4 md:p-16 border brass-border bg-[#181411] shadow-2xl">
+  <article class="w-full max-w-[1700px] mx-auto px-4 md:px-16 py-12 md:py-20">
+    <!-- Unboxed Floating Master Image -->
+    <div class="w-full flex items-center justify-center">
       <img 
         src={`/images/artworks/${slug}.webp`} 
         alt={data.title}
-        class="max-w-full max-h-[82vh] object-contain shadow-2xl"
+        class="max-w-full max-h-[85vh] object-contain shadow-2xl"
       />
     </div>
 
-    <!-- Mid-Century Provenance Placard & Acquisition Console -->
-    <div class="mt-12 md:mt-20 grid grid-cols-1 lg:grid-cols-12 gap-12 border-t brass-border pt-12">
+    <!-- Versace Gallery Placard & Collector Acquisition Console -->
+    <div class="mt-16 md:mt-24 grid grid-cols-1 lg:grid-cols-12 gap-16 border-t gallery-hairline pt-14">
       
       <!-- Left: Curatorial & Technical Provenance -->
-      <div class="lg:col-span-7 space-y-6">
+      <div class="lg:col-span-7 space-y-8">
         <div>
-          <span class="text-[9px] font-mono uppercase tracking-[0.25em] text-[#c89346]">Fine Art Photographic Plate</span>
-          <h1 class="font-serif text-3xl md:text-4xl text-[#f5f0e6] mt-1">{data.title}</h1>
-          <p class="text-sm text-[#9e9382] mt-2 font-light">{locationName} &bull; {new Date(data.capture.date).getFullYear()}</p>
+          <span class="text-[9px] font-mono uppercase tracking-[0.25em] text-[#c5a059]">Master Photographic Plate</span>
+          <h1 class="font-serif text-4xl md:text-5xl text-[#f7f4ee] font-light tracking-wide mt-2">{data.title}</h1>
+          <p class="text-xs font-mono tracking-[0.2em] uppercase text-[#a89f91] mt-2 font-light">{locationName} &bull; {new Date(data.capture.date).getFullYear()}</p>
         </div>
 
-        <p class="text-[#ded8cc] font-light leading-relaxed text-sm md:text-base max-w-2xl">
+        <p class="text-[#cfc8bd] font-light leading-relaxed text-sm md:text-base max-w-2xl">
           {data.description}
         </p>
 
         <!-- Technical Exposure Placard -->
-        <div class="pt-6 border-t brass-border">
-          <h3 class="text-[9px] font-mono uppercase tracking-[0.25em] text-[#c89346] mb-3">Capture & Exposure Specifications</h3>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-mono text-[#9e9382]">
+        <div class="pt-8 border-t gallery-hairline">
+          <h3 class="text-[9px] font-mono uppercase tracking-[0.25em] text-[#c5a059] mb-4">Technical Exposure Specifications</h3>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 text-xs font-mono text-[#a89f91]">
             <div>
-              <span class="block text-[#6e6456] text-[9px] uppercase tracking-widest">CAMERA</span>
+              <span class="block text-[#6e6557] text-[9px] uppercase tracking-widest">CAMERA</span>
               {data.capture.camera || 'Medium Format'}
             </div>
             <div>
-              <span class="block text-[#6e6456] text-[9px] uppercase tracking-widest">LENS</span>
+              <span class="block text-[#6e6557] text-[9px] uppercase tracking-widest">LENS</span>
               {data.capture.lens || 'Prime'}
             </div>
             <div>
-              <span class="block text-[#6e6456] text-[9px] uppercase tracking-widest">SETTINGS</span>
+              <span class="block text-[#6e6557] text-[9px] uppercase tracking-widest">EXPOSURE</span>
               {data.capture.settings?.aperture || 'f/8'} &bull; {data.capture.settings?.shutter_speed || '1/125s'}
             </div>
             <div>
-              <span class="block text-[#6e6456] text-[9px] uppercase tracking-widest">COLOR SPACE</span>
+              <span class="block text-[#6e6557] text-[9px] uppercase tracking-widest">COLOR PROFILE</span>
               {colorSpace}
             </div>
           </div>
@@ -76,26 +76,26 @@ const colorSpace = data.colorScience?.colorSpace || data.color_science?.native_s
       </div>
 
       <!-- Right: Substrate & Acquisition Console -->
-      <div class="lg:col-span-5 bg-[#1b1714] border brass-border p-8 space-y-6 shadow-xl">
+      <div class="lg:col-span-5 bg-[#14110f] border brass-hairline p-8 md:p-10 space-y-8 shadow-2xl">
         <div>
-          <span class="text-[9px] font-mono uppercase tracking-[0.25em] text-[#c89346] block mb-2">Acquire Edition</span>
-          <h2 class="font-serif text-xl text-[#f5f0e6]">Select Substrate & Dimensions</h2>
+          <span class="text-[9px] font-mono uppercase tracking-[0.25em] text-[#c5a059] block mb-2">Private Collector Edition</span>
+          <h2 class="font-serif text-2xl text-[#f7f4ee] font-light">Select Substrate & Dimensions</h2>
         </div>
 
         <!-- Substrate Options -->
-        <div class="space-y-3">
-          <label class="block text-xs font-mono uppercase tracking-[0.2em] text-[#9e9382]">Print Medium</label>
-          <div class="grid grid-cols-1 gap-2 text-xs">
+        <div class="space-y-4">
+          <label class="block text-xs font-mono uppercase tracking-[0.2em] text-[#a89f91]">Print Medium</label>
+          <div class="grid grid-cols-1 gap-2.5 text-xs">
             {variants.map((v: any, i: number) => {
               const substrateLabel = (v.substrate || v.label || 'Fine Art Giclée').replace(/-/g, ' ');
               const price = (v.price_usd_cents || v.priceCents || 18500) / 100;
               return (
-                <label class="flex items-center justify-between p-3 border brass-border bg-[#14110f] hover:border-[#c89346]/60 cursor-pointer transition-colors">
+                <label class="flex items-center justify-between p-3.5 border gallery-hairline bg-[#0e0c0a] hover:border-[#c5a059]/60 cursor-pointer transition-colors">
                   <div class="flex items-center gap-3">
-                    <input type="radio" name="substrate" value={v.sku} checked={i === 0} class="accent-[#c89346]" />
-                    <span class="text-[#f5f0e6] capitalize font-sans">{substrateLabel}</span>
+                    <input type="radio" name="substrate" value={v.sku} checked={i === 0} class="accent-[#c5a059]" />
+                    <span class="text-[#f7f4ee] capitalize font-sans">{substrateLabel}</span>
                   </div>
-                  <span class="font-mono text-[#dfa85b]">${price}</span>
+                  <span class="font-mono text-[#c5a059] font-medium">${price}</span>
                 </label>
               );
             })}
@@ -104,13 +104,13 @@ const colorSpace = data.colorScience?.colorSpace || data.color_science?.native_s
 
         <button 
           id="buy-btn"
-          class="w-full py-4 border border-[#c89346] text-[#f5f0e6] text-xs font-mono uppercase tracking-[0.25em] bg-[#c89346]/10 hover:bg-[#c89346] hover:text-[#12100e] transition-all duration-300 font-bold"
+          class="w-full py-4 border border-[#c5a059] text-[#0e0c0a] text-xs font-mono uppercase tracking-[0.25em] bg-[#c5a059] hover:bg-[#dfb872] transition-all duration-300 font-bold"
         >
           Acquire Archival Print &rarr;
         </button>
 
-        <p class="text-[11px] text-[#6e6456] font-light text-center leading-normal">
-          Each fine-art giclée is custom printed to 300 DPI archival museum standards on 100% cotton rag with pigmented mineral inks. Insured art freight calculated at checkout.
+        <p class="text-[11px] text-[#6e6557] font-light text-center leading-normal">
+          Printed to 300 DPI museum archival standards on 100% cotton rag with mineral pigments. Insured art freight calculated at checkout.
         </p>
       </div>
 

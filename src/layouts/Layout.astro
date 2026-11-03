@@ -1,14 +1,19 @@
 ﻿---
 // src/layouts/Layout.astro
+import '../styles/global.css';
+
 interface Props {
   title: string;
   description?: string;
 }
 
-const { title, description = "Alan Woodyard Fine Art Photography. Limited edition archival giclée prints, direct metal, and acrylic float mounts." } = Astro.props;
+const { 
+  title, 
+  description = "Alan Woodyard Fine Art Photography. Limited edition archival giclée prints, direct metal, and optical acrylic float mounts." 
+} = Astro.props;
 ---
 <!doctype html>
-<html lang="en" class="scroll-smooth bg-[#12100e]">
+<html lang="en" class="scroll-smooth bg-[#0a0908]">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -21,7 +26,7 @@ const { title, description = "Alan Woodyard Fine Art Photography. Limited editio
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link 
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=JetBrains+Mono:wght@300;400;500&family=Plus+Jakarta+Sans:wght@200;300;400;500;600&display=swap" 
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=JetBrains+Mono:wght@300;400;500&family=Plus+Jakarta+Sans:wght@200;300;400;500;600&display=swap" 
       rel="stylesheet" 
     />
 
@@ -32,7 +37,7 @@ const { title, description = "Alan Woodyard Fine Art Photography. Limited editio
       data-website-id="alanwoodyard-photo"
     ></script>
   </head>
-  <body class="bg-[#14110f] text-[#f5f0e6] antialiased selection:bg-[#c89346]/30 selection:text-[#f5f0e6] min-h-screen flex flex-col justify-between">
+  <body class="bg-[#0e0c0a] text-[#f7f4ee] antialiased selection:bg-[#c5a059]/30 selection:text-[#f7f4ee] min-h-screen flex flex-col justify-between">
     <slot />
   </body>
 </html>

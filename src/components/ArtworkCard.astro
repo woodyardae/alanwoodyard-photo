@@ -17,39 +17,38 @@ const minPrice = variants.length > 0
 const moods = data.taxonomies?.mood?.join(',') || (data.taxonomies?.moods || []).join(',') || '';
 ---
 <article 
-  class={`gallery-item group relative mb-20 md:mb-28 ${spanFull ? 'col-span-full' : ''}`}
+  class={`gallery-item group relative mb-24 md:mb-36 ${spanFull ? 'col-span-full' : ''}`}
   data-moods={moods}
 >
-  <a href={`/artwork/${slug}`} class="block overflow-hidden bg-[#100d0b]">
-    <div class="relative w-full flex items-center justify-center p-3 md:p-8 border brass-border bg-[#181411] group-hover:border-[#c89346]/60 transition-all duration-700 shadow-2xl">
-      <img 
-        src={`/images/artworks/${slug}.webp`} 
-        alt={data.title}
-        loading="lazy"
-        class="w-full h-auto object-contain max-h-[85vh] transition-transform duration-1000 ease-out group-hover:scale-[1.01]"
-      />
-    </div>
+  <!-- Artwork Presentation: Unboxed, Floating, Zero Box Borders -->
+  <a href={`/artwork/${slug}`} class="block overflow-hidden cursor-pointer">
+    <img 
+      src={`/images/artworks/${slug}.webp`} 
+      alt={data.title}
+      loading="lazy"
+      class="w-full h-auto object-contain max-h-[82vh] mx-auto transition-transform duration-1000 ease-out group-hover:scale-[1.012] shadow-2xl"
+    />
   </a>
 
   <!-- Mid-Century Museum Placard Label -->
-  <div class="mt-6 flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-2 px-1">
+  <div class="mt-8 flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-2 max-w-full">
     <div>
-      <h2 class="font-serif text-2xl md:text-3xl text-[#f5f0e6] font-light tracking-wide">
-        <a href={`/artwork/${slug}`} class="hover:text-[#dfa85b] transition-colors">
+      <h2 class="font-serif text-2xl md:text-3xl text-[#f7f4ee] font-light tracking-wide">
+        <a href={`/artwork/${slug}`} class="hover:text-[#dfb872] transition-colors">
           {data.title}
         </a>
       </h2>
-      <p class="text-[13px] text-[#a69c8d] font-light mt-1 tracking-wide">
+      <p class="text-xs font-mono tracking-[0.2em] uppercase text-[#a89f91] mt-1.5 font-light">
         {locationName} &bull; {new Date(data.capture.date).getFullYear()}
       </p>
     </div>
 
     <div class="text-left sm:text-right">
-      <p class="text-xs font-mono tracking-widest text-[#dfa85b] font-medium">
-        Edition From ${minPrice}
+      <p class="text-xs font-mono tracking-widest text-[#c5a059] font-medium">
+        Archival Release &bull; From ${minPrice}
       </p>
-      <p class="text-[10px] font-mono uppercase tracking-[0.2em] text-[#706556] mt-0.5">
-        Hahnemühle &bull; Acrylic &bull; Aluminum
+      <p class="text-[9px] font-mono uppercase tracking-[0.2em] text-[#6e6557] mt-1">
+        Hahnemühle &bull; Acrylic Float &bull; Aluminum
       </p>
     </div>
   </div>
