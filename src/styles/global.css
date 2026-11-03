@@ -1,37 +1,37 @@
-@import "tailwindcss";
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
   :root {
-    --bg-primary: #08090d;
-    --bg-secondary: #111219;
-    --bg-card: #161823;
-    --border-subtle: #242738;
-    --accent-sky: #38bdf8;
-    --accent-amber: #f59e0b;
-    --text-primary: #f8fafc;
-    --text-muted: #94a3b8;
+    --bg-gallery: #0c0c0e;
+    --text-primary: #f4f4f5;
+    --text-muted: #71717a;
+    --border-subtle: rgba(255, 255, 255, 0.07);
   }
 
   body {
-    background-color: var(--bg-primary);
+    background-color: var(--bg-gallery);
     color: var(--text-primary);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+  }
+
+  h1, h2, h3, .font-serif {
+    font-family: "Didot", "Bodoni MT", "Cinzel", "Cormorant Garamond", Georgia, serif;
   }
 }
 
-/* Custom scrollbars for gallery and cart */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+.gallery-hairline {
+  border-color: var(--border-subtle);
 }
-::-webkit-scrollbar-track {
-  background: #0d0e14;
+
+.img-fade-in {
+  opacity: 0;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
-::-webkit-scrollbar-thumb {
-  background: #25283b;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #38bdf8;
+.img-fade-in.loaded {
+  opacity: 1;
 }

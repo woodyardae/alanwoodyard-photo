@@ -1,158 +1,54 @@
----
+﻿---
 // src/pages/index.astro
 import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
 import CollectionFilter from '../components/CollectionFilter.astro';
 import ArtworkCard from '../components/ArtworkCard.astro';
 import { getCollection } from 'astro:content';
 
-const artworkEntries = await getCollection('artworks');
-const artworks = artworkEntries.map((e) => e.data);
+const artworks = await getCollection('artworks');
 ---
+<Layout title="Alan Woodyard | Fine Art Photography">
+  <Header />
 
-<Layout
-  title="Alan Woodyard &bull; Fine Art Photography & Archival Editions"
-  description="Authoritative fine-art photography gallery by Alan Woodyard. Archival giclée on Hahnemühle Photo Rag, ChromaLuxe metal panels, and optical acrylic float mounts."
->
-  <!-- Hero Section -->
-  <section class="relative border-b border-[#1f2233] bg-gradient-to-b from-[#0c0d14] via-[#090a0f] to-[#08090d] py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
-    <!-- Atmospheric Background Ambient Glow -->
-    <div class="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 h-96 w-[700px] rounded-full bg-sky-500/10 blur-[120px]"></div>
-
-    <div class="relative mx-auto max-w-5xl text-center">
-      <div class="inline-flex items-center gap-2 rounded-full border border-sky-500/30 bg-sky-500/10 px-3.5 py-1 text-xs font-mono font-medium text-sky-400 mb-6">
-        <span class="inline-block h-1.5 w-1.5 rounded-full bg-sky-400 animate-pulse"></span>
-        <span>AUTHORITATIVE FINE-ART RELEASES &bull; D50 / D65 CALIBRATED</span>
-      </div>
-
-      <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-tight">
-        Maritime Light, Coastal Geometry &amp; Archival Pigment
-      </h1>
-
-      <p class="mt-6 text-base sm:text-lg text-slate-300 max-w-3xl mx-auto leading-relaxed">
-        Authentic fine-art captures by Alan Woodyard. Spanning Chesapeake workboat heritage, high-velocity offshore racing, Austin skyline twilight, and the industrial pulse of the Texas Gulf Coast.
-      </p>
-
-      <!-- Value Propositions -->
-      <div class="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl mx-auto text-left">
-        <div class="rounded-lg border border-[#23273c] bg-[#12131d]/80 p-3.5">
-          <div class="text-[11px] font-mono text-sky-400 uppercase tracking-wider font-semibold">Giclée Paper</div>
-          <div class="text-xs text-slate-200 font-medium mt-1">Hahnemühle Photo Rag</div>
-          <div class="text-[10px] text-slate-500 mt-0.5">308gsm 100% cotton rag</div>
+  <!-- Hero Anchor Plate (Peter Lik Style: Expansive Horizon) -->
+  {artworks.length > 0 && (
+    <section class="w-full px-4 md:px-12 pt-8 pb-16 max-w-[1600px] mx-auto">
+      <a href={`/artwork/${artworks[0].slug}`} class="block group relative">
+        <div class="w-full overflow-hidden border gallery-hairline bg-[#09090b] flex items-center justify-center p-3 md:p-10 group-hover:border-white/20 transition-all duration-700">
+          <img 
+            src={`/images/artworks/${artworks[0].slug}.webp`} 
+            alt={artworks[0].data.title}
+            class="w-full max-h-[80vh] object-contain transition-transform duration-1000 ease-out group-hover:scale-[1.008]"
+          />
         </div>
-        <div class="rounded-lg border border-[#23273c] bg-[#12131d]/80 p-3.5">
-          <div class="text-[11px] font-mono text-sky-400 uppercase tracking-wider font-semibold">Direct Metal</div>
-          <div class="text-xs text-slate-200 font-medium mt-1">ChromaLuxe Aluminum</div>
-          <div class="text-[10px] text-slate-500 mt-0.5">Inset float mount frame</div>
+        <div class="mt-6 flex flex-col md:flex-row md:justify-between md:items-baseline gap-2">
+          <div>
+            <span class="text-[10px] font-mono uppercase tracking-widest text-zinc-500">Exhibition Hero &mdash; Limited Edition</span>
+            <h1 class="font-serif text-2xl md:text-3xl text-zinc-100 mt-1">{artworks[0].data.title}</h1>
+            <p class="text-xs text-zinc-400 mt-1 font-light">{artworks[0].data.capture.location} &bull; {new Date(artworks[0].data.capture.date).getFullYear()}</p>
+          </div>
+          <div class="text-left md:text-right">
+            <span class="text-xs font-mono tracking-widest text-zinc-300">View Master Exhibition Plate &rarr;</span>
+          </div>
         </div>
-        <div class="rounded-lg border border-[#23273c] bg-[#12131d]/80 p-3.5">
-          <div class="text-[11px] font-mono text-sky-400 uppercase tracking-wider font-semibold">Optical Acrylic</div>
-          <div class="text-xs text-slate-200 font-medium mt-1">HD Acrylic Panel</div>
-          <div class="text-[10px] text-slate-500 mt-0.5">Diamond-polished edges</div>
-        </div>
-        <div class="rounded-lg border border-[#23273c] bg-[#12131d]/80 p-3.5">
-          <div class="text-[11px] font-mono text-sky-400 uppercase tracking-wider font-semibold">Color Science</div>
-          <div class="text-xs text-slate-200 font-medium mt-1">ProPhoto &amp; Adobe RGB</div>
-          <div class="text-[10px] text-slate-500 mt-0.5">300 DPI mirrored bleed</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Collection Filter & Gallery Grid -->
-  <section id="collections" class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14">
-    <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-4 border-b border-[#1f2233] gap-4">
-      <div>
-        <h2 class="text-2xl font-bold tracking-tight text-white">The Archive Gallery</h2>
-        <p class="text-xs text-slate-400 mt-1">
-          Explore photographs categorized by regional and visual themes. Click any work to inspect technical EXIF and print dimensions.
-        </p>
-      </div>
-      <div class="text-xs font-mono text-slate-400">
-        Total Master Captures: <span class="text-sky-400 font-bold">{artworks.length} Works</span>
-      </div>
-    </div>
-
-    <!-- Multi-Tag Tab Bar -->
-    <div class="mb-10">
-      <CollectionFilter />
-    </div>
-
-    <!-- Artwork Cards Grid -->
-    <div id="artworks-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      {artworks.map((artwork) => (
-        <ArtworkCard artwork={artwork} />
-      ))}
-    </div>
-  </section>
-
-  <!-- Fine Art America / Pixels CNAME Subdomain Callout -->
-  <section class="border-y border-[#1f2233] bg-[#0c0d14] py-12 px-4 sm:px-6 lg:px-8">
-    <div class="mx-auto max-w-5xl rounded-2xl border border-[#262a40] bg-[#131522] p-8 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-8">
-      <div class="space-y-3 max-w-xl text-left">
-        <div class="inline-flex items-center gap-2 rounded bg-amber-500/10 px-2.5 py-1 text-xs font-mono font-semibold text-amber-400 border border-amber-500/30">
-          <span>MARKETPLACE INTEGRATION</span>
-        </div>
-        <h3 class="text-2xl font-bold text-white tracking-tight">Fine Art America &bull; Pixels.com White-Label Gallery</h3>
-        <p class="text-xs text-slate-300 leading-relaxed">
-          In addition to our sovereign lab fulfillment engine, Alan Woodyard's complete legacy archive is mirrored on our dedicated Pixels.com sub-domain at <code class="text-sky-400 font-mono">faa.alanwoodyard.photo</code> for global frame customization, phone cases, and international marketplace orders.
-        </p>
-      </div>
-      <a
-        href="https://faa.alanwoodyard.photo"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="rounded-lg bg-[#1f2338] border border-slate-600 px-6 py-3.5 text-xs font-bold text-white hover:bg-sky-500 hover:border-sky-400 hover:text-slate-950 transition-all text-center whitespace-nowrap shadow-lg cursor-pointer flex items-center gap-2"
-      >
-        <span>Open faa.alanwoodyard.photo</span>
-        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-        </svg>
       </a>
+    </section>
+  )}
+
+  <CollectionFilter />
+
+  <!-- Gallery Body: 2-Column Rhythm with Full-Width Breaks -->
+  <main class="w-full max-w-[1600px] mx-auto px-4 md:px-12 py-16">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 lg:gap-x-20">
+      {artworks.slice(1).map((art, idx) => {
+        // Every 3rd item breaks out to span the full width (Interrupter)
+        const isInterrupter = (idx % 3 === 2);
+        return <ArtworkCard artwork={art} spanFull={isInterrupter} />;
+      })}
     </div>
-  </section>
+  </main>
 
-  <!-- Pre-Flight Asset Engine & Fulfillment Engine Proof Banner -->
-  <section class="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-    <div class="text-center max-w-3xl mx-auto mb-12">
-      <h2 class="text-2xl font-bold text-white tracking-tight">Automated Pre-Flight &amp; Multi-Lab Engine</h2>
-      <p class="text-xs text-slate-400 mt-2 leading-relaxed">
-        Every artwork in this storefront passes through an automated Node.js Sharp pre-flight engine (<code class="text-sky-400 font-mono">scripts/preflight-prints.ts</code>) generating 300 DPI TIFF master files with 0.125-inch mirrored bleed margins before routing to the top 5 global print facilities.
-      </p>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="rounded-xl border border-[#222538] bg-[#10111a] p-6 space-y-3">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-mono font-semibold text-sky-400 uppercase">Pre-Flight Metric</span>
-          <span class="text-[10px] bg-sky-950 text-sky-300 px-2 py-0.5 rounded border border-sky-800">300 DPI</span>
-        </div>
-        <h4 class="text-base font-bold text-white">Archival Density Invariant</h4>
-        <p class="text-xs text-slate-400 leading-relaxed">
-          Enforces a strict minimum of 300 DPI for Hahnemühle cotton rag and stretched canvas, and 180 DPI for large-format direct aluminum panels. Zero upscaling or interpolation artifacts.
-        </p>
-      </div>
-
-      <div class="rounded-xl border border-[#222538] bg-[#10111a] p-6 space-y-3">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-mono font-semibold text-sky-400 uppercase">Bleed Margin</span>
-          <span class="text-[10px] bg-sky-950 text-sky-300 px-2 py-0.5 rounded border border-sky-800">0.125 Inch</span>
-        </div>
-        <h4 class="text-base font-bold text-white">Mirrored Edge Geometry</h4>
-        <p class="text-xs text-slate-400 leading-relaxed">
-          Fine-art labs require edge bleed. The pre-flight pipeline computes 38 pixels of mirrored border reflection per edge at 300 DPI, preventing unprinted white paper margins upon precision trimming.
-        </p>
-      </div>
-
-      <div class="rounded-xl border border-[#222538] bg-[#10111a] p-6 space-y-3">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-mono font-semibold text-sky-400 uppercase">Split-Cart Router</span>
-          <span class="text-[10px] bg-sky-950 text-sky-300 px-2 py-0.5 rounded border border-sky-800">5 Top Labs</span>
-        </div>
-        <h4 class="text-base font-bold text-white">Subsidization Protection</h4>
-        <p class="text-xs text-slate-400 leading-relaxed">
-          When an order contains prints from Prodigi, framed art from Printify, or canvas from Printful, discrete parcel shipping is calculated per facility to ensure zero seller freight subsidization.
-        </p>
-      </div>
-    </div>
-  </section>
+  <Footer />
 </Layout>

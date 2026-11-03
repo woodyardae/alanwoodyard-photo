@@ -1,68 +1,53 @@
----
+﻿---
 // src/components/CollectionFilter.astro
-const tags = [
-  { slug: 'all', label: 'All Works' },
-  { slug: 'maritime', label: 'Maritime & Regatta' },
-  { slug: 'coastal-geometry', label: 'Coastal Geometry' },
-  { slug: 'austin-skyline', label: 'Austin Skyline' },
-  { slug: 'chesapeake-heritage', label: 'Chesapeake Heritage' },
-  { slug: 'gulf-coast', label: 'Gulf Coast Industrial' },
-  { slug: 'minimalist', label: 'Minimalist Horizons' },
-  { slug: 'black-and-white', label: 'Black & White' },
-  { slug: 'limited-edition', label: 'Limited Edition' }
+const moods = [
+  { id: 'all', label: 'All Works' },
+  { id: 'magenta-twilight', label: 'Twilight' },
+  { id: 'golden-hour', label: 'Golden Hour' },
+  { id: 'deep-ocean', label: 'Deep Ocean' },
+  { id: 'fog-mist', label: 'Fog & Mist' },
+  { id: 'monochrome', label: 'Monochrome' }
 ];
 ---
-
-<nav id="collection-tabs" class="w-full overflow-x-auto py-2 scrollbar-none" aria-label="Filter Collection by Theme">
-  <div class="flex items-center gap-2 min-w-max pb-1">
-    {tags.map((t, idx) => (
-      <button
-        type="button"
-        class={`filter-tab rounded-full px-4 py-1.5 text-xs font-semibold tracking-wide transition-all cursor-pointer ${
-          idx === 0
-            ? 'active-tab bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20'
-            : 'bg-[#151622] text-slate-400 hover:bg-[#1f2233] hover:text-white border border-[#23263b]'
-        }`}
-        data-collection={t.slug}
+<div class="w-full max-w-7xl mx-auto px-6 md:px-12 pt-12 pb-8 flex flex-col md:flex-row justify-between items-start md:items-baseline gap-4 border-b gallery-hairline">
+  <div class="text-[11px] font-mono uppercase tracking-widest text-zinc-500">
+    Curated Portfolio &mdash; Coastal & Maritime Plates
+  </div>
+  
+  <div class="flex flex-wrap gap-x-6 gap-y-2 text-xs tracking-wider">
+    {moods.map((m) => (
+      <button 
+        class="mood-trigger text-zinc-500 hover:text-zinc-200 transition-colors cursor-pointer capitalize data-[active=true]:text-zinc-100 data-[active=true]:underline underline-offset-8"
+        data-mood={m.id}
+        data-active={m.id === 'all' ? 'true' : 'false'}
       >
-        {t.label}
+        {m.label}
       </button>
     ))}
   </div>
-</nav>
+</div>
 
 <script>
-  import { trackFilterCollection } from '../lib/analytics';
+  const buttons = document.querySelectorAll<HTMLButtonElement>('.mood-trigger');
+  const items = document.querySelectorAll<HTMLElement>('.gallery-item');
 
-  const tabs = document.querySelectorAll<HTMLButtonElement>('.filter-tab');
-  const cards = document.querySelectorAll<HTMLElement>('article[data-collections]');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => b.setAttribute('data-active', 'false'));
+      btn.setAttribute('data-active', 'true');
+      const selected = btn.dataset.mood;
 
-  tabs.forEach((tab) => {
-    tab.addEventListener('click', () => {
-      const selected = tab.getAttribute('data-collection') || 'all';
+      if (window.umami) {
+        window.umami.track('filter_mood', { mood: selected });
+      }
 
-      // Update active styles
-      tabs.forEach((t) => {
-        t.classList.remove('bg-sky-500', 'text-slate-950', 'shadow-md', 'shadow-sky-500/20');
-        t.classList.add('bg-[#151622]', 'text-slate-400', 'border', 'border-[#23263b]');
-      });
-      tab.classList.remove('bg-[#151622]', 'text-slate-400', 'border', 'border-[#23263b]');
-      tab.classList.add('bg-sky-500', 'text-slate-950', 'shadow-md', 'shadow-sky-500/20');
-
-      let visibleCount = 0;
-      cards.forEach((card) => {
-        const collections = card.getAttribute('data-collections')?.split(' ') || [];
-        if (selected === 'all' || collections.includes(selected)) {
-          card.style.display = 'flex';
-          visibleCount++;
+      items.forEach(item => {
+        const itemMoods = (item.dataset.moods || '').split(',');
+        if (selected === 'all' || itemMoods.includes(selected!)) {
+          item.style.display = 'block';
         } else {
-          card.style.display = 'none';
+          item.style.display = 'none';
         }
-      });
-
-      trackFilterCollection({
-        collection: selected,
-        artworkCount: visibleCount
       });
     });
   });
