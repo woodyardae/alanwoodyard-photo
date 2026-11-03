@@ -2,7 +2,7 @@
 // src/pages/artwork/[slug].astro
 import Layout from '../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
-import type { Artwork, Variant } from '../../content.config';
+import type { Artwork } from '../../content.config';
 
 export async function getStaticPaths() {
   const artworkEntries = await getCollection('artworks');
@@ -19,6 +19,7 @@ interface Props {
 const { artwork } = Astro.props;
 const defaultVariant = artwork.variants[0];
 const isLimited = artwork.limitedEdition?.isLimited;
+const isPanoramic = artwork.dimensions.aspectRatio === '16:9' || artwork.dimensions.aspectRatio === 'panoramic';
 ---
 
 <Layout
@@ -26,94 +27,228 @@ const isLimited = artwork.limitedEdition?.isLimited;
   description={artwork.description}
   image={artwork.previewImage}
 >
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
-    <!-- Breadcrumb -->
-    <nav class="mb-6 flex items-center space-x-2 text-xs text-slate-500 font-mono">
-      <a href="/" class="hover:text-slate-300">Archive</a>
-      <span>/</span>
-      <span class="text-sky-400 capitalize">{artwork.collections[0]?.replace('-', ' ')}</span>
-      <span>/</span>
-      <span class="text-slate-300 truncate max-w-xs">{artwork.title}</span>
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <!-- Breadcrumb & Top Bar -->
+    <nav class="mb-6 flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-slate-500">
+      <div class="flex items-center space-x-2">
+        <a href="/" class="hover:text-slate-300 transition-colors">Archive Gallery</a>
+        <span>/</span>
+        <span class="text-sky-400 capitalize">{artwork.collections[0]?.replace('-', ' ')}</span>
+        <span>/</span>
+        <span class="text-slate-300 truncate max-w-xs">{artwork.title}</span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="rounded bg-sky-950/80 px-2.5 py-0.5 text-[11px] font-mono font-semibold text-sky-400 border border-sky-800">
+          {artwork.colorScience.colorSpace}
+        </span>
+        <span class="rounded bg-[#161722] px-2 py-0.5 text-[11px] font-mono text-slate-300 border border-[#2b2e44]">
+          WP: {artwork.colorScience.whitePoint}
+        </span>
+        <span class="rounded bg-[#161722] px-2 py-0.5 text-[11px] font-mono text-slate-300 border border-[#2b2e44]">
+          {artwork.dimensions.aspectRatio} Format
+        </span>
+      </div>
     </nav>
 
-    <!-- Main Grid: Visualizer Left, Purchase & Specs Right -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
-      <!-- Left Column: Visualizer & Viewport Toggle -->
-      <div class="lg:col-span-7 space-y-4">
-        <!-- Interactive Viewport Container -->
-        <div class="relative overflow-hidden rounded-2xl border border-[#25283d] bg-[#0c0d13] p-2 flex items-center justify-center min-h-[420px] shadow-2xl">
-          <!-- Raw Image View -->
-          <img
-            id="artwork-viewport-img"
-            src={artwork.previewImage}
-            alt={artwork.title}
-            class="max-h-[600px] w-auto max-w-full rounded-lg object-contain transition-opacity duration-300"
-          />
+    <!-- Main Grid: Interactive Gallery Viewport Left, Acquisition Console Right -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+      <!-- Left Column: Interactive Viewports & Scale Visualizer -->
+      <div class="lg:col-span-7 space-y-6">
+        <!-- Viewport Container with Ambient Gallery Lighting -->
+        <div class="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0c0d12] shadow-2xl transition-all">
+          <!-- View 1: Print Master View (Expansive Presentation) -->
+          <div id="viewport-master" class="flex items-center justify-center min-h-[460px] sm:min-h-[520px] p-4 sm:p-8 bg-gradient-to-b from-[#0e0f16] to-[#08090d]">
+            <img
+              id="artwork-master-img"
+              src={artwork.previewImage}
+              alt={artwork.title}
+              class={`max-h-[520px] w-auto max-w-full rounded shadow-2xl object-contain transition-all duration-300 ${
+                isPanoramic ? 'w-full' : ''
+              }`}
+            />
+          </div>
 
-          <!-- View Mode Toggle Overlay -->
-          <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full border border-black/60 bg-black/70 backdrop-blur-md px-3 py-1.5 text-xs font-semibold shadow-lg">
+          <!-- View 2: Museum Gallery Wall Scale Visualizer -->
+          <div id="viewport-museum" class="hidden min-h-[460px] sm:min-h-[520px] p-6 sm:p-10 flex-col items-center justify-between relative bg-gradient-to-b from-[#181922] via-[#101118] to-[#0a0a0e] overflow-hidden select-none">
+            <!-- Ceiling Museum Track Lighting Glow -->
+            <div class="absolute -top-12 left-1/2 -translate-x-1/2 h-36 w-80 rounded-full bg-amber-100/10 blur-[60px] pointer-events-none"></div>
+
+            <!-- Wall Header Metric -->
+            <div class="w-full flex justify-between items-center text-[11px] font-mono text-slate-400 z-10">
+              <span class="flex items-center gap-1.5 text-amber-300">
+                <span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span>
+                <span>Museum Wall Scale (8.5ft Gallery Height)</span>
+              </span>
+              <span id="scale-indicator-text" class="text-slate-300 font-semibold">16" &times; 24" Print</span>
+            </div>
+
+            <!-- Wall Artwork Mounting Zone -->
+            <div class="flex-1 w-full flex items-center justify-center my-4 relative">
+              <div
+                id="scaled-art-frame"
+                class="transition-all duration-500 ease-out shadow-[0_25px_50px_-12px_rgba(0,0,0,0.9)] border-2 border-[#1a1b24] p-1 bg-black rounded-sm"
+                style="width: 45%; max-width: 90%;"
+              >
+                <img
+                  src={artwork.previewImage}
+                  alt={artwork.title}
+                  class="w-full h-auto object-contain block"
+                />
+              </div>
+            </div>
+
+            <!-- Minimalist Gallery Bench / Scale Reference -->
+            <div class="w-full flex flex-col items-center z-10 mt-auto">
+              <!-- Bench Seat -->
+              <div class="w-48 sm:w-64 h-3.5 bg-[#252834] rounded-sm shadow-lg border-t border-slate-700"></div>
+              <!-- Bench Legs -->
+              <div class="w-44 sm:w-60 flex justify-between px-2">
+                <div class="w-2.5 h-6 bg-[#1a1c26]"></div>
+                <div class="w-2.5 h-6 bg-[#1a1c26]"></div>
+              </div>
+              <div class="text-[10px] font-mono text-slate-500 mt-1 uppercase tracking-wider">
+                Gallery Seating Benchmark &bull; 60" Wide
+              </div>
+            </div>
+          </div>
+
+          <!-- View 3: Archival Matboard & Floating Frame View -->
+          <div id="viewport-framed" class="hidden min-h-[460px] sm:min-h-[520px] p-6 sm:p-10 items-center justify-center bg-[#090a0f]">
+            <img
+              src={artwork.framedMockup || artwork.previewImage}
+              alt={`${artwork.title} framed exhibition mockup`}
+              class="max-h-[500px] w-auto max-w-full object-contain rounded-md shadow-2xl"
+            />
+          </div>
+
+          <!-- Interactive Viewport Mode Controller Pill -->
+          <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-full border border-white/[0.12] bg-[#090a0f]/90 backdrop-blur-md p-1 text-xs font-semibold shadow-2xl z-20">
             <button
               type="button"
-              id="view-mode-raw"
-              class="rounded-full bg-sky-500 px-3 py-0.5 text-slate-950 transition-colors"
+              id="btn-mode-master"
+              class="viewport-mode-btn rounded-full bg-sky-500 px-3 py-1 text-slate-950 transition-all cursor-pointer font-medium"
+              data-mode="master"
             >
-              Print Master View
+              Master Capture
             </button>
             <button
               type="button"
-              id="view-mode-framed"
-              class="rounded-full px-3 py-0.5 text-slate-300 hover:text-white transition-colors"
+              id="btn-mode-museum"
+              class="viewport-mode-btn rounded-full px-3 py-1 text-slate-300 hover:text-white transition-all cursor-pointer font-medium"
+              data-mode="museum"
             >
-              Gallery Framed Mockup
+              Museum Wall Scale
+            </button>
+            <button
+              type="button"
+              id="btn-mode-framed"
+              class="viewport-mode-btn rounded-full px-3 py-1 text-slate-300 hover:text-white transition-all cursor-pointer font-medium"
+              data-mode="framed"
+            >
+              Matboard &amp; Frame
+            </button>
+            <button
+              type="button"
+              id="btn-mode-expand"
+              class="rounded-full px-2.5 py-1 text-slate-400 hover:text-white transition-all cursor-pointer"
+              title="Expansive Fullscreen Presentation"
+              aria-label="Expand Fullscreen"
+            >
+              <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+              </svg>
             </button>
           </div>
         </div>
 
-        <!-- Color Science Swatch & Technical Badges Bar -->
-        <div class="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[#1f2233] bg-[#10111a] p-4 text-xs">
-          <div class="flex items-center gap-3">
-            <span class="text-[11px] font-mono text-slate-400 uppercase">Dominant Palette:</span>
-            <div class="flex items-center gap-1.5">
-              {artwork.colorScience.dominantHex.map((hex) => (
-                <div class="flex items-center gap-1">
-                  <span
-                    class="h-4 w-4 rounded-full border border-white/20 shadow-inner"
-                    style={`background-color: ${hex};`}
-                  />
-                  <span class="font-mono text-[10px] text-slate-400">{hex}</span>
-                </div>
-              ))}
+        <!-- Color Science Tonal Palette & Proofing Bar -->
+        <div class="rounded-xl border border-white/[0.08] bg-[#111218] p-4.5 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5">
+              <span class="text-[11px] font-mono text-slate-400 uppercase tracking-wider font-semibold">
+                Dominant Tonal Palette:
+              </span>
+              <div class="flex items-center gap-2">
+                {artwork.colorScience.dominantHex.map((hex) => (
+                  <div class="flex items-center gap-1.5 group cursor-pointer" title={`Click to copy ${hex}`}>
+                    <span
+                      class="h-4 w-4 rounded-full border border-white/25 shadow-inner transition-transform group-hover:scale-110"
+                      style={`background-color: ${hex};`}
+                    />
+                    <span class="font-mono text-[10px] text-slate-400 group-hover:text-sky-300">{hex}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 text-[10px] font-mono text-slate-400">
+              <span class="rounded bg-sky-500/10 text-sky-400 px-2 py-0.5 border border-sky-500/30">
+                0.125" (38px) Mirrored Bleed
+              </span>
+              <span class="rounded bg-amber-500/10 text-amber-400 px-2 py-0.5 border border-amber-500/30">
+                D50/D65 Proofed
+              </span>
             </div>
           </div>
+        </div>
 
-          <div class="flex items-center gap-2">
-            <span class="rounded bg-sky-950 px-2 py-0.5 font-mono text-[10px] text-sky-400 border border-sky-800">
-              {artwork.colorScience.colorSpace}
-            </span>
-            <span class="rounded bg-[#1a1c28] px-2 py-0.5 font-mono text-[10px] text-slate-300 border border-[#2c3048]">
-              White Point: {artwork.colorScience.whitePoint}
-            </span>
+        <!-- Technical Camera & Print Geometry Specifications -->
+        <div class="rounded-xl border border-white/[0.08] bg-[#0e0f15] p-5 space-y-4">
+          <div class="flex items-center justify-between border-b border-[#202230] pb-2.5">
+            <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider font-mono">
+              Camera System &amp; Color Science Specifications
+            </h3>
+            <span class="text-[10px] font-mono text-sky-400">UUIDv7: {artwork.id.slice(0, 8)}...</span>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3.5 text-xs">
+            <div>
+              <span class="text-slate-500 block text-[10px] uppercase font-mono">Camera Body</span>
+              <span class="font-mono text-slate-200 font-medium">{artwork.capture.camera}</span>
+            </div>
+            <div>
+              <span class="text-slate-500 block text-[10px] uppercase font-mono">Lens / Focal Length</span>
+              <span class="font-mono text-slate-200 font-medium">{artwork.capture.lens} ({artwork.capture.focalLength})</span>
+            </div>
+            <div>
+              <span class="text-slate-500 block text-[10px] uppercase font-mono">Exposure / Sensitivity</span>
+              <span class="font-mono text-slate-200 font-medium">{artwork.capture.aperture} @ {artwork.capture.shutterSpeed}, ISO {artwork.capture.iso}</span>
+            </div>
+            <div>
+              <span class="text-slate-500 block text-[10px] uppercase font-mono">Native Resolution</span>
+              <span class="font-mono text-slate-200 font-medium">{artwork.dimensions.widthPx} &times; {artwork.dimensions.heightPx} px</span>
+            </div>
+            <div>
+              <span class="text-slate-500 block text-[10px] uppercase font-mono">Max Archival Paper (&ge;300 DPI)</span>
+              <span class="font-mono text-sky-400 font-bold">{artwork.masterAsset?.maxDpiPaperWidthInches}" &times; {artwork.masterAsset?.maxDpiPaperHeightInches}"</span>
+            </div>
+            <div>
+              <span class="text-slate-500 block text-[10px] uppercase font-mono">Max Direct Metal (&ge;180 DPI)</span>
+              <span class="font-mono text-sky-400 font-bold">{artwork.masterAsset?.maxDpiMetalWidthInches}" &times; {artwork.masterAsset?.maxDpiMetalHeightInches}"</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Right Column: Title, Substrate Selection & Purchase Engine -->
+      <!-- Right Column: Acquisition Console, Substrates & Variants -->
       <div class="lg:col-span-5 space-y-6">
         <div>
           {isLimited && (
-            <div class="inline-flex items-center gap-1.5 rounded bg-amber-500/15 border border-amber-500/30 px-2.5 py-1 text-xs font-bold text-amber-400 uppercase tracking-wider mb-2">
-              <span>Limited Edition Release &bull; {artwork.limitedEdition?.editionSize} Signed &amp; Numbered</span>
+            <div class="inline-flex items-center gap-1.5 rounded bg-amber-500/15 border border-amber-500/30 px-3 py-1 text-xs font-bold text-amber-400 uppercase tracking-wider mb-3">
+              <span class="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+              <span>Limited Master Edition &bull; {artwork.limitedEdition?.editionSize} Numbered Proofs</span>
             </div>
           )}
 
-          <h1 class="text-3xl font-extrabold tracking-tight text-white leading-tight">
+          <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
             {artwork.title}
           </h1>
 
-          <div class="mt-2 flex items-center gap-2 text-xs text-slate-400">
+          <div class="mt-2.5 flex items-center gap-2 text-xs text-slate-400 font-mono">
             <span>{artwork.capture.location.name}</span>
             <span>&bull;</span>
-            <span class="font-mono">{artwork.capture.date}</span>
+            <span>{artwork.capture.date}</span>
           </div>
 
           <p class="mt-4 text-sm text-slate-300 leading-relaxed">
@@ -121,34 +256,46 @@ const isLimited = artwork.limitedEdition?.isLimited;
           </p>
         </div>
 
-        <!-- Substrate & Variant Configuration Console -->
-        <div class="rounded-xl border border-[#23273e] bg-[#12131d] p-5 space-y-5">
+        <!-- Acquisition Engine Console -->
+        <div class="rounded-2xl border border-white/[0.08] bg-[#111219] p-6 space-y-6 shadow-xl">
           <!-- Step 1: Substrate Selector -->
           <div>
-            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-              Select Substrate &amp; Medium
-            </label>
+            <div class="flex items-center justify-between mb-3">
+              <label class="block text-xs font-bold text-slate-200 uppercase tracking-wider font-mono">
+                1. Select Substrate &amp; Medium
+              </label>
+              <a href="/fulfillment" class="text-[10px] font-mono text-sky-400 hover:underline">
+                Substrate Guide &rarr;
+              </a>
+            </div>
+
             <div id="substrate-buttons" class="space-y-2">
               {Array.from(new Set(artwork.variants.map((v) => v.substrate))).map((sub, idx) => {
                 const sampleVar = artwork.variants.find((v) => v.substrate === sub)!;
+                const minPrice = Math.min(
+                  ...artwork.variants.filter((v) => v.substrate === sub).map((v) => v.retailPriceUsd)
+                );
                 return (
                   <button
                     type="button"
-                    class={`substrate-btn w-full text-left rounded-lg border p-3 transition-all cursor-pointer flex items-center justify-between ${
+                    class={`substrate-btn w-full text-left rounded-xl border p-3.5 transition-all cursor-pointer flex items-center justify-between group ${
                       idx === 0
-                        ? 'active-sub border-sky-500 bg-sky-500/10 text-white'
-                        : 'border-[#262940] bg-[#161826] text-slate-300 hover:border-slate-600'
+                        ? 'active-sub border-sky-500 bg-sky-500/10 text-white shadow-md shadow-sky-500/10'
+                        : 'border-[#222434] bg-[#151622] text-slate-300 hover:border-slate-600 hover:bg-[#191b29]'
                     }`}
                     data-substrate={sub}
                   >
-                    <div>
-                      <div class="text-xs font-bold">{sampleVar.substrateName}</div>
-                      <div class="text-[10px] text-slate-400 mt-0.5 font-mono uppercase">
-                        Fulfillment Lab: {sampleVar.lab}
+                    <div class="min-w-0 pr-2">
+                      <div class="text-xs font-bold text-white group-hover:text-sky-300 transition-colors truncate">
+                        {sampleVar.substrateName}
+                      </div>
+                      <div class="text-[10px] text-slate-400 mt-0.5 font-mono uppercase flex items-center gap-1.5">
+                        <span class="inline-block h-1 w-1 rounded-full bg-sky-400"></span>
+                        <span>Fulfillment Lab: {sampleVar.lab}</span>
                       </div>
                     </div>
-                    <span class="font-mono text-xs text-sky-400 font-semibold">
-                      from ${Math.min(...artwork.variants.filter((v) => v.substrate === sub).map((v) => v.retailPriceUsd))}
+                    <span class="font-mono text-xs text-sky-400 font-semibold whitespace-nowrap">
+                      from ${minPrice}
                     </span>
                   </button>
                 );
@@ -156,21 +303,26 @@ const isLimited = artwork.limitedEdition?.isLimited;
             </div>
           </div>
 
-          <!-- Step 2: Size & Dimension Selector -->
+          <!-- Step 2: Dimensions / Size Selector -->
           <div>
-            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
-              Select Dimensions
-            </label>
-            <div id="size-selector-container" class="grid grid-cols-2 gap-2">
+            <div class="flex items-center justify-between mb-3">
+              <label class="block text-xs font-bold text-slate-200 uppercase tracking-wider font-mono">
+                2. Select Dimensions
+              </label>
+              <span id="selected-lab-badge" class="text-[10px] font-mono text-slate-400 uppercase">
+                Lab: {defaultVariant.lab}
+              </span>
+            </div>
+            <div id="size-selector-container" class="grid grid-cols-2 gap-2.5">
               <!-- Dynamically populated based on selected substrate -->
             </div>
           </div>
 
-          <!-- Price & Add To Cart Button -->
-          <div class="border-t border-[#23273d] pt-4 flex items-center justify-between">
+          <!-- Price & Add To Cart CTA -->
+          <div class="border-t border-[#222538] pt-5 flex items-center justify-between gap-4">
             <div>
-              <div class="text-[10px] text-slate-400 uppercase tracking-wider">Collector Price</div>
-              <div id="selected-price-display" class="text-2xl font-extrabold font-mono text-white">
+              <div class="text-[10px] font-mono uppercase tracking-wider text-slate-400">Collector Investment</div>
+              <div id="selected-price-display" class="text-3xl font-extrabold font-mono text-white tracking-tight">
                 ${defaultVariant.retailPriceUsd.toFixed(2)}
               </div>
             </div>
@@ -178,198 +330,268 @@ const isLimited = artwork.limitedEdition?.isLimited;
             <button
               type="button"
               id="add-to-cart-action"
-              class="rounded-lg bg-sky-500 px-6 py-3 text-sm font-bold text-slate-950 hover:bg-sky-400 transition-colors shadow-lg shadow-sky-500/20 cursor-pointer flex items-center gap-2"
+              class="flex-1 max-w-xs rounded-xl bg-sky-500 py-3.5 px-6 text-sm font-bold text-slate-950 hover:bg-sky-400 transition-all shadow-lg shadow-sky-500/25 cursor-pointer flex items-center justify-center gap-2 group"
             >
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg class="h-4 w-4 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
               <span>Add to Cart</span>
             </button>
           </div>
 
-          <!-- Archival Guarantee Micro-Copy -->
-          <div class="text-[11px] text-slate-500 leading-normal pt-1">
-            &bull; Printed on demand with 0.125" mirrored bleed margins.<br>
-            &bull; Includes physical Certificate of Authenticity and lab color inspection report.
-          </div>
-        </div>
-
-        <!-- Technical Capture & Pre-Flight Specifications -->
-        <div class="rounded-xl border border-[#1f2233] bg-[#0f1017] p-5 space-y-4">
-          <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">
-            Pre-Flight Technical Data &amp; Camera EXIF
-          </h3>
-
-          <div class="grid grid-cols-2 gap-3 text-xs">
-            <div>
-              <span class="text-slate-500 block text-[10px]">Camera System</span>
-              <span class="font-mono text-slate-200">{artwork.capture.camera}</span>
+          <!-- Archival Invariants Micro-Copy -->
+          <div class="rounded-lg bg-[#0b0c12] border border-[#1e202e] p-3 text-[11px] text-slate-400 space-y-1">
+            <div class="flex items-center gap-1.5 text-slate-300 font-medium">
+              <svg class="h-3.5 w-3.5 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Archival Fine-Art Guarantee:</span>
             </div>
-            <div>
-              <span class="text-slate-500 block text-[10px]">Lens / Focal Length</span>
-              <span class="font-mono text-slate-200">{artwork.capture.lens} ({artwork.capture.focalLength})</span>
-            </div>
-            <div>
-              <span class="text-slate-500 block text-[10px]">Exposure / ISO</span>
-              <span class="font-mono text-slate-200">{artwork.capture.aperture} @ {artwork.capture.shutterSpeed}, ISO {artwork.capture.iso}</span>
-            </div>
-            <div>
-              <span class="text-slate-500 block text-[10px]">Native Resolution</span>
-              <span class="font-mono text-slate-200">{artwork.dimensions.widthPx} &times; {artwork.dimensions.heightPx} px</span>
-            </div>
-            <div>
-              <span class="text-slate-500 block text-[10px]">Max Archival Paper (300 DPI)</span>
-              <span class="font-mono text-sky-400">{artwork.masterAsset?.maxDpiPaperWidthInches}" &times; {artwork.masterAsset?.maxDpiPaperHeightInches}"</span>
-            </div>
-            <div>
-              <span class="text-slate-500 block text-[10px]">Max Direct Metal (180 DPI)</span>
-              <span class="font-mono text-sky-400">{artwork.masterAsset?.maxDpiMetalWidthInches}" &times; {artwork.masterAsset?.maxDpiMetalHeightInches}"</span>
-            </div>
+            <p class="text-[10px] text-slate-500 leading-relaxed pl-5">
+              Inspected at &ge;300 DPI master density with 0.125" mirrored bleed margins. Shipped in rigid reinforced packaging with signed Certificate of Authenticity.
+            </p>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <script define:vars={{ artwork }}>
+  <!-- Fullscreen Expansive Modal (Peter Lik Style Full Bleed) -->
+  <div id="expansive-modal" class="fixed inset-0 z-50 hidden bg-[#06070a]/95 backdrop-blur-xl p-4 sm:p-8 flex items-center justify-center">
+    <button
+      type="button"
+      id="close-expansive-btn"
+      class="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors p-2"
+      aria-label="Close Fullscreen View"
+    >
+      <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+    <img
+      src={artwork.previewImage}
+      alt={artwork.title}
+      class="max-h-[92vh] max-w-[96vw] object-contain rounded shadow-2xl"
+    />
+  </div>
+
+  <!-- Structured Artwork JSON for Bundled Client Script -->
+  <script id="artwork-data" type="application/json" set:html={JSON.stringify(artwork)} />
+
+  <!-- Bundled Client Script with Analytics & Interactive State -->
+  <script>
     import { trackViewArtwork, trackSelectPrintSize } from '../../lib/analytics';
 
-    // Track artwork pageview
-    trackViewArtwork({
-      artworkId: artwork.id,
-      slug: artwork.slug,
-      title: artwork.title,
-      collection: artwork.collections[0],
-      colorSpace: artwork.colorScience.colorSpace
-    });
+    const dataEl = document.getElementById('artwork-data');
+    if (dataEl && dataEl.textContent) {
+      const artwork = JSON.parse(dataEl.textContent);
 
-    // Viewport Toggle
-    const viewportImg = document.getElementById('artwork-viewport-img');
-    const viewRawBtn = document.getElementById('view-mode-raw');
-    const viewFramedBtn = document.getElementById('view-mode-framed');
-
-    if (viewRawBtn && viewFramedBtn && viewportImg) {
-      viewRawBtn.addEventListener('click', () => {
-        viewportImg.src = artwork.previewImage;
-        viewRawBtn.className = 'rounded-full bg-sky-500 px-3 py-0.5 text-slate-950 transition-colors';
-        viewFramedBtn.className = 'rounded-full px-3 py-0.5 text-slate-300 hover:text-white transition-colors';
+      // 1. Dispatch View Artwork Telemetry
+      trackViewArtwork({
+        artworkId: artwork.id,
+        slug: artwork.slug,
+        title: artwork.title,
+        collection: artwork.collections[0] || 'fine-art',
+        colorSpace: artwork.colorScience.colorSpace
       });
 
-      viewFramedBtn.addEventListener('click', () => {
-        if (artwork.framedMockup) {
-          viewportImg.src = artwork.framedMockup;
-          viewFramedBtn.className = 'rounded-full bg-sky-500 px-3 py-0.5 text-slate-950 transition-colors';
-          viewRawBtn.className = 'rounded-full px-3 py-0.5 text-slate-300 hover:text-white transition-colors';
-        }
-      });
-    }
+      // 2. Viewport Mode Switcher
+      const modeButtons = document.querySelectorAll('.viewport-mode-btn');
+      const vMaster = document.getElementById('viewport-master');
+      const vMuseum = document.getElementById('viewport-museum');
+      const vFramed = document.getElementById('viewport-framed');
 
-    // Substrate & Variant Configuration State
-    let selectedSubstrate = artwork.variants[0].substrate;
-    let selectedVariant = artwork.variants[0];
-
-    const sizeContainer = document.getElementById('size-selector-container');
-    const priceDisplay = document.getElementById('selected-price-display');
-    const addBtn = document.getElementById('add-to-cart-action');
-    const substrateButtons = document.querySelectorAll('.substrate-btn');
-
-    function renderSizes() {
-      if (!sizeContainer) return;
-      const matchingVariants = artwork.variants.filter((v) => v.substrate === selectedSubstrate);
-
-      sizeContainer.innerHTML = matchingVariants
-        .map(
-          (v, idx) => `
-        <button
-          type="button"
-          class="size-btn rounded-lg border p-2.5 text-left transition-all cursor-pointer ${
-            v.sku === selectedVariant.sku
-              ? 'border-sky-500 bg-sky-500/10 text-white'
-              : 'border-[#262940] bg-[#161826] text-slate-300 hover:border-slate-600'
-          }"
-          data-sku="${v.sku}"
-        >
-          <div class="text-xs font-bold font-mono">${v.size}</div>
-          <div class="text-[10px] text-slate-400 mt-0.5 font-mono">$${v.retailPriceUsd.toFixed(2)}</div>
-        </button>
-      `
-        )
-        .join('');
-
-      sizeContainer.querySelectorAll('.size-btn').forEach((btn) => {
+      modeButtons.forEach((btn) => {
         btn.addEventListener('click', () => {
-          const sku = btn.getAttribute('data-sku');
-          const found = matchingVariants.find((v) => v.sku === sku);
-          if (found) {
-            selectedVariant = found;
-            renderSizes();
-            updatePrice();
+          const mode = btn.getAttribute('data-mode');
+
+          // Reset button styles
+          modeButtons.forEach((b) => {
+            b.classList.remove('bg-sky-500', 'text-slate-950');
+            b.classList.add('text-slate-300');
+          });
+          btn.classList.remove('text-slate-300');
+          btn.classList.add('bg-sky-500', 'text-slate-950');
+
+          // Hide all viewports
+          if (vMaster) vMaster.classList.add('hidden');
+          if (vMuseum) vMuseum.classList.add('hidden');
+          if (vFramed) vFramed.classList.add('hidden');
+
+          if (mode === 'master' && vMaster) {
+            vMaster.classList.remove('hidden');
+          } else if (mode === 'museum' && vMuseum) {
+            vMuseum.classList.remove('hidden');
+            vMuseum.classList.add('flex');
+          } else if (mode === 'framed' && vFramed) {
+            vFramed.classList.remove('hidden');
+            vFramed.classList.add('flex');
           }
         });
       });
-    }
 
-    function updatePrice() {
-      if (priceDisplay) {
-        priceDisplay.textContent = `$${selectedVariant.retailPriceUsd.toFixed(2)}`;
+      // 3. Expansive Fullscreen Modal
+      const expandBtn = document.getElementById('btn-mode-expand');
+      const expansiveModal = document.getElementById('expansive-modal');
+      const closeExpBtn = document.getElementById('close-expansive-btn');
+
+      if (expandBtn && expansiveModal) {
+        expandBtn.addEventListener('click', () => {
+          expansiveModal.classList.remove('hidden');
+          expansiveModal.classList.add('flex');
+        });
       }
 
-      // Track size selection telemetry
-      trackSelectPrintSize({
-        artworkId: artwork.id,
-        slug: artwork.slug,
-        substrate: selectedVariant.substrate,
-        size: selectedVariant.size,
-        priceUsd: selectedVariant.retailPriceUsd,
-        lab: selectedVariant.lab
-      });
-    }
-
-    substrateButtons.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const sub = btn.getAttribute('data-substrate');
-        if (!sub) return;
-        selectedSubstrate = sub;
-
-        substrateButtons.forEach((b) => {
-          b.classList.remove('border-sky-500', 'bg-sky-500/10', 'text-white');
-          b.classList.add('border-[#262940]', 'bg-[#161826]', 'text-slate-300');
+      if (closeExpBtn && expansiveModal) {
+        closeExpBtn.addEventListener('click', () => {
+          expansiveModal.classList.add('hidden');
+          expansiveModal.classList.remove('flex');
         });
-        btn.classList.remove('border-[#262940]', 'bg-[#161826]', 'text-slate-300');
-        btn.classList.add('border-sky-500', 'bg-sky-500/10', 'text-white');
+      }
 
-        const firstMatch = artwork.variants.find((v) => v.substrate === selectedSubstrate);
-        if (firstMatch) {
-          selectedVariant = firstMatch;
-        }
-        renderSizes();
-        updatePrice();
-      });
-    });
+      if (expansiveModal) {
+        expansiveModal.addEventListener('click', (e) => {
+          if (e.target === expansiveModal) {
+            expansiveModal.classList.add('hidden');
+            expansiveModal.classList.remove('flex');
+          }
+        });
+      }
 
-    renderSizes();
-    updatePrice();
+      // 4. Substrate & Variant Configuration State
+      let selectedSubstrate = artwork.variants[0].substrate;
+      let selectedVariant = artwork.variants[0];
 
-    if (addBtn) {
-      addBtn.addEventListener('click', () => {
-        if ((window as any).awpAddToCart) {
-          (window as any).awpAddToCart({
-            id: selectedVariant.sku,
-            artworkId: artwork.id,
-            slug: artwork.slug,
-            title: artwork.title,
-            previewImage: artwork.previewImage,
-            variantSku: selectedVariant.sku,
-            substrate: selectedVariant.substrate,
-            substrateName: selectedVariant.substrateName,
-            size: selectedVariant.size,
-            lab: selectedVariant.lab,
-            supplierSku: selectedVariant.supplierSku,
-            priceUsd: selectedVariant.retailPriceUsd,
-            quantity: 1
+      const sizeContainer = document.getElementById('size-selector-container');
+      const priceDisplay = document.getElementById('selected-price-display');
+      const addBtn = document.getElementById('add-to-cart-action');
+      const substrateButtons = document.querySelectorAll('.substrate-btn');
+      const labBadge = document.getElementById('selected-lab-badge');
+      const scaledFrame = document.getElementById('scaled-art-frame');
+      const scaleIndicator = document.getElementById('scale-indicator-text');
+
+      function updateMuseumScale(variant: any) {
+        if (!scaledFrame || !scaleIndicator) return;
+        const widthInches = variant.widthInches || 24;
+
+        // Proportional scale on 8.5ft gallery wall
+        // 12" -> 30%, 16" -> 42%, 24" -> 58%, 36" -> 78%, 40"+ -> 90%
+        let scalePercent = 45;
+        if (widthInches <= 12) scalePercent = 30;
+        else if (widthInches <= 16) scalePercent = 42;
+        else if (widthInches <= 24) scalePercent = 58;
+        else if (widthInches <= 36) scalePercent = 78;
+        else scalePercent = 90;
+
+        scaledFrame.style.width = `${scalePercent}%`;
+        scaleIndicator.textContent = `${variant.size} (${variant.substrateName.split(' ')[0]})`;
+      }
+
+      function renderSizes() {
+        if (!sizeContainer) return;
+        const matchingVariants = artwork.variants.filter((v: any) => v.substrate === selectedSubstrate);
+
+        sizeContainer.innerHTML = matchingVariants
+          .map(
+            (v: any) => `
+          <button
+            type="button"
+            class="size-btn rounded-xl border p-3 text-left transition-all cursor-pointer ${
+              v.sku === selectedVariant.sku
+                ? 'border-sky-500 bg-sky-500/15 text-white shadow-sm shadow-sky-500/20'
+                : 'border-[#222434] bg-[#151622] text-slate-300 hover:border-slate-600 hover:bg-[#191b29]'
+            }"
+            data-sku="${v.sku}"
+          >
+            <div class="text-xs font-bold font-mono">${v.size}</div>
+            <div class="text-[11px] text-sky-400 mt-0.5 font-mono font-semibold">$${v.retailPriceUsd.toFixed(2)}</div>
+          </button>
+        `
+          )
+          .join('');
+
+        sizeContainer.querySelectorAll('.size-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const sku = btn.getAttribute('data-sku');
+            const found = matchingVariants.find((v: any) => v.sku === sku);
+            if (found) {
+              selectedVariant = found;
+              renderSizes();
+              updatePrice();
+              updateMuseumScale(found);
+            }
           });
+        });
+      }
+
+      function updatePrice() {
+        if (priceDisplay) {
+          priceDisplay.textContent = `$${selectedVariant.retailPriceUsd.toFixed(2)}`;
         }
+        if (labBadge) {
+          labBadge.textContent = `Lab: ${selectedVariant.lab}`;
+        }
+
+        // Track size selection telemetry via Umami
+        trackSelectPrintSize({
+          artworkId: artwork.id,
+          slug: artwork.slug,
+          substrate: selectedVariant.substrate,
+          size: selectedVariant.size,
+          priceUsd: selectedVariant.retailPriceUsd,
+          lab: selectedVariant.lab
+        });
+      }
+
+      substrateButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const sub = btn.getAttribute('data-substrate');
+          if (!sub) return;
+          selectedSubstrate = sub;
+
+          substrateButtons.forEach((b) => {
+            b.classList.remove('border-sky-500', 'bg-sky-500/10', 'text-white', 'shadow-md', 'shadow-sky-500/10');
+            b.classList.add('border-[#222434]', 'bg-[#151622]', 'text-slate-300');
+          });
+          btn.classList.remove('border-[#222434]', 'bg-[#151622]', 'text-slate-300');
+          btn.classList.add('border-sky-500', 'bg-sky-500/10', 'text-white', 'shadow-md', 'shadow-sky-500/10');
+
+          const firstMatch = artwork.variants.find((v: any) => v.substrate === selectedSubstrate);
+          if (firstMatch) {
+            selectedVariant = firstMatch;
+          }
+          renderSizes();
+          updatePrice();
+          updateMuseumScale(selectedVariant);
+        });
       });
+
+      renderSizes();
+      updatePrice();
+      updateMuseumScale(selectedVariant);
+
+      // Add To Cart Handler
+      if (addBtn) {
+        addBtn.addEventListener('click', () => {
+          if ((window as any).awpAddToCart) {
+            (window as any).awpAddToCart({
+              id: selectedVariant.sku,
+              artworkId: artwork.id,
+              slug: artwork.slug,
+              title: artwork.title,
+              previewImage: artwork.previewImage,
+              variantSku: selectedVariant.sku,
+              substrate: selectedVariant.substrate,
+              substrateName: selectedVariant.substrateName,
+              size: selectedVariant.size,
+              lab: selectedVariant.lab,
+              supplierSku: selectedVariant.supplierSku,
+              priceUsd: selectedVariant.retailPriceUsd,
+              quantity: 1
+            });
+          }
+        });
+      }
     }
   </script>
 </Layout>

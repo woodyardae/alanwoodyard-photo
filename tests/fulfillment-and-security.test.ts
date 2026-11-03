@@ -9,6 +9,7 @@ import {
 } from '../src/lib/fulfillment';
 import { validateCartItems, type CatalogArtwork } from '../src/lib/security';
 import { calculatePrintDimensions } from '../scripts/preflight-prints';
+import { artworkSchema } from '../src/content/schema';
 
 test('calculatePrintDimensions enforces 300 DPI for paper and 180 DPI for metal', () => {
   const dims = calculatePrintDimensions(6000, 4000);
@@ -84,26 +85,112 @@ test('calculateSplitCartShipping calculates discrete parcels across multiple lab
   assert.equal(result.totalShippingCents, 1250 + 750 + 850);
 });
 
-test('generateExternalOrderId produces deterministic SHA-256 tokens', async () => {
-  const sessionId = 'cs_test_session_12345';
-  const id1 = await generateExternalOrderId(sessionId, 'prodigi');
-  const id2 = await generateExternalOrderId(sessionId, 'prodigi');
-  const idPfy = await generateExternalOrderId(sessionId, 'printify');
+test('calculateSplitCartShipping handles all top 5 fulfillment partners', () => {
+  const fiveLabItems: OrderItem[] = [
+    {
+      id: 'item-1',
+      sku: 'AWP-1',
+      artworkId: 'a1',
+      artworkTitle: 'Art 1',
+      substrate: 'hahnemuhle-rag',
+      size: '16x24',
+      quantity: 1,
+      unitPriceCents: 12500,
+      lab: 'prodigi',
+      supplierSku: 'prodigi:GLOBAL-FAP-16x24',
+      printAssetUrl: '/img1.webp'
+    },
+    {
+      id: 'item-2',
+      sku: 'AWP-2',
+      artworkId: 'a1',
+      artworkTitle: 'Art 1',
+      substrate: 'framed-print',
+      size: '16x24',
+      quantity: 1,
+      unitPriceCents: 14500,
+      lab: 'printify',
+      supplierSku: 'printify:FRAMED-1624',
+      printAssetUrl: '/img2.webp'
+    },
+    {
+      id: 'item-3',
+      sku: 'AWP-3',
+      artworkId: 'a1',
+      artworkTitle: 'Art 1',
+      substrate: 'stretched-canvas',
+      size: '16x24',
+      quantity: 1,
+      unitPriceCents: 13500,
+      lab: 'printful',
+      supplierSku: 'printful:CANVAS-1624',
+      printAssetUrl: '/img3.webp'
+    },
+    {
+      id: 'item-4',
+      sku: 'AWP-4',
+      artworkId: 'a1',
+      artworkTitle: 'Art 1',
+      substrate: 'linen-art-cards',
+      size: 'A6',
+      quantity: 1,
+      unitPriceCents: 2800,
+      lab: 'gelato',
+      supplierSku: 'gelato:CARDS-A6',
+      printAssetUrl: '/img4.webp'
+    },
+    {
+      id: 'item-5',
+      sku: 'AWP-5',
+      artworkId: 'a1',
+      artworkTitle: 'Art 1',
+      substrate: 'acrylic-float',
+      size: '8x10',
+      quantity: 1,
+      unitPriceCents: 6500,
+      lab: 'gooten',
+      supplierSku: 'gooten:BLOCK-810',
+      printAssetUrl: '/img5.webp'
+    }
+  ];
 
-  assert.equal(id1, id2);
-  assert.match(id1, /^awp_prd_/);
-  assert.match(idPfy, /^awp_pfy_/);
-  assert.notEqual(id1, idPfy);
+  const shipping = calculateSplitCartShipping(fiveLabItems, 'US');
+  assert.equal(shipping.isMultiVendor, true);
+  assert.equal(shipping.vendorCount, 5);
+  assert.equal(shipping.parcels.length, 5);
+
+  const expectedTotal = 1250 + 750 + 850 + 700 + 950; // $45.00
+  assert.equal(shipping.totalShippingCents, expectedTotal);
 });
 
-test('routeOrder routes multi-lab order with mocked fallback', async () => {
+test('generateExternalOrderId produces deterministic SHA-256 tokens for all labs', async () => {
+  const sessionId = 'cs_test_session_12345';
+  const idPrd1 = await generateExternalOrderId(sessionId, 'prodigi');
+  const idPrd2 = await generateExternalOrderId(sessionId, 'prodigi');
+  const idPfy = await generateExternalOrderId(sessionId, 'printify');
+  const idPfl = await generateExternalOrderId(sessionId, 'printful');
+  const idGlt = await generateExternalOrderId(sessionId, 'gelato');
+  const idGtn = await generateExternalOrderId(sessionId, 'gooten');
+
+  assert.equal(idPrd1, idPrd2);
+  assert.match(idPrd1, /^awp_prd_/);
+  assert.match(idPfy, /^awp_pfy_/);
+  assert.match(idPfl, /^awp_pfl_/);
+  assert.match(idGlt, /^awp_glt_/);
+  assert.match(idGtn, /^awp_gtn_/);
+
+  const uniqueSet = new Set([idPrd1, idPfy, idPfl, idGlt, idGtn]);
+  assert.equal(uniqueSet.size, 5);
+});
+
+test('routeOrder routes 5-lab order with mocked fallback', async () => {
   const order: FulfillmentOrder = {
-    sessionId: 'cs_test_multi_lab_123',
-    orderNumber: 'AWP-TEST1234',
+    sessionId: 'cs_test_five_lab_123',
+    orderNumber: 'AWP-TEST5555',
     recipient: {
-      name: 'Jane Doe',
-      email: 'jane@example.com',
-      address1: '123 Main St',
+      name: 'Alan Collector',
+      email: 'collector@example.com',
+      address1: '400 Congress Ave',
       city: 'Austin',
       state: 'TX',
       postalCode: '78701',
@@ -112,38 +199,78 @@ test('routeOrder routes multi-lab order with mocked fallback', async () => {
     items: [
       {
         id: '1',
-        sku: 'AWP-AUSTIN-HAG-1624',
-        artworkId: 'austin-skyline-rowing-dawn',
-        artworkTitle: 'Dawn Shell',
+        sku: 'AWP-1',
+        artworkId: 'a1',
+        artworkTitle: 'Title 1',
         substrate: 'hahnemuhle-rag',
         size: '16x24',
         quantity: 1,
         unitPriceCents: 12500,
         lab: 'prodigi',
         supplierSku: 'prodigi:GLOBAL-FAP-16x24',
-        printAssetUrl: 'https://alanwoodyard.photo/images/artworks/austin.webp'
+        printAssetUrl: 'https://alanwoodyard.photo/preview.webp'
       },
       {
         id: '2',
-        sku: 'AWP-AUSTIN-DSK-3515',
-        artworkId: 'austin-skyline-rowing-dawn',
-        artworkTitle: 'Dawn Shell Desk Mat',
-        substrate: 'desk-mat',
-        size: '35.4x15.7',
+        sku: 'AWP-2',
+        artworkId: 'a1',
+        artworkTitle: 'Title 1',
+        substrate: 'framed-print',
+        size: '16x24',
         quantity: 1,
-        unitPriceCents: 4200,
+        unitPriceCents: 14500,
         lab: 'printify',
-        supplierSku: 'printify:DESK-MAT-900400',
-        printAssetUrl: 'https://alanwoodyard.photo/images/artworks/austin.webp'
+        supplierSku: 'printify:FRAMED-1624',
+        printAssetUrl: 'https://alanwoodyard.photo/preview.webp'
+      },
+      {
+        id: '3',
+        sku: 'AWP-3',
+        artworkId: 'a1',
+        artworkTitle: 'Title 1',
+        substrate: 'stretched-canvas',
+        size: '16x24',
+        quantity: 1,
+        unitPriceCents: 13500,
+        lab: 'printful',
+        supplierSku: 'printful:CANVAS-1624',
+        printAssetUrl: 'https://alanwoodyard.photo/preview.webp'
+      },
+      {
+        id: '4',
+        sku: 'AWP-4',
+        artworkId: 'a1',
+        artworkTitle: 'Title 1',
+        substrate: 'linen-art-cards',
+        size: 'A6',
+        quantity: 1,
+        unitPriceCents: 2800,
+        lab: 'gelato',
+        supplierSku: 'gelato:CARDS-A6',
+        printAssetUrl: 'https://alanwoodyard.photo/preview.webp'
+      },
+      {
+        id: '5',
+        sku: 'AWP-5',
+        artworkId: 'a1',
+        artworkTitle: 'Title 1',
+        substrate: 'acrylic-float',
+        size: '8x10',
+        quantity: 1,
+        unitPriceCents: 6500,
+        lab: 'gooten',
+        supplierSku: 'gooten:BLOCK-810',
+        printAssetUrl: 'https://alanwoodyard.photo/preview.webp'
       }
     ]
   };
 
   const result = await routeOrder(order, { ALLOW_MOCK_DISPATCH: '1' });
   assert.equal(result.success, true);
-  assert.equal(result.totalParcels, 2);
-  assert.equal(result.parcels[0].status, 'mocked');
-  assert.equal(result.parcels[1].status, 'mocked');
+  assert.equal(result.totalParcels, 5);
+  for (const parcel of result.parcels) {
+    assert.equal(parcel.status, 'mocked');
+  }
 });
 
 test('validateCartItems prevents price manipulation and verifies catalog bounds', () => {
@@ -209,4 +336,62 @@ test('validateCartItems prevents price manipulation and verifies catalog bounds'
     mockCatalog
   );
   assert.equal(badSku.valid, false);
+});
+
+test('artworkSchema strictly validates UUIDv7 and collection tags', () => {
+  const validDoc = {
+    id: '01a19f88-519d-70ee-a3b8-885955d63316', // Valid UUIDv7
+    title: 'Dawn Shell on Lady Bird Lake',
+    slug: 'austin-skyline-rowing-dawn',
+    description: 'Fine art description...',
+    capture: {
+      date: '2026-03-22',
+      location: { name: 'Austin, Texas' },
+      camera: 'Fujifilm GFX 100 II',
+      lens: 'GF 45-100mm',
+      focalLength: '68mm',
+      aperture: 'f/8.0',
+      shutterSpeed: '1/60s',
+      iso: 100
+    },
+    colorScience: {
+      colorSpace: 'ProPhoto RGB',
+      dominantHex: ['#182838', '#f97316'],
+      whitePoint: 'D65'
+    },
+    dimensions: {
+      widthPx: 6000,
+      heightPx: 4000,
+      aspectRatio: '2:3',
+      orientation: 'landscape'
+    },
+    collections: ['austin-skyline', 'maritime'],
+    previewImage: '/preview.webp',
+    variants: [
+      {
+        sku: 'SKU-1',
+        substrate: 'hahnemuhle-rag',
+        substrateName: 'Hahnemühle Rag',
+        size: '16x24',
+        widthInches: 24,
+        heightInches: 16,
+        lab: 'prodigi',
+        supplierSku: 'prodigi:GLOBAL-FAP',
+        baseCostUsd: 34,
+        retailPriceUsd: 125,
+        inStock: true
+      }
+    ]
+  };
+
+  const parsed = artworkSchema.safeParse(validDoc);
+  assert.equal(parsed.success, true);
+
+  // Invalid UUID (e.g. non-UUID or UUIDv4 with version 4 instead of 7)
+  const invalidUuidDoc = {
+    ...validDoc,
+    id: 'c9bf9e57-1685-4c89-bafb-ff5af830be8a' // UUIDv4, not UUIDv7
+  };
+  const invalidParsed = artworkSchema.safeParse(invalidUuidDoc);
+  assert.equal(invalidParsed.success, false);
 });
