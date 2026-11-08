@@ -10,6 +10,7 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
 <Layout title="Merchandise Studio | Alan Woodyard Admin" theme="walnut">
   <div class="min-h-screen flex flex-col bg-[#0c0a09] text-[#f7f4ee]">
     
+    <!-- Top Header -->
     <header class="sticky top-0 z-40 bg-[#161210]/95 backdrop-blur-md border-b border-white/10 px-4 py-3 sm:px-6">
       <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div class="flex items-center justify-between">
@@ -22,17 +23,6 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
           <a href="/admin/syndication" class="sm:hidden text-xs font-mono text-[#a89f91]">Syndication &rarr;</a>
         </div>
 
-        <div class="flex-1 sm:max-w-md">
-          <select 
-            id="artworkSelect" 
-            class="w-full text-sm font-mono bg-[#080706] border border-white/15 py-2.5 px-3 text-[#f7f4ee] focus:border-[#c5a059] focus:outline-none"
-          >
-            {catalog.map((item) => (
-              <option value={item.id}>{item.data.title}</option>
-            ))}
-          </select>
-        </div>
-
         <div class="hidden sm:flex items-center gap-4 text-xs font-mono">
           <a href="/admin/syndication" class="text-[#a89f91] hover:text-[#f7f4ee]">Syndication Desk &rarr;</a>
           <a href="/" class="text-[#c5a059] hover:underline" target="_blank">View Live Store ↗</a>
@@ -40,6 +30,7 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
       </div>
     </header>
 
+    <!-- Substrate Rail -->
     <nav class="bg-[#100d0c] border-b border-white/[0.08] px-4 py-2.5 overflow-x-auto no-scrollbar">
       <div class="max-w-7xl mx-auto flex items-center gap-2 min-w-max" id="productChips">
         <button type="button" class="prod-chip active px-3.5 py-2 border border-[#c5a059] bg-[#c5a059]/20 text-[#dfb872] text-xs font-mono uppercase transition-colors" data-w="16" data-h="7">
@@ -63,9 +54,11 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
       </div>
     </nav>
 
+    <!-- Workspace Grid -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start pb-28 lg:pb-12">
       
-      <section class="lg:col-span-8 flex flex-col items-center">
+      <!-- Left: Interactive Canvas -->
+      <section class="lg:col-span-7 xl:col-span-8 flex flex-col items-center">
         <div 
           class="relative w-full aspect-[4/3] bg-[#050404] border border-white/15 overflow-hidden flex items-center justify-center select-none shadow-2xl" 
           id="viewportContainer"
@@ -76,18 +69,19 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
             style="touch-action: none;"
           ></canvas>
 
+          <!-- On-Canvas HUD Quick Steppers -->
           <div class="absolute bottom-3 inset-x-3 flex items-center justify-between pointer-events-none gap-2">
             <div class="flex items-center gap-1.5 pointer-events-auto bg-[#0a0808]/90 backdrop-blur-md border border-white/15 p-1 rounded">
               <button 
                 type="button" 
-                id="gridToggleBtn" 
+                id="hudGridBtn" 
                 class="px-2.5 py-1.5 text-[11px] font-mono rounded transition-colors bg-[#c5a059]/30 text-[#dfb872] border border-[#c5a059]"
               >
                 Grid: ON
               </button>
               <button 
                 type="button" 
-                id="bleedToggleBtn" 
+                id="hudBleedBtn" 
                 class="px-2.5 py-1.5 text-[11px] font-mono rounded transition-colors bg-[#c5a059]/30 text-[#dfb872] border border-[#c5a059]"
               >
                 Bleed: ON
@@ -95,44 +89,119 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
             </div>
 
             <div class="flex items-center gap-1 pointer-events-auto bg-[#0a0808]/90 backdrop-blur-md border border-white/15 p-1 rounded text-xs font-mono">
-              <button type="button" id="zoomOutBtn" class="w-8 h-7 flex items-center justify-center text-base hover:bg-white/10 text-[#f7f4ee] active:scale-95 transition-transform">−</button>
-              <span id="zoomDisplay" class="px-1 text-[11px] text-[#dfb872] min-w-[3rem] text-center font-bold">1.00x</span>
-              <button type="button" id="zoomInBtn" class="w-8 h-7 flex items-center justify-center text-base hover:bg-white/10 text-[#f7f4ee] active:scale-95 transition-transform">+</button>
-              <button type="button" id="resetFitBtn" class="px-2.5 py-1 text-[10px] uppercase text-[#a89f91] hover:text-[#f7f4ee] border-l border-white/15 ml-0.5">Fit</button>
+              <button type="button" id="hudZoomOutBtn" class="w-8 h-7 flex items-center justify-center text-base hover:bg-white/10 text-[#f7f4ee] active:scale-95 transition-transform">−</button>
+              <span id="hudZoomDisplay" class="px-1 text-[11px] text-[#dfb872] min-w-[3rem] text-center font-bold">1.00x</span>
+              <button type="button" id="hudZoomInBtn" class="w-8 h-7 flex items-center justify-center text-base hover:bg-white/10 text-[#f7f4ee] active:scale-95 transition-transform">+</button>
             </div>
           </div>
         </div>
 
         <div class="w-full mt-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] font-mono text-[#8e8577]">
-          <p>Pinch with 2 fingers to zoom &bull; Drag with 1 finger to pan &bull; Double-tap to reset</p>
-          <p><span class="text-[#d4a359]">Gold box:</span> 5% bleed margin (lab cut boundary)</p>
+          <p>Pinch / Drag on canvas to frame &bull; Double-tap to reset</p>
+          <p><span class="text-[#d4a359]">Gold frame:</span> 5% lab cut safe area</p>
         </div>
       </section>
 
-      <section class="lg:col-span-4 space-y-5 bg-[#14100e] border border-white/10 p-5">
-        <div>
-          <span class="text-[11px] font-mono uppercase tracking-widest text-[#a89f91] block mb-1">Print Composition Standard</span>
-          <p class="text-xs font-sans text-[#a89f91] leading-relaxed">
-            Framing pure master plates. All crops save unwatermarked for lab fulfillment.
-          </p>
+      <!-- Right: Full Control Panel -->
+      <section class="lg:col-span-5 xl:col-span-4 space-y-5 bg-[#14100e] border border-white/10 p-5 rounded-[2px]">
+        
+        <!-- 1. Artwork Selector with Steppers -->
+        <div class="space-y-1.5">
+          <label class="block text-[11px] font-mono uppercase tracking-wider text-[#a89f91]">Photograph</label>
+          <div class="flex items-center gap-2">
+            <button type="button" id="prevArtworkBtn" class="px-3 py-2.5 bg-[#080706] hover:bg-[#201a17] border border-white/15 text-xs font-mono text-[#dfb872] active:scale-95 transition-all">◀</button>
+            <select 
+              id="artworkSelect" 
+              class="flex-1 text-xs font-mono bg-[#080706] border border-white/15 py-2.5 px-3 text-[#f7f4ee] focus:border-[#c5a059] focus:outline-none"
+            >
+              {catalog.map((item) => (
+                <option value={item.id}>{item.data.title}</option>
+              ))}
+            </select>
+            <button type="button" id="nextArtworkBtn" class="px-3 py-2.5 bg-[#080706] hover:bg-[#201a17] border border-white/15 text-xs font-mono text-[#dfb872] active:scale-95 transition-all">▶</button>
+          </div>
         </div>
 
-        <div class="border-t border-white/10 pt-4">
-          <div class="flex justify-between text-xs font-mono text-[#a89f91] mb-1.5">
-            <span>Manual Scale Slider</span>
-            <span id="sliderValLabel">1.00x</span>
+        <!-- 2. Auto-Fit Suite -->
+        <div class="space-y-1.5 border-t border-white/10 pt-4">
+          <label class="block text-[11px] font-mono uppercase tracking-wider text-[#a89f91]">Auto-Fit Framing</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" id="fitWidthBtn" class="py-2.5 px-2 border border-white/15 hover:border-[#c5a059] bg-[#0a0808] hover:bg-[#1a1512] text-xs font-mono text-[#f7f4ee] active:scale-95 transition-all">
+              Fit Width
+            </button>
+            <button type="button" id="fitHeightBtn" class="py-2.5 px-2 border border-white/15 hover:border-[#c5a059] bg-[#0a0808] hover:bg-[#1a1512] text-xs font-mono text-[#f7f4ee] active:scale-95 transition-all">
+              Fit Height
+            </button>
+            <button type="button" id="fillBleedBtn" class="py-2.5 px-2 border border-white/15 hover:border-[#c5a059] bg-[#0a0808] hover:bg-[#1a1512] text-xs font-mono text-[#f7f4ee] active:scale-95 transition-all">
+              Fill Bleed
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. Re-Centering Suite -->
+        <div class="space-y-1.5 border-t border-white/10 pt-4">
+          <label class="block text-[11px] font-mono uppercase tracking-wider text-[#a89f91]">Alignment & Re-Centering</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" id="centerHBtn" class="py-2.5 px-2 border border-white/15 hover:border-[#c5a059] bg-[#0a0808] hover:bg-[#1a1512] text-xs font-mono text-[#f7f4ee] active:scale-95 transition-all">
+              Center H
+            </button>
+            <button type="button" id="centerVBtn" class="py-2.5 px-2 border border-white/15 hover:border-[#c5a059] bg-[#0a0808] hover:bg-[#1a1512] text-xs font-mono text-[#f7f4ee] active:scale-95 transition-all">
+              Center V
+            </button>
+            <button type="button" id="centerAllBtn" class="py-2.5 px-2 border border-white/15 hover:border-[#c5a059] bg-[#0a0808] hover:bg-[#1a1512] text-xs font-mono text-[#f7f4ee] active:scale-95 transition-all">
+              Reset Center
+            </button>
+          </div>
+        </div>
+
+        <!-- 4. Numerical Scale & Slider with External Nudge Stack -->
+        <div class="space-y-2 border-t border-white/10 pt-4">
+          <div class="flex items-center justify-between">
+            <label class="text-[11px] font-mono uppercase tracking-wider text-[#a89f91]">Scale Factor</label>
+            <div class="flex items-center gap-1.5">
+              <div class="flex items-center bg-[#080706] border border-white/20 px-2 py-1">
+                <input 
+                  type="number" 
+                  id="zoomInput" 
+                  min="0.3" 
+                  max="3.5" 
+                  step="0.05" 
+                  value="1.00" 
+                  class="w-16 bg-transparent text-[#f7f4ee] font-mono text-xs text-right focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <span class="ml-1 text-xs font-mono text-[#a89f91]">x</span>
+              </div>
+              <div class="flex flex-col">
+                <button type="button" id="nudgeUpBtn" class="px-2 py-0.5 bg-[#181412] hover:bg-[#25201c] border border-white/15 text-[10px] text-[#f7f4ee] active:bg-[#c5a059] active:text-[#0a0808]">▲</button>
+                <button type="button" id="nudgeDownBtn" class="px-2 py-0.5 bg-[#181412] hover:bg-[#25201c] border-x border-b border-white/15 text-[10px] text-[#f7f4ee] active:bg-[#c5a059] active:text-[#0a0808]">▼</button>
+              </div>
+            </div>
           </div>
           <input 
             type="range" 
             id="zoomSlider" 
-            min="1" 
-            max="3" 
-            step="0.02" 
-            value="1" 
+            min="0.3" 
+            max="3.5" 
+            step="0.01" 
+            value="1.00" 
             class="w-full h-2 bg-[#080706] accent-[#c5a059] cursor-pointer" 
           />
         </div>
 
+        <!-- 5. Composition & Lab Guides -->
+        <div class="space-y-1.5 border-t border-white/10 pt-4">
+          <label class="block text-[11px] font-mono uppercase tracking-wider text-[#a89f91]">Composition & Lab Overlays</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" id="sidebarGridBtn" class="py-2.5 px-2 border border-[#c5a059] bg-[#c5a059]/20 text-xs font-mono text-[#dfb872] active:scale-95 transition-all">
+              Grid: ON
+            </button>
+            <button type="button" id="sidebarBleedBtn" class="py-2.5 px-2 border border-[#c5a059] bg-[#c5a059]/20 text-xs font-mono text-[#dfb872] active:scale-95 transition-all">
+              Bleed: ON
+            </button>
+          </div>
+        </div>
+
+        <!-- 6. Export JSON -->
         <div class="border-t border-white/10 pt-4">
           <button 
             type="button" 
@@ -142,10 +211,12 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
             📋 Download Approved Crops JSON
           </button>
         </div>
+
       </section>
 
     </main>
 
+    <!-- Sticky Bottom Bar -->
     <div class="fixed bottom-0 inset-x-0 z-30 bg-[#120f0d]/95 backdrop-blur-md border-t border-white/15 p-3.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-2xl">
       <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
         <div class="flex-1 min-w-0">
@@ -169,16 +240,35 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
     const canvas = document.getElementById('cropCanvas') as HTMLCanvasElement;
     const ctx = canvas.getContext('2d')!;
     const artworkSelect = document.getElementById('artworkSelect') as HTMLSelectElement;
+    const prevArtworkBtn = document.getElementById('prevArtworkBtn')!;
+    const nextArtworkBtn = document.getElementById('nextArtworkBtn')!;
     const productChips = document.querySelectorAll('.prod-chip');
     const activeSubstrateLabel = document.getElementById('activeSubstrateLabel')!;
+    
+    // Zoom Elements
     const zoomSlider = document.getElementById('zoomSlider') as HTMLInputElement;
-    const zoomDisplay = document.getElementById('zoomDisplay')!;
-    const sliderValLabel = document.getElementById('sliderValLabel')!;
-    const zoomInBtn = document.getElementById('zoomInBtn')!;
-    const zoomOutBtn = document.getElementById('zoomOutBtn')!;
-    const resetFitBtn = document.getElementById('resetFitBtn')!;
-    const gridToggleBtn = document.getElementById('gridToggleBtn')!;
-    const bleedToggleBtn = document.getElementById('bleedToggleBtn')!;
+    const zoomInput = document.getElementById('zoomInput') as HTMLInputElement;
+    const nudgeUpBtn = document.getElementById('nudgeUpBtn')!;
+    const nudgeDownBtn = document.getElementById('nudgeDownBtn')!;
+    const hudZoomDisplay = document.getElementById('hudZoomDisplay')!;
+    const hudZoomInBtn = document.getElementById('hudZoomInBtn')!;
+    const hudZoomOutBtn = document.getElementById('hudZoomOutBtn')!;
+
+    // Fit & Alignment Buttons
+    const fitWidthBtn = document.getElementById('fitWidthBtn')!;
+    const fitHeightBtn = document.getElementById('fitHeightBtn')!;
+    const fillBleedBtn = document.getElementById('fillBleedBtn')!;
+    const centerHBtn = document.getElementById('centerHBtn')!;
+    const centerVBtn = document.getElementById('centerVBtn')!;
+    const centerAllBtn = document.getElementById('centerAllBtn')!;
+
+    // Overlay Buttons
+    const hudGridBtn = document.getElementById('hudGridBtn')!;
+    const hudBleedBtn = document.getElementById('hudBleedBtn')!;
+    const sidebarGridBtn = document.getElementById('sidebarGridBtn')!;
+    const sidebarBleedBtn = document.getElementById('sidebarBleedBtn')!;
+
+    // Action Buttons
     const approveBtn = document.getElementById('approveBtn') as HTMLButtonElement;
     const exportJsonBtn = document.getElementById('exportJsonBtn') as HTMLButtonElement;
     const statusMsg = document.getElementById('statusMsg')!;
@@ -236,6 +326,7 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
 
       ctx.drawImage(img, drawX, drawY, drawW, drawH);
 
+      // Thirds Grid
       if (showGrid) {
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
         ctx.lineWidth = 1.5;
@@ -249,6 +340,7 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
         ctx.setLineDash([]);
       }
 
+      // Bleed Margin
       if (showBleed) {
         ctx.strokeStyle = '#d4a359';
         ctx.lineWidth = 2;
@@ -258,14 +350,14 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
 
       ctx.restore();
 
-      const zoomText = `${zoom.toFixed(2)}x`;
-      zoomDisplay.textContent = zoomText;
-      sliderValLabel.textContent = zoomText;
-      zoomSlider.value = zoom.toString();
+      // Synchronize All Zoom Displays
+      const zoomStr = zoom.toFixed(2);
+      hudZoomDisplay.textContent = `${zoomStr}x`;
+      zoomInput.value = zoomStr;
+      zoomSlider.value = zoomStr;
     }
 
     function switchPhoto() {
-      // Force clean unwatermarked preview with fallback
       const cleanPath = `/images/artworks/clean/${artworkSelect.value}.webp`;
       img.src = cleanPath;
       img.onerror = () => {
@@ -280,19 +372,44 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
       };
     }
 
-    function resetTransform() {
+    function setZoom(newZoom: number) {
+      zoom = Math.min(3.5, Math.max(0.3, parseFloat(newZoom.toFixed(2))));
+      draw();
+    }
+
+    // Auto-Fit Algorithms
+    function fitWidth() {
+      if (!img.complete || !img.naturalWidth) return;
+      const srcRatio = img.naturalWidth / img.naturalHeight;
+      if (srcRatio > currentRatio) {
+        setZoom(currentRatio / srcRatio);
+      } else {
+        setZoom(1.0);
+      }
+      panX = 0;
+      draw();
+    }
+
+    function fitHeight() {
+      if (!img.complete || !img.naturalWidth) return;
+      const srcRatio = img.naturalWidth / img.naturalHeight;
+      if (srcRatio < currentRatio) {
+        setZoom(srcRatio / currentRatio);
+      } else {
+        setZoom(1.0);
+      }
+      panY = 0;
+      draw();
+    }
+
+    function fillBleed() {
+      setZoom(1.0);
       panX = 0;
       panY = 0;
-      zoom = 1.0;
       draw();
     }
 
-    function setZoom(newZoom: number) {
-      zoom = Math.min(3.0, Math.max(1.0, parseFloat(newZoom.toFixed(2))));
-      draw();
-    }
-
-    // Touch Engine
+    // Touch & Pointer Gesture Engine
     let touchStartX = 0;
     let touchStartY = 0;
     let initialPinchDist = 0;
@@ -304,7 +421,7 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
 
       const now = Date.now();
       if (now - lastTap < 300) {
-        resetTransform();
+        fillBleed();
         lastTap = 0;
         return;
       }
@@ -345,6 +462,7 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
       }
     });
 
+    // Substrate Rail Handlers
     productChips.forEach((chip) => {
       chip.addEventListener('click', () => {
         productChips.forEach((c) => {
@@ -364,29 +482,78 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
       });
     });
 
-    zoomInBtn.addEventListener('click', () => setZoom(zoom + 0.15));
-    zoomOutBtn.addEventListener('click', () => setZoom(zoom - 0.15));
-    resetFitBtn.addEventListener('click', () => { panX = 0; panY = 0; zoom = 1.0; draw(); });
+    // Artwork Steppers
+    prevArtworkBtn.addEventListener('click', () => {
+      if (artworkSelect.selectedIndex > 0) {
+        artworkSelect.selectedIndex--;
+        switchPhoto();
+      }
+    });
+    nextArtworkBtn.addEventListener('click', () => {
+      if (artworkSelect.selectedIndex < artworkSelect.options.length - 1) {
+        artworkSelect.selectedIndex++;
+        switchPhoto();
+      }
+    });
+    artworkSelect.addEventListener('change', switchPhoto);
+
+    // Auto-Fit Suite Handlers
+    fitWidthBtn.addEventListener('click', fitWidth);
+    fitHeightBtn.addEventListener('click', fitHeight);
+    fillBleedBtn.addEventListener('click', fillBleed);
+
+    // Centering Handlers
+    centerHBtn.addEventListener('click', () => { panX = 0; draw(); });
+    centerVBtn.addEventListener('click', () => { panY = 0; draw(); });
+    centerAllBtn.addEventListener('click', () => { panX = 0; panY = 0; draw(); });
+
+    // Zoom Handlers
+    hudZoomInBtn.addEventListener('click', () => setZoom(zoom + 0.15));
+    hudZoomOutBtn.addEventListener('click', () => setZoom(zoom - 0.15));
+    nudgeUpBtn.addEventListener('click', () => setZoom(zoom + 0.05));
+    nudgeDownBtn.addEventListener('click', () => setZoom(zoom - 0.05));
+    zoomInput.addEventListener('change', () => setZoom(parseFloat(zoomInput.value) || 1.0));
     zoomSlider.addEventListener('input', () => setZoom(parseFloat(zoomSlider.value)));
 
-    gridToggleBtn.addEventListener('click', () => {
+    // Grid & Bleed Toggles (Synchronized across HUD and Sidebar)
+    function toggleGrid() {
       showGrid = !showGrid;
-      gridToggleBtn.textContent = showGrid ? 'Grid: ON' : 'Grid: OFF';
-      gridToggleBtn.className = showGrid
-        ? 'px-2.5 py-1.5 text-[11px] font-mono rounded transition-colors bg-[#c5a059]/30 text-[#dfb872] border border-[#c5a059]'
-        : 'px-2.5 py-1.5 text-[11px] font-mono rounded transition-colors bg-white/5 text-[#a89f91] border border-white/10';
-      draw();
-    });
+      const label = showGrid ? 'Grid: ON' : 'Grid: OFF';
+      const activeClass = 'py-2.5 px-2 border border-[#c5a059] bg-[#c5a059]/20 text-xs font-mono text-[#dfb872] active:scale-95 transition-all';
+      const inactiveClass = 'py-2.5 px-2 border border-white/10 bg-[#0a0808] text-xs font-mono text-[#8e8577] active:scale-95 transition-all';
+      
+      hudGridBtn.textContent = label;
+      hudGridBtn.className = showGrid
+        ? 'px-2.5 py-1.5 text-[11px] font-mono rounded bg-[#c5a059]/30 text-[#dfb872] border border-[#c5a059]'
+        : 'px-2.5 py-1.5 text-[11px] font-mono rounded bg-white/5 text-[#a89f91] border border-white/10';
 
-    bleedToggleBtn.addEventListener('click', () => {
+      sidebarGridBtn.textContent = label;
+      sidebarGridBtn.className = showGrid ? activeClass : inactiveClass;
+      draw();
+    }
+
+    function toggleBleed() {
       showBleed = !showBleed;
-      bleedToggleBtn.textContent = showBleed ? 'Bleed: ON' : 'Bleed: OFF';
-      bleedToggleBtn.className = showBleed
-        ? 'px-2.5 py-1.5 text-[11px] font-mono rounded transition-colors bg-[#c5a059]/30 text-[#dfb872] border border-[#c5a059]'
-        : 'px-2.5 py-1.5 text-[11px] font-mono rounded transition-colors bg-white/5 text-[#a89f91] border border-white/10';
-      draw();
-    });
+      const label = showBleed ? 'Bleed: ON' : 'Bleed: OFF';
+      const activeClass = 'py-2.5 px-2 border border-[#c5a059] bg-[#c5a059]/20 text-xs font-mono text-[#dfb872] active:scale-95 transition-all';
+      const inactiveClass = 'py-2.5 px-2 border border-white/10 bg-[#0a0808] text-xs font-mono text-[#8e8577] active:scale-95 transition-all';
 
+      hudBleedBtn.textContent = label;
+      hudBleedBtn.className = showBleed
+        ? 'px-2.5 py-1.5 text-[11px] font-mono rounded bg-[#c5a059]/30 text-[#dfb872] border border-[#c5a059]'
+        : 'px-2.5 py-1.5 text-[11px] font-mono rounded bg-white/5 text-[#a89f91] border border-white/10';
+
+      sidebarBleedBtn.textContent = label;
+      sidebarBleedBtn.className = showBleed ? activeClass : inactiveClass;
+      draw();
+    }
+
+    hudGridBtn.addEventListener('click', toggleGrid);
+    sidebarGridBtn.addEventListener('click', toggleGrid);
+    hudBleedBtn.addEventListener('click', toggleBleed);
+    sidebarBleedBtn.addEventListener('click', toggleBleed);
+
+    // Save Approval
     approveBtn.addEventListener('click', async () => {
       const id = artworkSelect.value;
       approveBtn.disabled = true;
@@ -421,6 +588,7 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
       }
     });
 
+    // Export Crops
     exportJsonBtn.addEventListener('click', async () => {
       try {
         const res = await fetch('/api/approve-merch');
@@ -437,7 +605,6 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
       }
     });
 
-    artworkSelect.addEventListener('change', switchPhoto);
     window.addEventListener('resize', draw);
     switchPhoto();
   </script>
