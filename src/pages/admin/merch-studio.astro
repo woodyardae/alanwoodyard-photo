@@ -3,236 +3,107 @@ import Layout from '../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
 
 const artworks = await getCollection('artworks');
-
-const products = [
-  { id: 'deskmat', name: 'Studio Panoramic Desk Mat', w: 31.5, h: 15.5, note: 'Printify 16:7 ultrawide desk pad' },
-  { id: 'displate', name: 'Displate Steel Poster', w: 20, h: 29, note: 'Displate rigid steel plate (20:29)' },
-  { id: 'canvas-wrap', name: 'Canvas Gallery Wrap', w: 30, h: 20, note: 'Prodigi 1.5" pine bar wrap (3:2)' },
-  { id: 'acrylic-block', name: 'Acrylic Display Block', w: 8, h: 8, note: 'Gooten 1:1 optical acrylic cube' },
-  { id: 'apparel-tee', name: 'Heavyweight Studio Tee', w: 12, h: 16, note: 'Printful DTG chest print (3:4)' },
-  { id: 'ceramic-mug', name: 'Ceramic Waterfront Mug', w: 8.5, h: 3.5, note: 'Printify full wrap mug' },
-];
+const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title));
 ---
 
-<Layout title="Merch Framing Studio | Alan Woodyard" theme="walnut">
-  <div class="min-h-screen bg-[#0a0908] text-[#f7f4ee] flex flex-col font-sans">
-    <header class="border-b border-white/[0.08] bg-[#141210] px-8 py-4 flex items-center justify-between">
-      <div class="flex items-center gap-4">
-        <a href="/" class="text-xs font-mono text-[#8e8577] hover:text-[#dfb872] transition-colors">&larr; Storefront</a>
-        <span class="text-white/[0.2]">/</span>
-        <h1 class="text-xs uppercase tracking-[0.22em] text-[#dfb872] font-mono font-medium">
-          Studio Merch & Framing Desk
-        </h1>
-        <span class="text-[10px] font-mono bg-[#1f1d1a] px-2 py-0.5 border border-white/[0.08] text-[#8e8577]">
-          Private Operator View
-        </span>
+<Layout title="Merchandise Studio | Alan Woodyard">
+  <main class="w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 font-sans text-[#f7f4ee]">
+    <div class="mb-6 flex flex-wrap items-baseline justify-between border-b border-white/[0.08] pb-4 gap-4">
+      <div>
+        <h1 class="text-xl sm:text-2xl font-serif tracking-wide text-[#f7f4ee]">Merchandise Framing Studio</h1>
+        <p class="text-xs font-mono text-[#a89f91] mt-1">Configure crops, safe bleeds, and watermark positions</p>
       </div>
-      <div class="text-[11px] font-mono text-[#8e8577]">
-        {artworks.length} Plates Ingested
+      <div class="flex gap-4 text-xs font-mono">
+        <a href="/admin/syndication" class="text-[#8e8577] hover:text-[#f7f4ee]">&larr; Syndication Desk</a>
+        <a href="/" class="text-[#c5a059] hover:underline">Storefront &rarr;</a>
       </div>
-    </header>
+    </div>
 
-    <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
-      <!-- Left: Canvas Workspace -->
-      <div class="lg:col-span-8 p-8 flex flex-col items-center justify-center bg-[#070605] border-r border-white/[0.08] select-none">
-        <div id="coverageBanner" class="w-full max-w-[760px] mb-4 p-3 border font-mono text-xs flex items-center justify-between transition-colors bg-emerald-950/40 border-emerald-500/40 text-emerald-300">
-          <div class="flex items-center gap-2">
-            <span id="coverageIcon">✓</span>
-            <span id="coverageText">Full Bleed: Image covers 100% of physical print area</span>
-          </div>
-          <span id="coverageSub" class="text-[10px] opacity-75">Zero void margins &bull; Ready for approval</span>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+      <!-- Canvas Viewport -->
+      <div class="lg:col-span-8 bg-[#0a0908] border border-white/[0.08] p-4 sm:p-6 flex flex-col items-center rounded-[1px]">
+        <div class="relative w-full aspect-[4/3] bg-[#050505] border border-white/[0.04] overflow-hidden flex items-center justify-center select-none" id="viewport">
+          <canvas 
+            id="cropCanvas" 
+            class="max-w-full max-h-full cursor-grab active:cursor-grabbing"
+            style="touch-action: none;"
+          ></canvas>
         </div>
 
-        <div class="relative shadow-[0_20px_50px_rgba(0,0,0,0.85)] border border-white/20">
-          <canvas id="cropCanvas" class="cursor-grab active:cursor-grabbing block"></canvas>
-        </div>
-
-        <p class="mt-4 text-[11px] font-mono text-[#8e8577]">
-          Drag to pan composition &bull; Clean unwatermarked master preview
-        </p>
-      </div>
-
-      <!-- Right: Precision Controls -->
-      <div class="lg:col-span-4 p-8 bg-[#141210] flex flex-col justify-between overflow-y-auto space-y-6">
-        <div class="space-y-6">
-          <div>
-            <label class="block text-[11px] font-mono uppercase tracking-wider text-[#a89f91] mb-2">
-              1. Select Photographic Plate
-            </label>
-            <select id="artworkSelect" class="w-full bg-[#0a0908] border border-white/[0.12] text-[#f7f4ee] px-3 py-2.5 text-xs font-mono focus:border-[#c5a059] focus:outline-none">
-              {artworks.map((art) => (
-                <option value={art.id}>{art.data.title} ({art.data.capture?.aspect_ratio || '3:2'})</option>
-              ))}
-            </select>
+        <div class="w-full mt-4 flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-[#8e8577]">
+          <div class="flex items-center gap-3">
+            <span>Scale:</span>
+            <input type="range" id="zoomSlider" min="1" max="3" step="0.05" value="1" class="w-28 sm:w-36 accent-[#c5a059]" />
+            <span id="zoomVal">1.00x</span>
           </div>
-
-          <div>
-            <label class="block text-[11px] font-mono uppercase tracking-wider text-[#a89f91] mb-2">
-              2. Target Physical Product
+          <div class="flex items-center gap-4">
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" id="gridToggle" checked class="accent-[#c5a059]" />
+              <span>Thirds Grid</span>
             </label>
-            <select id="productSelect" class="w-full bg-[#0a0908] border border-white/[0.12] text-[#f7f4ee] px-3 py-2.5 text-xs font-mono focus:border-[#c5a059] focus:outline-none">
-              {products.map((p) => (
-                <option value={p.id} data-w={p.w} data-h={p.h}>{p.name} ({p.w}:{p.h})</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-[11px] font-mono uppercase tracking-wider text-[#a89f91] mb-2">
-              3. Orientation
-            </label>
-            <div class="flex gap-2">
-              <button type="button" id="orientationPortrait" class="flex-1 py-2 px-3 text-xs font-mono border border-[#c5a059]/40 bg-[#1f1d1a] text-[#dfb872]">
-                Portrait
-              </button>
-              <button type="button" id="orientationLandscape" class="flex-1 py-2 px-3 text-xs font-mono border border-white/[0.1] bg-[#0a0908] text-[#8e8577]">
-                Landscape
-              </button>
-            </div>
-          </div>
-
-          <!-- Zoom & Fit Controls -->
-          <div class="border-t border-white/[0.08] pt-5 space-y-3">
-            <div class="flex items-center justify-between">
-              <label class="text-[11px] font-mono uppercase tracking-wider text-[#a89f91]">
-                4. Zoom Scale
-              </label>
-
-              <!-- Number Box with External Buttons -->
-              <div class="flex items-center">
-                <input
-                  type="number"
-                  id="zoomInput"
-                  min="0.10"
-                  max="5.00"
-                  step="0.05"
-                  value="1.00"
-                  class="w-16 px-2 py-1 text-xs font-mono bg-[#0a0908] border border-white/20 text-[#dfb872] text-right focus:border-[#c5a059] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                />
-                <div class="flex flex-col border-y border-r border-white/20 bg-[#0a0908]">
-                  <button
-                    type="button"
-                    id="btnZoomUp"
-                    class="px-1.5 py-0.5 text-[8px] font-mono text-[#a89f91] hover:text-[#dfb872] hover:bg-[#1f1d1a] leading-none border-b border-white/10 select-none"
-                    title="Nudge Zoom Up (+0.05)"
-                  >
-                    ▲
-                  </button>
-                  <button
-                    type="button"
-                    id="btnZoomDown"
-                    class="px-1.5 py-0.5 text-[8px] font-mono text-[#a89f91] hover:text-[#dfb872] hover:bg-[#1f1d1a] leading-none select-none"
-                    title="Nudge Zoom Down (-0.05)"
-                  >
-                    ▼
-                  </button>
-                </div>
-                <span class="ml-1.5 text-xs font-mono text-[#8e8577]">x</span>
-              </div>
-            </div>
-
-            <input
-              type="range"
-              id="zoomSlider"
-              min="0.20"
-              max="3.00"
-              step="0.01"
-              value="1.00"
-              class="w-full accent-[#c5a059] bg-[#0a0908] cursor-pointer"
-            />
-
-            <div class="grid grid-cols-3 gap-2 pt-1">
-              <button type="button" id="btnFitWidth" class="py-1.5 px-2 text-[11px] font-mono border border-white/10 bg-[#0a0908] text-[#dfb872] hover:border-[#c5a059]/60 hover:bg-[#1a1815] transition-colors">
-                Fit Width
-              </button>
-              <button type="button" id="btnFitHeight" class="py-1.5 px-2 text-[11px] font-mono border border-white/10 bg-[#0a0908] text-[#dfb872] hover:border-[#c5a059]/60 hover:bg-[#1a1815] transition-colors">
-                Fit Height
-              </button>
-              <button type="button" id="btnFillBleed" class="py-1.5 px-2 text-[11px] font-mono border border-white/10 bg-[#0a0908] text-[#dfb872] hover:border-[#c5a059]/60 hover:bg-[#1a1815] transition-colors">
-                Cover Bleed
-              </button>
-            </div>
-          </div>
-
-          <!-- Centering Controls -->
-          <div class="border-t border-white/[0.08] pt-5 space-y-3">
-            <label class="block text-[11px] font-mono uppercase tracking-wider text-[#a89f91]">
-              5. Re-Centering
-            </label>
-            <div class="grid grid-cols-3 gap-2">
-              <button type="button" id="btnCenterX" class="py-1.5 px-2 text-[11px] font-mono border border-white/10 bg-[#0a0908] text-[#a89f91] hover:text-[#f7f4ee] hover:border-[#c5a059]/60 hover:bg-[#1a1815] transition-colors">
-                Center H
-              </button>
-              <button type="button" id="btnCenterY" class="py-1.5 px-2 text-[11px] font-mono border border-white/10 bg-[#0a0908] text-[#a89f91] hover:text-[#f7f4ee] hover:border-[#c5a059]/60 hover:bg-[#1a1815] transition-colors">
-                Center V
-              </button>
-              <button type="button" id="btnCenterAll" class="py-1.5 px-2 text-[11px] font-mono border border-white/10 bg-[#0a0908] text-[#a89f91] hover:text-[#f7f4ee] hover:border-[#c5a059]/60 hover:bg-[#1a1815] transition-colors">
-                Center All
-              </button>
-            </div>
-          </div>
-
-          <!-- Framing Guides -->
-          <div class="border-t border-white/[0.08] pt-5 space-y-2">
-            <label class="block text-[11px] font-mono uppercase tracking-wider text-[#a89f91]">
-              6. Framing Guides
-            </label>
-            <label class="flex items-center gap-2 text-xs font-mono text-[#8e8577] cursor-pointer">
-              <input type="checkbox" id="gridToggle" class="accent-[#c5a059]" checked />
-              <span>Thirds Guide (Dashed Gold)</span>
-            </label>
-            <label class="flex items-center gap-2 text-xs font-mono text-[#8e8577] cursor-pointer">
-              <input type="checkbox" id="bleedToggle" class="accent-[#c5a059]" checked />
-              <span>5% Bleed Hazard Zone</span>
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" id="bleedToggle" checked class="accent-[#c5a059]" />
+              <span>Bleed Safe Area</span>
             </label>
           </div>
         </div>
+      </div>
 
-        <!-- Approval Action -->
+      <!-- Controls -->
+      <div class="lg:col-span-4 bg-[#141210] border border-white/[0.08] p-4 sm:p-6 space-y-6 rounded-[1px]">
+        <div>
+          <label class="block text-xs font-mono uppercase tracking-widest text-[#a89f91] mb-2">Photograph</label>
+          <select id="artworkSelect" class="w-full text-xs font-mono bg-[#0a0908] border border-white/[0.1] p-3 text-[#f7f4ee]">
+            {catalog.map((item) => (
+              <option value={item.id}>
+                {item.data.title}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-mono uppercase tracking-widest text-[#a89f91] mb-2">Product Target</label>
+          <select id="productSelect" class="w-full text-xs font-mono bg-[#0a0908] border border-white/[0.1] p-3 text-[#f7f4ee]">
+            <option value="displate_p" data-w="20" data-h="29">Displate Steel (20:29 Portrait)</option>
+            <option value="displate_l" data-w="29" data-h="20">Displate Steel (29:20 Landscape)</option>
+            <option value="deskmat" data-w="16" data-h="7">Desk Pad (16:7 Ultrawide)</option>
+            <option value="frame_4x5" data-w="4" data-h="5">Standard Frame (4:5)</option>
+            <option value="square" data-w="1" data-h="1">Square Coaster / Tile (1:1)</option>
+            <option value="wrap_pano" data-w="2" data-h="1">Panoramic Canvas (2:1)</option>
+          </select>
+        </div>
+
+        <div class="border-t border-white/[0.08] pt-4 space-y-3">
+          <label class="block text-xs font-mono uppercase tracking-widest text-[#a89f91]">Watermark Placement</label>
+          <div class="grid grid-cols-3 gap-2 text-xs font-mono">
+            <button type="button" class="wm-choice p-2.5 border border-[#c5a059]/40 bg-[#1f1d1a] text-[#dfb872]" data-wm="br">Bottom-R</button>
+            <button type="button" class="wm-choice p-2.5 border border-white/[0.1] bg-[#0a0908] text-[#8e8577]" data-wm="bl">Bottom-L</button>
+            <button type="button" class="wm-choice p-2.5 border border-white/[0.1] bg-[#0a0908] text-[#8e8577]" data-wm="none">None</button>
+          </div>
+        </div>
+
         <div class="border-t border-white/[0.08] pt-6 space-y-3">
-          <button
-            type="button"
-            id="approveBtn"
-            class="w-full py-3 px-4 text-xs font-mono tracking-wider uppercase border border-[#c5a059] bg-[#c5a059] text-[#0a0908] hover:bg-[#dfb872] transition-colors font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            Approve Framing & Enable Product &rarr;
+          <button type="button" id="approveBtn" class="w-full py-3.5 bg-[#2a241c] border border-[#c5a059] text-xs font-mono text-[#dfb872] hover:bg-[#c5a059] hover:text-[#0a0908] transition-colors font-bold uppercase tracking-wider">
+            Save Crop Approval
           </button>
-          <div id="statusMsg" class="text-xs font-mono text-center text-[#8e8577] h-4"></div>
+          <p id="statusMsg" class="text-xs font-mono text-center text-[#8e8577] min-h-[1.5rem]"></p>
         </div>
       </div>
     </div>
-  </div>
+  </main>
 
   <script>
     const canvas = document.getElementById('cropCanvas') as HTMLCanvasElement;
     const ctx = canvas.getContext('2d')!;
     const artworkSelect = document.getElementById('artworkSelect') as HTMLSelectElement;
     const productSelect = document.getElementById('productSelect') as HTMLSelectElement;
-    const orientationPortrait = document.getElementById('orientationPortrait') as HTMLButtonElement;
-    const orientationLandscape = document.getElementById('orientationLandscape') as HTMLButtonElement;
-
     const zoomSlider = document.getElementById('zoomSlider') as HTMLInputElement;
-    const zoomInput = document.getElementById('zoomInput') as HTMLInputElement;
-    const btnZoomUp = document.getElementById('btnZoomUp') as HTMLButtonElement;
-    const btnZoomDown = document.getElementById('btnZoomDown') as HTMLButtonElement;
-
-    const btnFitWidth = document.getElementById('btnFitWidth') as HTMLButtonElement;
-    const btnFitHeight = document.getElementById('btnFitHeight') as HTMLButtonElement;
-    const btnFillBleed = document.getElementById('btnFillBleed') as HTMLButtonElement;
-
-    const btnCenterX = document.getElementById('btnCenterX') as HTMLButtonElement;
-    const btnCenterY = document.getElementById('btnCenterY') as HTMLButtonElement;
-    const btnCenterAll = document.getElementById('btnCenterAll') as HTMLButtonElement;
-
+    const zoomVal = document.getElementById('zoomVal') as HTMLElement;
     const gridToggle = document.getElementById('gridToggle') as HTMLInputElement;
     const bleedToggle = document.getElementById('bleedToggle') as HTMLInputElement;
     const approveBtn = document.getElementById('approveBtn') as HTMLButtonElement;
     const statusMsg = document.getElementById('statusMsg') as HTMLElement;
-
-    const coverageBanner = document.getElementById('coverageBanner') as HTMLElement;
-    const coverageIcon = document.getElementById('coverageIcon') as HTMLElement;
-    const coverageText = document.getElementById('coverageText') as HTMLElement;
-    const coverageSub = document.getElementById('coverageSub') as HTMLElement;
 
     let img = new Image();
     let panX = 0;
@@ -241,94 +112,21 @@ const products = [
     let isDragging = false;
     let startX = 0;
     let startY = 0;
-    let currentOrientation: 'portrait' | 'landscape' = 'portrait';
+    let wmPosition = 'br';
 
     function getTargetRatio(): number {
       const opt = productSelect.selectedOptions[0];
-      const baseW = parseFloat(opt.dataset.w || '1');
-      const baseH = parseFloat(opt.dataset.h || '1');
-      const minDim = Math.min(baseW, baseH);
-      const maxDim = Math.max(baseW, baseH);
-      return currentOrientation === 'portrait' ? (minDim / maxDim) : (maxDim / minDim);
-    }
-
-    function setOrientation(orientation: 'portrait' | 'landscape') {
-      currentOrientation = orientation;
-      if (orientation === 'portrait') {
-        orientationPortrait.className = 'flex-1 py-2 px-3 text-xs font-mono border border-[#c5a059]/40 bg-[#1f1d1a] text-[#dfb872]';
-        orientationLandscape.className = 'flex-1 py-2 px-3 text-xs font-mono border border-white/[0.1] bg-[#0a0908] text-[#8e8577]';
-      } else {
-        orientationLandscape.className = 'flex-1 py-2 px-3 text-xs font-mono border border-[#c5a059]/40 bg-[#1f1d1a] text-[#dfb872]';
-        orientationPortrait.className = 'flex-1 py-2 px-3 text-xs font-mono border border-white/[0.1] bg-[#0a0908] text-[#8e8577]';
-      }
-      panX = 0;
-      panY = 0;
-      draw();
-    }
-
-    function updateZoom(val: number) {
-      zoom = Math.max(0.1, Math.min(5.0, val));
-      zoomSlider.value = zoom.toFixed(2);
-      zoomInput.value = zoom.toFixed(2);
-      draw();
-    }
-
-    function fitToWidth() {
-      if (!img.complete || !img.naturalWidth) return;
-      const ratio = getTargetRatio();
-      const srcRatio = img.naturalWidth / img.naturalHeight;
-      const targetZoom = srcRatio > ratio ? (ratio / srcRatio) : 1.0;
-      panX = 0;
-      updateZoom(targetZoom);
-    }
-
-    function fitToHeight() {
-      if (!img.complete || !img.naturalWidth) return;
-      const ratio = getTargetRatio();
-      const srcRatio = img.naturalWidth / img.naturalHeight;
-      const targetZoom = srcRatio > ratio ? 1.0 : (srcRatio / ratio);
-      panY = 0;
-      updateZoom(targetZoom);
-    }
-
-    function fillBleed() {
-      panX = 0;
-      panY = 0;
-      updateZoom(1.0);
-    }
-
-    function drawCheckerboard(w: number, h: number) {
-      const size = 16;
-      for (let x = 0; x < w; x += size) {
-        for (let y = 0; y < h; y += size) {
-          ctx.fillStyle = ((x / size + y / size) % 2 === 0) ? '#181512' : '#0e0c0a';
-          ctx.fillRect(x, y, size, size);
-        }
-      }
-    }
-
-    function drawHighContrastLine(x1: number, y1: number, x2: number, y2: number) {
-      ctx.save();
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.85)';
-      ctx.lineWidth = 3;
-      ctx.setLineDash([6, 6]);
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.lineTo(x2, y2);
-      ctx.stroke();
-
-      ctx.strokeStyle = 'rgba(223, 184, 114, 0.95)';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-      ctx.restore();
+      const w = parseFloat(opt.dataset.w || '1');
+      const h = parseFloat(opt.dataset.h || '1');
+      return w / h;
     }
 
     function draw() {
       if (!img.complete || !img.naturalWidth) return;
 
       const ratio = getTargetRatio();
-      const maxW = 760;
-      const maxH = 560;
+      const maxW = 720;
+      const maxH = 540;
 
       let targetW = maxW;
       let targetH = targetW / ratio;
@@ -340,7 +138,8 @@ const products = [
       canvas.width = targetW;
       canvas.height = targetH;
 
-      drawCheckerboard(targetW, targetH);
+      ctx.fillStyle = '#050505';
+      ctx.fillRect(0, 0, targetW, targetH);
 
       const srcRatio = img.naturalWidth / img.naturalHeight;
       let drawW: number;
@@ -359,133 +158,100 @@ const products = [
 
       ctx.drawImage(img, drawX, drawY, drawW, drawH);
 
-      const leftGap = drawX > 0.5;
-      const topGap = drawY > 0.5;
-      const rightGap = (drawX + drawW) < (targetW - 0.5);
-      const bottomGap = (drawY + drawH) < (targetH - 0.5);
-      const hasVoid = leftGap || topGap || rightGap || bottomGap;
-
-      if (hasVoid) {
-        coverageBanner.className = 'w-full max-w-[760px] mb-4 p-3 border font-mono text-xs flex items-center justify-between transition-colors bg-red-950/60 border-red-500/60 text-red-200 animate-pulse';
-        coverageIcon.textContent = '⚠️';
-        coverageText.textContent = 'UNCOVERED BORDER DETECTED: Print will have blank canvas margins';
-        coverageSub.textContent = 'Use "Cover Bleed" or zoom in and pan to eliminate voids';
-        approveBtn.disabled = true;
-      } else {
-        coverageBanner.className = 'w-full max-w-[760px] mb-4 p-3 border font-mono text-xs flex items-center justify-between transition-colors bg-emerald-950/40 border-emerald-500/40 text-emerald-300';
-        coverageIcon.textContent = '✓';
-        coverageText.textContent = 'Full Bleed: Image covers 100% of physical print area';
-        coverageSub.textContent = 'Zero void margins • Ready for approval';
-        approveBtn.disabled = false;
-      }
-
       if (gridToggle.checked) {
-        drawHighContrastLine(targetW / 3, 0, targetW / 3, targetH);
-        drawHighContrastLine((targetW * 2) / 3, 0, (targetW * 2) / 3, targetH);
-        drawHighContrastLine(0, targetH / 3, targetW, targetH / 3);
-        drawHighContrastLine(0, (targetH * 2) / 3, targetW, (targetH * 2) / 3);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(targetW / 3, 0); ctx.lineTo(targetW / 3, targetH);
+        ctx.moveTo((targetW * 2) / 3, 0); ctx.lineTo((targetW * 2) / 3, targetH);
+        ctx.moveTo(0, targetH / 3); ctx.lineTo(targetW, targetH / 3);
+        ctx.moveTo(0, (targetH * 2) / 3); ctx.lineTo(targetW, (targetH * 2) / 3);
+        ctx.stroke();
+        ctx.setLineDash([]);
       }
 
       if (bleedToggle.checked) {
-        const inset = Math.round(Math.min(targetW, targetH) * 0.05);
-        ctx.save();
-        ctx.fillStyle = 'rgba(217, 119, 6, 0.22)';
-        ctx.fillRect(0, 0, targetW, inset);
-        ctx.fillRect(0, targetH - inset, targetW, inset);
-        ctx.fillRect(0, inset, inset, targetH - inset * 2);
-        ctx.fillRect(targetW - inset, inset, inset, targetH - inset * 2);
-
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.9)';
-        ctx.lineWidth = 3;
-        ctx.setLineDash([8, 6]);
+        ctx.strokeStyle = 'rgba(197, 160, 89, 0.5)';
+        ctx.lineWidth = 1;
+        const inset = Math.min(targetW, targetH) * 0.05;
         ctx.strokeRect(inset, inset, targetW - inset * 2, targetH - inset * 2);
+      }
 
-        ctx.strokeStyle = 'rgba(245, 158, 11, 0.95)';
-        ctx.lineWidth = 1.5;
-        ctx.strokeRect(inset, inset, targetW - inset * 2, targetH - inset * 2);
-        ctx.restore();
+      if (wmPosition !== 'none') {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.font = '10px monospace';
+        const label = 'ALAN WOODYARD';
+        if (wmPosition === 'br') ctx.fillText(label, targetW - 110, targetH - 12);
+        if (wmPosition === 'bl') ctx.fillText(label, 12, targetH - 12);
       }
     }
 
     function switchPhoto() {
-      const id = artworkSelect.value;
-      const cleanSrc = `/images/artworks/clean/${id}.webp`;
-      const fallbackSrc = `/images/artworks/${id}.webp`;
-
-      img = new Image();
+      img.src = `/images/artworks/${artworkSelect.value}.webp`;
       img.onload = () => {
         panX = 0;
         panY = 0;
-        updateZoom(1.0);
-        if (img.naturalWidth > img.naturalHeight) {
-          setOrientation('landscape');
-        } else {
-          setOrientation('portrait');
-        }
+        zoom = 1.0;
+        zoomSlider.value = '1';
+        zoomVal.textContent = '1.00x';
+        draw();
       };
-
-      // Try clean master first, fall back if not generated
-      img.onerror = () => {
-        if (img.src.includes('/clean/')) {
-          img.src = fallbackSrc;
-        }
-      };
-
-      img.src = cleanSrc;
     }
-
-    btnFitWidth.addEventListener('click', fitToWidth);
-    btnFitHeight.addEventListener('click', fitToHeight);
-    btnFillBleed.addEventListener('click', fillBleed);
-
-    btnCenterX.addEventListener('click', () => { panX = 0; draw(); });
-    btnCenterY.addEventListener('click', () => { panY = 0; draw(); });
-    btnCenterAll.addEventListener('click', () => { panX = 0; panY = 0; draw(); });
-
-    btnZoomUp.addEventListener('click', () => updateZoom(zoom + 0.05));
-    btnZoomDown.addEventListener('click', () => updateZoom(zoom - 0.05));
-
-    zoomSlider.addEventListener('input', () => updateZoom(parseFloat(zoomSlider.value)));
-    zoomInput.addEventListener('input', () => {
-      const v = parseFloat(zoomInput.value);
-      if (!isNaN(v) && v > 0) updateZoom(v);
-    });
 
     artworkSelect.addEventListener('change', switchPhoto);
     productSelect.addEventListener('change', () => { panX = 0; panY = 0; draw(); });
-    orientationPortrait.addEventListener('click', () => setOrientation('portrait'));
-    orientationLandscape.addEventListener('click', () => setOrientation('landscape'));
+
+    zoomSlider.addEventListener('input', () => {
+      zoom = parseFloat(zoomSlider.value);
+      zoomVal.textContent = `${zoom.toFixed(2)}x`;
+      draw();
+    });
+
     gridToggle.addEventListener('change', draw);
     bleedToggle.addEventListener('change', draw);
 
-    canvas.addEventListener('mousedown', (e) => {
+    // Universal Pointer Events (Touch, Pencil, Mouse)
+    canvas.addEventListener('pointerdown', (e) => {
       isDragging = true;
       startX = e.clientX - panX;
       startY = e.clientY - panY;
+      canvas.setPointerCapture(e.pointerId);
     });
 
-    window.addEventListener('mousemove', (e) => {
+    canvas.addEventListener('pointermove', (e) => {
       if (!isDragging) return;
       panX = e.clientX - startX;
       panY = e.clientY - startY;
       draw();
     });
 
-    window.addEventListener('mouseup', () => { isDragging = false; });
+    const endDrag = (e: PointerEvent) => {
+      if (isDragging) {
+        isDragging = false;
+        try { canvas.releasePointerCapture(e.pointerId); } catch (_) {}
+      }
+    };
 
-    canvas.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      const delta = e.deltaY < 0 ? 0.05 : -0.05;
-      updateZoom(zoom + delta);
-    }, { passive: false });
+    canvas.addEventListener('pointerup', endDrag);
+    canvas.addEventListener('pointercancel', endDrag);
+
+    document.querySelectorAll('.wm-choice').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.wm-choice').forEach((b) => {
+          b.className = 'wm-choice p-2.5 border border-white/[0.1] bg-[#0a0908] text-[#8e8577]';
+        });
+        btn.className = 'wm-choice p-2.5 border border-[#c5a059]/40 bg-[#1f1d1a] text-[#dfb872]';
+        wmPosition = btn.getAttribute('data-wm') || 'none';
+        draw();
+      });
+    });
 
     approveBtn.addEventListener('click', async () => {
       const id = artworkSelect.value;
-      const baseProduct = productSelect.options[productSelect.selectedIndex].text.split(' (')[0];
-      const productLabel = `${baseProduct} (${currentOrientation})`;
-
+      const product = productSelect.options[productSelect.selectedIndex].text;
       approveBtn.disabled = true;
-      statusMsg.textContent = 'Saving crop...';
+      statusMsg.textContent = 'Saving...';
 
       try {
         const res = await fetch('/api/approve-merch', {
@@ -493,20 +259,14 @@ const products = [
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             id,
-            product: productLabel,
-            crop: {
-              panX,
-              panY,
-              zoom,
-              ratio: getTargetRatio(),
-              orientation: currentOrientation,
-            },
-            watermark: 'none',
+            product,
+            crop: { panX, panY, zoom, ratio: getTargetRatio() },
+            watermark: wmPosition,
           }),
         });
 
         if (res.ok) {
-          statusMsg.textContent = `✓ Approved: ${productLabel}`;
+          statusMsg.textContent = `Approved: ${product}`;
           statusMsg.className = 'text-xs font-mono text-center text-[#c5a059]';
         } else {
           statusMsg.textContent = 'Save failed.';
