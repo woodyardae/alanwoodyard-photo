@@ -1,4 +1,4 @@
----
+﻿---
 export const prerender = false;
 import Layout from '../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
@@ -10,7 +10,6 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
 <Layout title="Merchandise Studio | Alan Woodyard Admin" theme="walnut">
   <div class="min-h-screen flex flex-col bg-[#0c0a09] text-[#f7f4ee]">
     
-    <!-- Top Bar: Navigation & Artwork Selection -->
     <header class="sticky top-0 z-40 bg-[#161210]/95 backdrop-blur-md border-b border-white/10 px-4 py-3 sm:px-6">
       <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div class="flex items-center justify-between">
@@ -41,7 +40,6 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
       </div>
     </header>
 
-    <!-- Substrate Selector: Horizontal Touch Rail -->
     <nav class="bg-[#100d0c] border-b border-white/[0.08] px-4 py-2.5 overflow-x-auto no-scrollbar">
       <div class="max-w-7xl mx-auto flex items-center gap-2 min-w-max" id="productChips">
         <button type="button" class="prod-chip active px-3.5 py-2 border border-[#c5a059] bg-[#c5a059]/20 text-[#dfb872] text-xs font-mono uppercase transition-colors" data-w="16" data-h="7">
@@ -65,10 +63,8 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
       </div>
     </nav>
 
-    <!-- Main Workspace -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start pb-28 lg:pb-12">
       
-      <!-- Interactive Framing Viewport -->
       <section class="lg:col-span-8 flex flex-col items-center">
         <div 
           class="relative w-full aspect-[4/3] bg-[#050404] border border-white/15 overflow-hidden flex items-center justify-center select-none shadow-2xl" 
@@ -80,15 +76,11 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
             style="touch-action: none;"
           ></canvas>
 
-          <!-- Floating On-Canvas Touch Controls -->
           <div class="absolute bottom-3 inset-x-3 flex items-center justify-between pointer-events-none gap-2">
-            
-            <!-- Grid & Bleed Toggles with Clear State -->
             <div class="flex items-center gap-1.5 pointer-events-auto bg-[#0a0808]/90 backdrop-blur-md border border-white/15 p-1 rounded">
               <button 
                 type="button" 
                 id="gridToggleBtn" 
-                title="Toggles rule-of-thirds composition guidelines"
                 class="px-2.5 py-1.5 text-[11px] font-mono rounded transition-colors bg-[#c5a059]/30 text-[#dfb872] border border-[#c5a059]"
               >
                 Grid: ON
@@ -96,48 +88,33 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
               <button 
                 type="button" 
                 id="bleedToggleBtn" 
-                title="Shows 5% outer trim margin that print cutters slice away"
                 class="px-2.5 py-1.5 text-[11px] font-mono rounded transition-colors bg-[#c5a059]/30 text-[#dfb872] border border-[#c5a059]"
               >
                 Bleed: ON
               </button>
             </div>
 
-            <!-- Zoom Steppers & Reset -->
             <div class="flex items-center gap-1 pointer-events-auto bg-[#0a0808]/90 backdrop-blur-md border border-white/15 p-1 rounded text-xs font-mono">
               <button type="button" id="zoomOutBtn" class="w-8 h-7 flex items-center justify-center text-base hover:bg-white/10 text-[#f7f4ee] active:scale-95 transition-transform">−</button>
               <span id="zoomDisplay" class="px-1 text-[11px] text-[#dfb872] min-w-[3rem] text-center font-bold">1.00x</span>
               <button type="button" id="zoomInBtn" class="w-8 h-7 flex items-center justify-center text-base hover:bg-white/10 text-[#f7f4ee] active:scale-95 transition-transform">+</button>
               <button type="button" id="resetFitBtn" class="px-2.5 py-1 text-[10px] uppercase text-[#a89f91] hover:text-[#f7f4ee] border-l border-white/15 ml-0.5">Fit</button>
             </div>
-
           </div>
         </div>
 
-        <!-- Touch Hint & Guide Explanation -->
         <div class="w-full mt-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] font-mono text-[#8e8577]">
-          <p>Pinch with 2 fingers to zoom &bull; Drag with 1 finger to position &bull; Double-tap to reset</p>
-          <p><span class="text-[#d4a359]">Gold box:</span> Bleed boundary (keep crucial art inside)</p>
+          <p>Pinch with 2 fingers to zoom &bull; Drag with 1 finger to pan &bull; Double-tap to reset</p>
+          <p><span class="text-[#d4a359]">Gold box:</span> 5% bleed margin (lab cut boundary)</p>
         </div>
       </section>
 
-      <!-- Sidebar Controls -->
       <section class="lg:col-span-4 space-y-5 bg-[#14100e] border border-white/10 p-5">
         <div>
-          <label class="block text-xs font-mono uppercase tracking-widest text-[#a89f91] mb-2.5">
-            Watermark Positioning
-          </label>
-          <div class="grid grid-cols-3 gap-2 text-xs font-mono">
-            <button type="button" class="wm-choice active p-3 border border-[#c5a059] bg-[#c5a059]/20 text-[#dfb872] transition-colors" data-wm="br">
-              Bottom-R
-            </button>
-            <button type="button" class="wm-choice p-3 border border-white/10 bg-[#080706] text-[#a89f91] transition-colors" data-wm="bl">
-              Bottom-L
-            </button>
-            <button type="button" class="wm-choice p-3 border border-white/10 bg-[#080706] text-[#a89f91] transition-colors" data-wm="none">
-              Clean (None)
-            </button>
-          </div>
+          <span class="text-[11px] font-mono uppercase tracking-widest text-[#a89f91] block mb-1">Print Composition Standard</span>
+          <p class="text-xs font-sans text-[#a89f91] leading-relaxed">
+            Framing pure master plates. All crops save unwatermarked for lab fulfillment.
+          </p>
         </div>
 
         <div class="border-t border-white/10 pt-4">
@@ -169,12 +146,11 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
 
     </main>
 
-    <!-- Sticky Bottom Approval Bar -->
     <div class="fixed bottom-0 inset-x-0 z-30 bg-[#120f0d]/95 backdrop-blur-md border-t border-white/15 p-3.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-2xl">
       <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
         <div class="flex-1 min-w-0">
           <p id="activeSubstrateLabel" class="text-xs font-mono text-[#c5a059] font-bold truncate">Desk Pad (16:7)</p>
-          <p id="statusMsg" class="text-[11px] font-mono text-[#a89f91] truncate">Ready to save to Cloud KV</p>
+          <p id="statusMsg" class="text-[11px] font-mono text-[#a89f91] truncate">Ready to save</p>
         </div>
 
         <button 
@@ -215,7 +191,6 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
     let currentProductName = 'Desk Pad (16:7)';
     let showGrid = true;
     let showBleed = true;
-    let wmPosition = 'br';
 
     function draw() {
       if (!img.complete || !img.naturalWidth) return;
@@ -261,7 +236,6 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
 
       ctx.drawImage(img, drawX, drawY, drawW, drawH);
 
-      // Thirds Grid (High contrast dashed lines)
       if (showGrid) {
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
         ctx.lineWidth = 1.5;
@@ -275,21 +249,11 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
         ctx.setLineDash([]);
       }
 
-      // Bleed Safe Area (High contrast gold frame)
       if (showBleed) {
         ctx.strokeStyle = '#d4a359';
         ctx.lineWidth = 2;
         const inset = Math.min(targetW, targetH) * 0.05;
         ctx.strokeRect(inset, inset, targetW - inset * 2, targetH - inset * 2);
-      }
-
-      // Watermark Stamp
-      if (wmPosition !== 'none') {
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-        ctx.font = '700 11px monospace';
-        const label = 'ALAN WOODYARD';
-        if (wmPosition === 'br') ctx.fillText(label, targetW - 110, targetH - 14);
-        if (wmPosition === 'bl') ctx.fillText(label, 14, targetH - 14);
       }
 
       ctx.restore();
@@ -301,9 +265,17 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
     }
 
     function switchPhoto() {
-      img.src = `/images/artworks/${artworkSelect.value}.webp`;
+      // Force clean unwatermarked preview with fallback
+      const cleanPath = `/images/artworks/clean/${artworkSelect.value}.webp`;
+      img.src = cleanPath;
+      img.onerror = () => {
+        img.onerror = null;
+        img.src = `/images/artworks/${artworkSelect.value}.webp`;
+      };
       img.onload = () => {
-        resetTransform();
+        panX = 0;
+        panY = 0;
+        zoom = 1.0;
         draw();
       };
     }
@@ -320,7 +292,7 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
       draw();
     }
 
-    // Native iOS Multi-Touch Gesture Engine
+    // Touch Engine
     let touchStartX = 0;
     let touchStartY = 0;
     let initialPinchDist = 0;
@@ -330,7 +302,6 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
     canvas.addEventListener('touchstart', (e) => {
       e.preventDefault();
 
-      // Double Tap Reset Detection
       const now = Date.now();
       if (now - lastTap < 300) {
         resetTransform();
@@ -374,7 +345,6 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
       }
     });
 
-    // Substrate Selection
     productChips.forEach((chip) => {
       chip.addEventListener('click', () => {
         productChips.forEach((c) => {
@@ -394,13 +364,11 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
       });
     });
 
-    // Zoom Controls
     zoomInBtn.addEventListener('click', () => setZoom(zoom + 0.15));
     zoomOutBtn.addEventListener('click', () => setZoom(zoom - 0.15));
-    resetFitBtn.addEventListener('click', resetTransform);
+    resetFitBtn.addEventListener('click', () => { panX = 0; panY = 0; zoom = 1.0; draw(); });
     zoomSlider.addEventListener('input', () => setZoom(parseFloat(zoomSlider.value)));
 
-    // Grid & Bleed Toggles
     gridToggleBtn.addEventListener('click', () => {
       showGrid = !showGrid;
       gridToggleBtn.textContent = showGrid ? 'Grid: ON' : 'Grid: OFF';
@@ -419,23 +387,10 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
       draw();
     });
 
-    // Watermark Selection
-    document.querySelectorAll('.wm-choice').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.wm-choice').forEach((b) => {
-          b.className = 'wm-choice p-3 border border-white/10 bg-[#080706] text-[#a89f91]';
-        });
-        btn.className = 'wm-choice active p-3 border border-[#c5a059] bg-[#c5a059]/20 text-[#dfb872]';
-        wmPosition = btn.getAttribute('data-wm') || 'none';
-        draw();
-      });
-    });
-
-    // Save Crop to Cloud KV
     approveBtn.addEventListener('click', async () => {
       const id = artworkSelect.value;
       approveBtn.disabled = true;
-      statusMsg.textContent = 'Saving crop to Cloud KV...';
+      statusMsg.textContent = 'Saving crop...';
       statusMsg.className = 'text-[11px] font-mono text-[#c5a059]';
 
       try {
@@ -446,19 +401,19 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
             id,
             product: currentProductName,
             crop: { panX, panY, zoom, ratio: currentRatio },
-            watermark: wmPosition,
+            watermark: 'none',
           }),
         });
 
         const data = await res.json();
         if (res.ok && data.success) {
-          statusMsg.textContent = `Saved to Cloud ✓ (${currentProductName})`;
+          statusMsg.textContent = `Saved ✓ (${currentProductName})`;
           statusMsg.className = 'text-[11px] font-mono text-[#c5a059] font-bold';
         } else {
           statusMsg.textContent = data.error || 'Save failed.';
           statusMsg.className = 'text-[11px] font-mono text-red-400';
         }
-      } catch (err) {
+      } catch {
         statusMsg.textContent = 'Network communication error.';
         statusMsg.className = 'text-[11px] font-mono text-red-400';
       } finally {
@@ -466,7 +421,6 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
       }
     });
 
-    // Export KV Crops to Downloadable JSON
     exportJsonBtn.addEventListener('click', async () => {
       try {
         const res = await fetch('/api/approve-merch');
