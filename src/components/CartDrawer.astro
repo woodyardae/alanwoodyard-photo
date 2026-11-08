@@ -198,36 +198,14 @@
     }
   });
 
-        // Direct Stripe Hosted Checkout Routing
-  const checkoutBtn = document.getElementById('checkoutBtn') as HTMLButtonElement;
-  checkoutBtn?.addEventListener('click', async () => {
+          // Direct On-Site Checkout Routing
+  const checkoutBtn = document.getElementById('checkoutBtn');
+  checkoutBtn?.addEventListener('click', () => {
     const items = $cartItems.get();
     if (!items || items.length === 0) return;
-
-    checkoutBtn.disabled = true;
-    const originalText = checkoutBtn.textContent;
-    checkoutBtn.textContent = 'Connecting to Secure Checkout...';
-
-    try {
-      const res = await fetch('/api/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items }),
-      });
-
-      const data = await res.json();
-      if (res.ok && data.url) {
-        window.location.href = data.url;
-      } else {
-        alert(data.error || 'Failed to initialize checkout.');
-        checkoutBtn.disabled = false;
-        checkoutBtn.textContent = originalText;
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Network error connecting to payment gateway.');
-      checkoutBtn.disabled = false;
-      checkoutBtn.textContent = originalText;
+    $isCartOpen.set(false);
+    if (window.location.pathname !== '/checkout') {
+      window.location.href = '/checkout';
     }
   });
 </script>

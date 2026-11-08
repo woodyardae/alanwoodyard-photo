@@ -1,0 +1,218 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+---
+
+<Layout title="Acquisition Checkout | Alan Woodyard Photography" theme="walnut">
+  <Header />
+
+  <main class="w-full max-w-7xl mx-auto px-6 lg:px-12 py-12 flex-1">
+    <div class="mb-8">
+      <a href="/artworks" class="inline-flex items-center gap-2 text-xs font-mono text-[var(--theme-text-muted)] hover:text-[var(--theme-accent)] transition-colors">
+        <span>&larr;</span>
+        <span class="tracking-widest uppercase text-[11px]">Return to Exhibition Gallery</span>
+      </a>
+    </div>
+
+    <!-- Empty State Container -->
+    <div id="emptyCheckout" class="hidden text-center py-20 font-mono text-xs text-[var(--theme-text-muted)] space-y-4">
+      <p>Your collector cart is currently empty.</p>
+      <a href="/artworks" class="inline-block px-6 py-2.5 border border-[var(--theme-accent)] text-[var(--theme-accent)] hover:bg-[var(--theme-accent)] hover:text-[var(--theme-bg)] transition-colors uppercase tracking-widest text-[11px]">
+        Explore Artworks &rarr;
+      </a>
+    </div>
+
+    <!-- Active Checkout Grid -->
+    <div id="activeCheckout" class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+      
+      <!-- Left Column: Acquisition Review -->
+      <section class="lg:col-span-5 space-y-8 font-sans">
+        <div>
+          <span class="text-[11px] font-mono text-[var(--theme-accent)] tracking-[0.25em] uppercase block mb-1">
+            Order Review
+          </span>
+          <h1 class="font-serif text-2xl lg:text-3xl tracking-wide text-[var(--theme-text)] font-light">
+            Purchase Summary
+          </h1>
+        </div>
+
+        <!-- Selected Pieces -->
+        <div id="checkoutItemsList" class="space-y-3 border-t border-[var(--theme-border)] pt-6"></div>
+
+        <!-- Lab Packaging & Shipping Note -->
+        <div id="checkoutShippingBreakdown" class="space-y-3 border-t border-[var(--theme-border)] pt-6 font-mono text-xs">
+          <span class="text-[10px] uppercase tracking-widest text-[var(--theme-accent)] block">
+            Fulfillment & Packaging
+          </span>
+          <div id="checkoutPackageCards" class="space-y-2"></div>
+        </div>
+
+        <!-- Pricing Totals -->
+        <div class="border-t border-[var(--theme-border)] pt-6 space-y-2 font-mono text-xs">
+          <div class="flex justify-between text-[var(--theme-text-muted)]">
+            <span>Prints & Substrates</span>
+            <span id="summarySubtotal" class="text-[var(--theme-text)] font-sans text-sm">$0.00</span>
+          </div>
+          <div class="flex justify-between text-[var(--theme-text-muted)]">
+            <span>Insured Art Freight</span>
+            <span id="summaryFreight" class="text-[var(--theme-accent)]">Included</span>
+          </div>
+          <div class="border-t border-[var(--theme-border)] pt-3 flex justify-between items-baseline">
+            <span class="font-serif text-sm tracking-wider uppercase text-[var(--theme-text)]">Total Acquisition</span>
+            <span id="summaryTotal" class="font-serif text-2xl text-[var(--theme-accent)]">$0.00</span>
+          </div>
+        </div>
+
+        <!-- Trust Badges -->
+        <div class="p-4 border border-[var(--theme-border)] bg-[var(--theme-surface)]/50 font-mono text-[11px] text-[var(--theme-text-muted)] space-y-1.5 leading-relaxed">
+          <p class="flex items-center gap-2 text-[var(--theme-text)] font-medium">
+            <span>🔒</span>
+            <span>256-Bit Encrypted Direct Checkout</span>
+          </p>
+          <p>&bull; All fine-art gicl&eacute;es inspected and hand-packed in rigid archival containers.</p>
+          <p>&bull; Insured carrier transit with live digital tracking provided at dispatch.</p>
+        </div>
+      </section>
+
+      <!-- Right Column: Integrated Stripe Embedded Checkout -->
+      <section class="lg:col-span-7 bg-[var(--theme-surface)] border border-[var(--theme-border)] p-6 lg:p-8 shadow-2xl relative min-h-[460px]">
+        <div id="paymentLoading" class="absolute inset-0 flex flex-col items-center justify-center font-mono text-xs text-[var(--theme-text-muted)] gap-3 bg-[var(--theme-surface)] z-10">
+          <div class="w-6 h-6 border-2 border-[var(--theme-accent)] border-t-transparent rounded-full animate-spin"></div>
+          <span>Mounting secure payment gateway...</span>
+        </div>
+
+        <!-- Real Stripe Embedded Checkout Mount Target -->
+        <div id="stripe-checkout" class="w-full"></div>
+
+        <!-- Fallback Sandbox Mode -->
+        <div id="simulatedPaymentPanel" class="hidden py-8 px-6 text-center space-y-6 font-mono">
+          <div class="inline-block p-3 rounded-full bg-[var(--theme-accent)]/10 text-[var(--theme-accent)] text-xl">
+            🛠️
+          </div>
+          <div>
+            <h2 class="text-sm font-bold uppercase tracking-wider text-[var(--theme-text)]">
+              Sandbox Test Environment Active
+            </h2>
+            <p class="text-xs text-[var(--theme-text-muted)] mt-2 max-w-md mx-auto leading-relaxed">
+              Stripe API is operating in local mock mode. You can test the acquisition pipeline without entering card details.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            id="mockAcquireBtn"
+            class="px-8 py-3.5 bg-[var(--theme-accent)] text-[var(--theme-bg)] hover:bg-[var(--theme-accent-hover)] font-mono text-xs uppercase tracking-widest font-bold transition-colors"
+          >
+            Complete Mock Acquisition &rarr;
+          </button>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</Layout>
+
+<script>
+  import { 
+    $cartItems, 
+    $cartSubtotal, 
+    $fulfillmentPackages, 
+    $totalShipping 
+  } from '../stores/cart';
+
+  const emptyContainer = document.getElementById('emptyCheckout')!;
+  const activeContainer = document.getElementById('activeCheckout')!;
+  const itemsList = document.getElementById('checkoutItemsList')!;
+  const packageCards = document.getElementById('checkoutPackageCards')!;
+  const summarySubtotal = document.getElementById('summarySubtotal')!;
+  const summaryFreight = document.getElementById('summaryFreight')!;
+  const summaryTotal = document.getElementById('summaryTotal')!;
+  const loading = document.getElementById('paymentLoading')!;
+  const simPanel = document.getElementById('simulatedPaymentPanel')!;
+  const mockBtn = document.getElementById('mockAcquireBtn')!;
+
+  async function init() {
+    const items = $cartItems.get();
+    if (!items || items.length === 0) {
+      emptyContainer.classList.remove('hidden');
+      activeContainer.classList.add('hidden');
+      return;
+    }
+
+    // 1. Render Order Review Summary
+    itemsList.innerHTML = items.map((item) => `
+      <div class="flex items-center gap-4 py-2">
+        <img src="${item.imageSrc}" alt="${item.artworkTitle}" class="w-14 h-14 object-cover border border-white/10" />
+        <div class="flex-1 min-w-0">
+          <h3 class="font-serif text-sm text-[var(--theme-text)] truncate">${item.artworkTitle}</h3>
+          <p class="text-[11px] font-mono text-[var(--theme-text-muted)]">${item.variantTitle}</p>
+          <p class="text-[11px] font-mono text-[var(--theme-accent)]">$${item.price.toFixed(2)} &times; ${item.quantity}</p>
+        </div>
+      </div>
+    `).join('');
+
+    const packages = $fulfillmentPackages.get();
+    packageCards.innerHTML = packages.map((pkg, idx) => `
+      <div class="p-2.5 border border-[var(--theme-border)] bg-[var(--theme-bg)] text-[11px]">
+        <div class="flex justify-between font-bold text-[var(--theme-text)]">
+          <span>Package ${idx + 1}: ${pkg.providerName}</span>
+          <span class="${pkg.estimatedShipping === 0 ? 'text-[var(--theme-accent)]' : ''}">
+            ${pkg.estimatedShipping === 0 ? 'Complimentary' : '$' + pkg.estimatedShipping.toFixed(2)}
+          </span>
+        </div>
+        <p class="text-[10px] text-[var(--theme-text-muted)] mt-0.5">${pkg.packagingDescription}</p>
+      </div>
+    `).join('');
+
+    const subtotal = $cartSubtotal.get();
+    const freight = $totalShipping.get();
+    summarySubtotal.textContent = `$${subtotal.toFixed(2)}`;
+    summaryFreight.textContent = freight === 0 ? 'Included' : `$${freight.toFixed(2)}`;
+    summaryTotal.textContent = `$${(subtotal + freight).toFixed(2)}`;
+
+    // 2. Fetch Session from Backend
+    try {
+      const res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items }),
+      });
+
+      const data = await res.json();
+      loading.classList.add('hidden');
+
+      if (data.simulated) {
+        simPanel.classList.remove('hidden');
+        mockBtn.addEventListener('click', () => {
+          window.location.href = data.returnUrl;
+        });
+        return;
+      }
+
+      if (data.clientSecret && data.publishableKey) {
+        if (!(window as any).Stripe) {
+          await new Promise<void>((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://js.stripe.com/v3/';
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error('Failed to load Stripe.js'));
+            document.head.appendChild(script);
+          });
+        }
+
+        const stripe = (window as any).Stripe(data.publishableKey);
+        const checkout = await stripe.initEmbeddedCheckout({
+          clientSecret: data.clientSecret,
+        });
+
+        checkout.mount('#stripe-checkout');
+      } else {
+        throw new Error(data.error || 'Failed to initialize session');
+      }
+    } catch (err: any) {
+      loading.innerHTML = `<span class="text-red-400">Failed to mount checkout: ${err.message}</span>`;
+    }
+  }
+
+  init();
+</script>

@@ -1,0 +1,46 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+
+const sessionId = Astro.url.searchParams.get('session_id') || '';
+---
+
+<Layout title="Order Confirmed | Alan Woodyard Photography" theme="walnut">
+  <Header />
+
+  <main class="w-full max-w-4xl mx-auto px-6 py-20 flex-1 flex flex-col items-center justify-center text-center">
+    <div class="w-16 h-16 rounded-full border border-[var(--theme-accent)] flex items-center justify-center text-[var(--theme-accent)] text-2xl mb-6">
+      ✓
+    </div>
+
+    <span class="text-xs font-mono tracking-[0.25em] uppercase text-[var(--theme-accent)] mb-3 block">
+      Order Confirmed
+    </span>
+
+    <h1 class="font-serif text-3xl md:text-5xl text-[var(--theme-text)] font-light tracking-wide mb-6">
+      Thank You for Your Order
+    </h1>
+
+    <p class="text-sm font-sans text-[var(--theme-text-muted)] max-w-lg leading-relaxed mb-8">
+      We've received your order and are getting it prepared. You'll receive an email confirmation shortly, followed by tracking info as soon as your package ships.
+    </p>
+
+    {sessionId && (
+      <div class="p-4 border border-[var(--theme-border)] bg-[var(--theme-surface)] font-mono text-xs text-[var(--theme-text-muted)] mb-8">
+        Order Reference: <span class="text-[var(--theme-text)]">{sessionId}</span>
+      </div>
+    )}
+
+    <a 
+      href="/artworks" 
+      class="px-8 py-3.5 border border-[var(--theme-accent)] text-[var(--theme-accent)] hover:bg-[var(--theme-accent)] hover:text-[var(--theme-bg)] transition-colors font-mono text-xs uppercase tracking-widest font-semibold"
+    >
+      Continue Browsing
+    </a>
+  </main>
+</Layout>
+
+<script>
+  import { $cartItems } from '../stores/cart';
+  $cartItems.set([]);
+</script>

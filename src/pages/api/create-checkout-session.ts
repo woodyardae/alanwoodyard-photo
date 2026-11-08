@@ -31,17 +31,20 @@ export const POST: APIRoute = async (context) => {
       });
     }
 
-    // Access secrets via Cloudflare Workers module import, falling back to process.env
     const stripeKey =
       (env as any)?.STRIPE_SECRET_KEY ||
       (import.meta.env as any)?.STRIPE_SECRET_KEY ||
       process.env.STRIPE_SECRET_KEY;
 
+    const stripePublic =
+      (env as any)?.STRIPE_PUBLIC_KEY ||
+      (import.meta.env as any)?.STRIPE_PUBLIC_KEY ||
+      process.env.STRIPE_PUBLIC_KEY;
+
     if (!stripeKey || stripeKey.includes('placeholder')) {
-      console.warn('[CHECKOUT] Live Stripe key not bound. Returning simulated session.');
       return new Response(
         JSON.stringify({
-          url: '/order-confirmation?session_id=cs_test_simulated_' + Date.now(),
+          returnUrl: '/order-confirmation?session_id=cs_test_simulated_' + Date.now(),
           simulated: true,
         }),
         {
@@ -83,6 +86,7 @@ export const POST: APIRoute = async (context) => {
     const origin = new URL(request.url).origin;
 
     const session = await stripe.checkout.sessions.create({
+      ui_mode: 'embedded',
       payment_method_types: ['card'],
       mode: 'payment',
       line_items,
@@ -94,14 +98,20 @@ export const POST: APIRoute = async (context) => {
         item_count: items.length.toString(),
         source: 'alanwoodyard.photo',
       },
-      success_url: `${origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/artworks`,
+      return_url: `${origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`,
     });
 
-    return new Response(JSON.stringify({ url: session.url }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({
+        clientSecret: session.client_secret,
+        publishableKey: stripePublic,
+        simulated: false,
+      }),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   } catch (err: any) {
     console.error('[CHECKOUT ERROR]', err);
     return new Response(JSON.stringify({ error: err.message || 'Checkout session error' }), {
