@@ -1,0 +1,42 @@
+{
+    "id":  "img_0993",
+    "title":  "Rayburn Sunset",
+    "caption":  "",
+    "description":  "",
+    "mood":  "all",
+    "collections":  [
+
+                    ],
+    "master_file":  "assets/source-masters/IMG_0993.JPG",
+    "sha256":  "144dc446454341440fc34426cd164bbfc88ce87f6e772be646a1e606e260e400",
+    "version":  1,
+    "display":  {
+                    "watermark":  "default"
+                },
+    "capture":  {
+                    "date":  "EXIF",
+                    "location":  "",
+                    "camera":  "",
+                    "lens":  "",
+                    "settings":  {
+
+                                 },
+                    "native_dimensions":  {
+                                              "width":  19008,
+                                              "height":  12672
+                                          },
+                    "aspect_ratio":  "3:2"
+                },
+    "merch_approved":  [
+
+                       ],
+    "print_variants":  [
+                           {
+                               "sku":  "prodigi:rag-63x42",
+                               "substrate":  "Hahnemühle Photo Rag",
+                               "size":  "63x42",
+                               "price_cents":  18500
+                           }
+                       ],
+    "solo_display":  true
+}

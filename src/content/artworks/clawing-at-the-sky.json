@@ -1,0 +1,40 @@
+{
+  "id": "06-01k1imgrev-clawingatthesky",
+  "title": "Clawing at the Sky",
+  "caption": "",
+  "description": "",
+  "mood": "all",
+  "collections": [],
+  "master_file": "assets/source-masters/06-01K1ImgRev-ClawingatTheSky.jpg",
+  "sha256": "8e7ea72a4575b0eb51eb63b8d708c0f2df5adc4539b5330394183d02c98761f8",
+  "version": 1,
+  "display": {
+    "watermark": "default"
+  },
+  "capture": {
+    "date": "EXIF",
+    "location": "",
+    "camera": "Extracted from EXIF",
+    "lens": "",
+    "settings": {
+      "aperture": "",
+      "shutter_speed": "",
+      "iso": ""
+    },
+    "native_dimensions": {
+      "width": 2049,
+      "height": 3073
+    },
+    "aspect_ratio": "0.67:1"
+  },
+  "merch_approved": [],
+  "print_variants": [
+    {
+      "sku": "prodigi:rag-7x10",
+      "substrate": "hahnemuhle-photo-rag",
+      "size": "7x10",
+      "price_cents": 18500
+    }
+  ],
+  "solo_display": true
+}

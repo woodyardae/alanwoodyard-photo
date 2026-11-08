@@ -1,0 +1,36 @@
+{
+  "id": "bridgerowertriptych-3",
+  "title": "Bridge Rower Triptych 3",
+  "caption": "",
+  "description": "",
+  "mood": "all",
+  "collections": [],
+  "master_file": "assets/source-masters/BridgeRowerTriptych-3.tiff",
+  "sha256": "051a605c3d8867e0a1f92f827044da3d8ffbd9d754745af16d90329314ec48ca",
+  "version": 1,
+  "display": {
+    "watermark": "default"
+  },
+  "capture": {
+    "date": "2026-11-04",
+    "location": "",
+    "camera": "",
+    "lens": "",
+    "settings": {},
+    "native_dimensions": {
+      "width": 4610,
+      "height": 3688
+    },
+    "aspect_ratio": "5:4"
+  },
+  "merch_approved": [],
+  "print_variants": [
+    {
+      "sku": "prodigi:rag-15x12",
+      "substrate": "Hahnemühle Photo Rag",
+      "size": "15x12",
+      "price_cents": 18500
+    }
+  ],
+  "solo_display": false
+}

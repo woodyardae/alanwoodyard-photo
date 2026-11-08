@@ -1,0 +1,36 @@
+{
+  "id": "caged-heron",
+  "title": "Caged Heron",
+  "caption": "",
+  "description": "",
+  "mood": "all",
+  "collections": [],
+  "master_file": "assets/source-masters/Caged-Heron.jpg",
+  "sha256": "3f50db4375c5d1a788a05c5592798024783ea9cb95b74d2f02d7dda3fe28ed70",
+  "version": 1,
+  "display": {
+    "watermark": "default"
+  },
+  "capture": {
+    "date": "EXIF",
+    "location": "",
+    "camera": "",
+    "lens": "",
+    "settings": {},
+    "native_dimensions": {
+      "width": 12952,
+      "height": 7286
+    },
+    "aspect_ratio": "1.78:1"
+  },
+  "merch_approved": [],
+  "print_variants": [
+    {
+      "sku": "prodigi:rag-43x24",
+      "substrate": "Hahnemühle Photo Rag",
+      "size": "43x24",
+      "price_cents": 18500
+    }
+  ],
+  "solo_display": true
+}

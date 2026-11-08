@@ -1,0 +1,36 @@
+{
+  "id": "cloud-web",
+  "title": "Cloud Web",
+  "caption": "",
+  "description": "",
+  "mood": "all",
+  "collections": [],
+  "master_file": "assets/source-masters/Cloud-Web.jpg",
+  "sha256": "ca225db6d9b8ae027d9c7149597ec4b8e39a3576e6ec80e4b6813113b7081891",
+  "version": 1,
+  "display": {
+    "watermark": "default"
+  },
+  "capture": {
+    "date": "EXIF",
+    "location": "",
+    "camera": "",
+    "lens": "",
+    "settings": {},
+    "native_dimensions": {
+      "width": 3448,
+      "height": 2298
+    },
+    "aspect_ratio": "1.50:1"
+  },
+  "merch_approved": [],
+  "print_variants": [
+    {
+      "sku": "prodigi:rag-11x8",
+      "substrate": "Hahnemühle Photo Rag",
+      "size": "11x8",
+      "price_cents": 18500
+    }
+  ],
+  "solo_display": true
+}

@@ -1,0 +1,2 @@
+﻿# Cloudflare Edge Redirects / Subdomain mapping
+https://photo-garden.alanwoodyard.photo/* https://photo-garden.alanwoodyard.photo/photo-garden/:splat 200

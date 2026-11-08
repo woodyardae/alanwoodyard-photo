@@ -1,0 +1,554 @@
+﻿[
+    {
+        "id":  "awp-01",
+        "title":  "Offshore Chop \u0026 Heavy Rigging",
+        "location":  "Galveston Bay, TX",
+        "aspect_ratio":  "3:2",
+        "thumbnail":  "/assets/photos/thumbs/awp-01.webp",
+        "master_print_url":  "https://assets.alanwoodyard.photo/masters/awp-01.tif",
+        "variants":  [
+                         {
+                             "id":  "awp-01_rag_16x24",
+                             "title":  "16x24 Hahnemühle Photo Rag Fine Art Print",
+                             "category":  "fine_art",
+                             "supplier":  "prodigi",
+                             "supplier_sku":  "GLOBAL-FAP-16x24",
+                             "price_cents":  12500
+                         },
+                         {
+                             "id":  "awp-01_canvas_20x30",
+                             "title":  "20x30 Stretched Canvas Gallery Wrap (1.5in)",
+                             "category":  "wall_art",
+                             "supplier":  "prodigi",
+                             "supplier_sku":  "GLOBAL-CAN-20x30",
+                             "price_cents":  21000
+                         },
+                         {
+                             "id":  "awp-01_mug_15oz",
+                             "title":  "15oz Black Ceramic Waterfront Mug",
+                             "category":  "merch",
+                             "supplier":  "printify",
+                             "supplier_sku":  "printify-mug-15oz-blk",
+                             "supplier_blueprint_id":  482,
+                             "supplier_provider_id":  99,
+                             "price_cents":  2400
+                         },
+                         {
+                             "id":  "awp-01_tee_heavy",
+                             "title":  "Heavyweight Ringspun Cotton Tee",
+                             "category":  "apparel",
+                             "supplier":  "printify",
+                             "supplier_sku":  "printify-tee-heavy-navy",
+                             "supplier_blueprint_id":  12,
+                             "supplier_provider_id":  29,
+                             "price_cents":  3400
+                         }
+                     ]
+    },
+    {
+        "id":  "awp-02",
+        "title":  "Working Channel at Low Slack",
+        "location":  "Houston Ship Channel, TX",
+        "aspect_ratio":  "3:2",
+        "thumbnail":  "/assets/photos/thumbs/awp-02.webp",
+        "master_print_url":  "https://assets.alanwoodyard.photo/masters/awp-02.tif",
+        "variants":  [
+                         {
+                             "id":  "awp-02_rag_16x24",
+                             "title":  "16x24 Hahnemühle Photo Rag Fine Art Print",
+                             "category":  "fine_art",
+                             "supplier":  "prodigi",
+                             "supplier_sku":  "GLOBAL-FAP-16x24",
+                             "price_cents":  12500
+                         },
+                         {
+                             "id":  "awp-02_canvas_20x30",
+                             "title":  "20x30 Stretched Canvas Gallery Wrap (1.5in)",
+                             "category":  "wall_art",
+                             "supplier":  "prodigi",
+                             "supplier_sku":  "GLOBAL-CAN-20x30",
+                             "price_cents":  21000
+                         },
+                         {
+                             "id":  "awp-02_mug_15oz",
+                             "title":  "15oz Black Ceramic Waterfront Mug",
+                             "category":  "merch",
+                             "supplier":  "printify",
+                             "supplier_sku":  "printify-mug-15oz-blk",
+                             "supplier_blueprint_id":  482,
+                             "supplier_provider_id":  99,
+                             "price_cents":  2400
+                         },
+                         {
+                             "id":  "awp-02_tee_heavy",
+                             "title":  "Heavyweight Ringspun Cotton Tee",
+                             "category":  "apparel",
+                             "supplier":  "printify",
+                             "supplier_sku":  "printify-tee-heavy-navy",
+                             "supplier_blueprint_id":  12,
+                             "supplier_provider_id":  29,
+                             "price_cents":  3400
+                         }
+                     ]
+    },
+    {
+        "id":  "awp-03",
+        "title":  "Thermal Southerly on Clear Lake",
+        "location":  "Clear Lake, TX",
+        "aspect_ratio":  "3:2",
+        "thumbnail":  "/assets/photos/thumbs/awp-03.webp",
+        "master_print_url":  "https://assets.alanwoodyard.photo/masters/awp-03.tif",
+        "variants":  [
+                         {
+                             "id":  "awp-03_rag_16x24",
+                             "title":  "16x24 Hahnemühle Photo Rag Fine Art Print",
+                             "category":  "fine_art",
+                             "supplier":  "prodigi",
+                             "supplier_sku":  "GLOBAL-FAP-16x24",
+                             "price_cents":  12500
+                         },
+                         {
+                             "id":  "awp-03_canvas_20x30",
+                             "title":  "20x30 Stretched Canvas Gallery Wrap (1.5in)",
+                             "category":  "wall_art",
+                             "supplier":  "prodigi",
+                             "supplier_sku":  "GLOBAL-CAN-20x30",
+                             "price_cents":  21000
+                         },
+                         {
+                             "id":  "awp-03_mug_15oz",
+                             "title":  "15oz Black Ceramic Waterfront Mug",
+                             "category":  "merch",
+                             "supplier":  "printify",
+                             "supplier_sku":  "printify-mug-15oz-blk",
+                             "supplier_blueprint_id":  482,
+                             "supplier_provider_id":  99,
+                             "price_cents":  2400
+                         },
+                         {
+                             "id":  "awp-03_tee_heavy",
+                             "title":  "Heavyweight Ringspun Cotton Tee",
+                             "category":  "apparel",
+                             "supplier":  "printify",
+                             "supplier_sku":  "printify-tee-heavy-navy",
+                             "supplier_blueprint_id":  12,
+                             "supplier_provider_id":  29,
+                             "price_cents":  3400
+                         }
+                     ]
+    },
+    {
+        "id":  "awp-04",
+        "title":  "Squall Line Approaching Red Fish Island",
+        "location":  "Galveston Bay, TX",
+        "aspect_ratio":  "16:9",
+        "thumbnail":  "/assets/photos/thumbs/awp-04.webp",
+        "master_print_url":  "https://assets.alanwoodyard.photo/masters/awp-04.tif",
+        "variants":  [
+                         {
+                             "id":  "awp-04_rag_16x24",
+                             "title":  "16x24 Hahnemühle Photo Rag Fine Art Print",
+                             "category":  "fine_art",
+                             "supplier":  "prodigi",
+                             "supplier_sku":  "GLOBAL-FAP-16x24",
+                             "price_cents":  12500
+                         },
+                         {
+                             "id":  "awp-04_canvas_20x30",
+                             "title":  "20x30 Stretched Canvas Gallery Wrap (1.5in)",
+                             "category":  "wall_art",
+                             "supplier":  "prodigi",
+                             "supplier_sku":  "GLOBAL-CAN-20x30",
+                             "price_cents":  21000
+                         },
+                         {
+                             "id":  "awp-04_mug_15oz",
+                             "title":  "15oz Black Ceramic Waterfront Mug",
+                             "category":  "merch",
+                             "supplier":  "printify",
+                             "supplier_sku":  "printify-mug-15oz-blk",
+                             "supplier_blueprint_id":  482,
+                             "supplier_provider_id":  99,
+                             "price_cents":  2400
+                         },
+                         {
+                             "id":  "awp-04_tee_heavy",
+                             "title":  "Heavyweight Ringspun Cotton Tee",
+                             "category":  "apparel",
+                             "supplier":  "printify",
+                             "supplier_sku":  "printify-tee-heavy-navy",
+                             "supplier_blueprint_id":  12,
+                             "supplier_provider_id":  29,
+                             "price_cents":  3400
+                         }
+                     ]
+    },
+    {
+        "id":  "awp-05",
+        "title":  "Tug Bow Wave in Winter Mist",
+        "location":  "Bolivar Roads, TX",
+        "aspect_ratio":  "3:2",
+        "thumbnail":  "/assets/photos/thumbs/awp-05.webp",
+        "master_print_url":  "https://assets.alanwoodyard.photo/masters/awp-05.tif",
+        "variants":  [
+                         {
+                             "id":  "awp-05_rag_16x24",
+                             "title":  "16x24 Hahnemühle Photo Rag Fine Art Print",
+                             "category":  "fine_art",
+                             "supplier":  "prodigi",
+                             "supplier_sku":  "GLOBAL-FAP-16x24",
+                             "price_cents":  12500
+                         },
+                         {
+                             "id":  "awp-05_canvas_20x30",
+                             "title":  "20x30 Stretched Canvas Gallery Wrap (1.5in)",
+                             "category":  "wall_art",
+                             "supplier":  "prodigi",
+                             "supplier_sku":  "GLOBAL-CAN-20x30",
+                             "price_cents":  21000
+                         },
+                         {
+                             "id":  "awp-05_mug_15oz",
+                             "title":  "15oz Black Ceramic Waterfront Mug",
+                             "category":  "merch",
+                             "supplier":  "printify",
+                             "supplier_sku":  "printify-mug-15oz-blk",
+                             "supplier_blueprint_id":  482,
+                             "supplier_provider_id":  99,
+                             "price_cents":  2400
+                         },
+                         {
+                             "id":  "awp-05_tee_heavy",
+                             "title":  "Heavyweight Ringspun Cotton Tee",
+                             "category":  "apparel",
+                             "supplier":  "printify",
+                             "supplier_sku":  "printify-tee-heavy-navy",
+                             "supplier_blueprint_id":  12,
+                             "supplier_provider_id":  29,
+                             "price_cents":  3400
+                         }
+                     ]
+    },
+    {
+        "id":  "awp-06",
+        "title":  "Breeze Building Behind Kemah Flats",
+        "location":  "Kemah, TX",
+        "aspect_ratio":  "4:3",
+        "thumbnail":  "/assets/photos/thumbs/awp-06.webp",
+        "master_print_url":  "https://assets.alanwoodyard.photo/masters/awp-06.tif",
+        "variants":  [
+                         {
+                             "id":  "awp-06_rag_16x24",
+                             "title":  "16x24 Hahnemühle Photo Rag Fine Art Print",
+                             "category":  "fine_art",
+                             "supplier":  "prodigi",
+                             "supplier_sku":  "GLOBAL-FAP-16x24",
+                             "price_cents":  12500
+                         },
+                         {
+                             "id":  "awp-06_canvas_20x30",
+                             "title":  "20x30 Stretched Canvas Gallery Wrap (1.5in)",
+                             "category":  "wall_art",
+                             "supplier":  "prodigi",
+                             "supplier_sku":  "GLOBAL-CAN-20x30",
+                             "price_cents":  21000
+                         },
+                         {
+                             "id":  "awp-06_mug_15oz",
+                             "title":  "15oz Black Ceramic Waterfront Mug",
+                             "category":  "merch",
+                             "supplier":  "printify",
+                             "supplier_sku":  "printify-mug-15oz-blk",
+                             "supplier_blueprint_id":  482,
+                             "supplier_provider_id":  99,
+                             "price_cents":  2400
+                         },
+                         {
+                             "id":  "awp-06_tee_heavy",
+                             "title":  "Heavyweight Ringspun Cotton Tee",
+                             "category":  "apparel",
+                             "supplier":  "printify",
+                             "supplier_sku":  "printify-tee-heavy-navy",
+                             "supplier_blueprint_id":  12,
+                             "supplier_provider_id":  29,
+                             "price_cents":  3400
+                         }
+                     ]
+    },
+    {
+        "id":  "awp-07",
+        "title":  "Steel Hull Moored Off Pelican Island",
+        "location":  "Galveston Channel, TX",
+        "aspect_ratio":  "3:2",
+        "thumbnail":  "/assets/photos/thumbs/awp-07.webp",
+        "master_print_url":  "https://assets.alanwoodyard.photo/masters/awp-07.tif",
+        "variants":  [
+                         {
+                             "id":  "awp-07_rag_16x24",
+                             "title":  "16x24 Hahnemühle Photo Rag Fine Art Print",
+                             "category":  "fine_art",
+                             "supplier":  "prodigi",
+                             "supplier_sku":  "GLOBAL-FAP-16x24",
+                             "price_cents":  12500
+                         },
+                         {
+                             "id":  "awp-07_canvas_20x30",
+                             "title":  "20x30 Stretched Canvas Gallery Wrap (1.5in)",
+                             "category":  "wall_art",
+                             "supplier":  "prodigi",
+                             "supplier_sku":  "GLOBAL-CAN-20x30",
+                             "price_cents":  21000
+                         },
+                         {
+                             "id":  "awp-07_mug_15oz",
+                             "title":  "15oz Black Ceramic Waterfront Mug",
+                             "category":  "merch",
+                             "supplier":  "printify",
+                             "supplier_sku":  "printify-mug-15oz-blk",
+                             "supplier_blueprint_id":  482,
+                             "supplier_provider_id":  99,
+                             "price_cents":  2400
+                         },
+                         {
+                             "id":  "awp-07_tee_heavy",
+                             "title":  "Heavyweight Ringspun Cotton Tee",
+                             "category":  "apparel",
+                             "supplier":  "printify",
+                             "supplier_sku":  "printify-tee-heavy-navy",
+                             "supplier_blueprint_id":  12,
+                             "supplier_provider_id":  29,
+                             "price_cents":  3400
+                         }
+                     ]
+    },
+    {
+        "id":  "awp-08",
+        "title":  "High Fetch on the Outer Shoals",
+        "location":  "Gulf of Mexico",
+        "aspect_ratio":  "3:2",
+        "thumbnail":  "/assets/photos/thumbs/awp-08.webp",
+        "master_print_url":  "https://assets.alanwoodyard.photo/masters/awp-08.tif",
+        "variants":  [
+                         {
+                             "id":  "awp-08_rag_16x24",
+                             "title":  "16x24 Hahnemühle Photo Rag Fine Art Print",
+                             "category":  "fine_art",
+                             "supplier":  "prodigi",
+                             "supplier_sku":  "GLOBAL-FAP-16x24",
+                             "price_cents":  12500
+                         },
+                         {
+                             "id":  "awp-08_canvas_20x30",
+                             "title":  "20x30 Stretched Canvas Gallery Wrap (1.5in)",
+                             "category":  "wall_art",
+                             "supplier":  "prodigi",
+                             "supplier_sku":  "GLOBAL-CAN-20x30",
+                             "price_cents":  21000
+                         },
+                         {
+                             "id":  "awp-08_mug_15oz",
+                             "title":  "15oz Black Ceramic Waterfront Mug",
+                             "category":  "merch",
+                             "supplier":  "printify",
+                             "supplier_sku":  "printify-mug-15oz-blk",
+                             "supplier_blueprint_id":  482,
+                             "supplier_provider_id":  99,
+                             "price_cents":  2400
+                         },
+                         {
+                             "id":  "awp-08_tee_heavy",
+                             "title":  "Heavyweight Ringspun Cotton Tee",
+                             "category":  "apparel",
+                             "supplier":  "printify",
+                             "supplier_sku":  "printify-tee-heavy-navy",
+                             "supplier_blueprint_id":  12,
+                             "supplier_provider_id":  29,
+                             "price_cents":  3400
+                         }
+                     ]
+    },
+    {
+        "id":  "awp-09",
+        "title":  "Morning Ebb at the Dike",
+        "location":  "Texas City Dike, TX",
+        "aspect_ratio":  "16:9",
+        "thumbnail":  "/assets/photos/thumbs/awp-09.webp",
+        "master_print_url":  "https://assets.alanwoodyard.photo/masters/awp-09.tif",
+        "variants":  [
+                         {
+                             "id":  "awp-09_rag_16x24",
+                             "title":  "16x24 Hahnemühle Photo Rag Fine Art Print",
+                             "category":  "fine_art",
+                             "supplier":  "prodigi",
+                             "supplier_sku":  "GLOBAL-FAP-16x24",
+                             "price_cents":  12500
+                         },
+                         {
+                             "id":  "awp-09_canvas_20x30",
+                             "title":  "20x30 Stretched Canvas Gallery Wrap (1.5in)",
+                             "category":  "wall_art",
+                             "supplier":  "prodigi",
+                             "supplier_sku":  "GLOBAL-CAN-20x30",
+                             "price_cents":  21000
+                         },
+                         {
+                             "id":  "awp-09_mug_15oz",
+                             "title":  "15oz Black Ceramic Waterfront Mug",
+                             "category":  "merch",
+                             "supplier":  "printify",
+                             "supplier_sku":  "printify-mug-15oz-blk",
+                             "supplier_blueprint_id":  482,
+                             "supplier_provider_id":  99,
+                             "price_cents":  2400
+                         },
+                         {
+                             "id":  "awp-09_tee_heavy",
+                             "title":  "Heavyweight Ringspun Cotton Tee",
+                             "category":  "apparel",
+                             "supplier":  "printify",
+                             "supplier_sku":  "printify-tee-heavy-navy",
+                             "supplier_blueprint_id":  12,
+                             "supplier_provider_id":  29,
+                             "price_cents":  3400
+                         }
+                     ]
+    },
+    {
+        "id":  "awp-10",
+        "title":  "Deck Under Heel: Offshore Reach",
+        "location":  "Offshore Texas Coast",
+        "aspect_ratio":  "3:2",
+        "thumbnail":  "/assets/photos/thumbs/awp-10.webp",
+        "master_print_url":  "https://assets.alanwoodyard.photo/masters/awp-10.tif",
+        "variants":  [
+                         {
+                             "id":  "awp-10_rag_16x24",
+                             "title":  "16x24 Hahnemühle Photo Rag Fine Art Print",
+                             "category":  "fine_art",
+                             "supplier":  "prodigi",
+                             "supplier_sku":  "GLOBAL-FAP-16x24",
+                             "price_cents":  12500
+                         },
+                         {
+                             "id":  "awp-10_canvas_20x30",
+                             "title":  "20x30 Stretched Canvas Gallery Wrap (1.5in)",
+                             "category":  "wall_art",
+                             "supplier":  "prodigi",
+                             "supplier_sku":  "GLOBAL-CAN-20x30",
+                             "price_cents":  21000
+                         },
+                         {
+                             "id":  "awp-10_mug_15oz",
+                             "title":  "15oz Black Ceramic Waterfront Mug",
+                             "category":  "merch",
+                             "supplier":  "printify",
+                             "supplier_sku":  "printify-mug-15oz-blk",
+                             "supplier_blueprint_id":  482,
+                             "supplier_provider_id":  99,
+                             "price_cents":  2400
+                         },
+                         {
+                             "id":  "awp-10_tee_heavy",
+                             "title":  "Heavyweight Ringspun Cotton Tee",
+                             "category":  "apparel",
+                             "supplier":  "printify",
+                             "supplier_sku":  "printify-tee-heavy-navy",
+                             "supplier_blueprint_id":  12,
+                             "supplier_provider_id":  29,
+                             "price_cents":  3400
+                         }
+                     ]
+    },
+    {
+        "id":  "awp-11",
+        "title":  "Harbor Channel Tideland Silhouettes",
+        "location":  "Galveston Bay, TX",
+        "aspect_ratio":  "4:3",
+        "thumbnail":  "/assets/photos/thumbs/awp-11.webp",
+        "master_print_url":  "https://assets.alanwoodyard.photo/masters/awp-11.tif",
+        "variants":  [
+                         {
+                             "id":  "awp-11_rag_16x24",
+                             "title":  "16x24 Hahnemühle Photo Rag Fine Art Print",
+                             "category":  "fine_art",
+                             "supplier":  "prodigi",
+                             "supplier_sku":  "GLOBAL-FAP-16x24",
+                             "price_cents":  12500
+                         },
+                         {
+                             "id":  "awp-11_canvas_20x30",
+                             "title":  "20x30 Stretched Canvas Gallery Wrap (1.5in)",
+                             "category":  "wall_art",
+                             "supplier":  "prodigi",
+                             "supplier_sku":  "GLOBAL-CAN-20x30",
+                             "price_cents":  21000
+                         },
+                         {
+                             "id":  "awp-11_mug_15oz",
+                             "title":  "15oz Black Ceramic Waterfront Mug",
+                             "category":  "merch",
+                             "supplier":  "printify",
+                             "supplier_sku":  "printify-mug-15oz-blk",
+                             "supplier_blueprint_id":  482,
+                             "supplier_provider_id":  99,
+                             "price_cents":  2400
+                         },
+                         {
+                             "id":  "awp-11_tee_heavy",
+                             "title":  "Heavyweight Ringspun Cotton Tee",
+                             "category":  "apparel",
+                             "supplier":  "printify",
+                             "supplier_sku":  "printify-tee-heavy-navy",
+                             "supplier_blueprint_id":  12,
+                             "supplier_provider_id":  29,
+                             "price_cents":  3400
+                         }
+                     ]
+    },
+    {
+        "id":  "awp-12",
+        "title":  "Sunset Groundswell Beyond the Jetties",
+        "location":  "Galveston Jetties, TX",
+        "aspect_ratio":  "3:2",
+        "thumbnail":  "/assets/photos/thumbs/awp-12.webp",
+        "master_print_url":  "https://assets.alanwoodyard.photo/masters/awp-12.tif",
+        "variants":  [
+                         {
+                             "id":  "awp-12_rag_16x24",
+                             "title":  "16x24 Hahnemühle Photo Rag Fine Art Print",
+                             "category":  "fine_art",
+                             "supplier":  "prodigi",
+                             "supplier_sku":  "GLOBAL-FAP-16x24",
+                             "price_cents":  12500
+                         },
+                         {
+                             "id":  "awp-12_canvas_20x30",
+                             "title":  "20x30 Stretched Canvas Gallery Wrap (1.5in)",
+                             "category":  "wall_art",
+                             "supplier":  "prodigi",
+                             "supplier_sku":  "GLOBAL-CAN-20x30",
+                             "price_cents":  21000
+                         },
+                         {
+                             "id":  "awp-12_mug_15oz",
+                             "title":  "15oz Black Ceramic Waterfront Mug",
+                             "category":  "merch",
+                             "supplier":  "printify",
+                             "supplier_sku":  "printify-mug-15oz-blk",
+                             "supplier_blueprint_id":  482,
+                             "supplier_provider_id":  99,
+                             "price_cents":  2400
+                         },
+                         {
+                             "id":  "awp-12_tee_heavy",
+                             "title":  "Heavyweight Ringspun Cotton Tee",
+                             "category":  "apparel",
+                             "supplier":  "printify",
+                             "supplier_sku":  "printify-tee-heavy-navy",
+                             "supplier_blueprint_id":  12,
+                             "supplier_provider_id":  29,
+                             "price_cents":  3400
+                         }
+                     ]
+    }
+]

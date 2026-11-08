@@ -25,3 +25,10 @@ public/masters/*.tif
 public/masters/*.tiff
 .wrangler/
 .wrangler
+
+.dev.vars
+
+# Source photography masters
+assets/source-masters/
+*.tiff
+*.tif

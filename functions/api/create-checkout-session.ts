@@ -1,140 +1,100 @@
-/**
- * functions/api/create-checkout-session.ts
- *
- * Cloudflare Pages Function: Create Stripe Checkout Session
- * - Validates cart line items with server price authority
- * - Calculates discrete split-cart multi-package shipping fees
- * - Attaches multi-lab fulfillment metadata for webhook processing
- */
+import Stripe from 'stripe';
+import pricingMatrix from '../../src/content/pricing-matrix.json';
 
-import { validateCartItems } from '../../src/lib/security';
-import { calculateSplitCartShipping, type OrderItem, type PodLab } from '../../src/lib/fulfillment';
+interface CartLineItem {
+  id: string;
+  sku: string;
+  artworkTitle: string;
+  variantTitle: string;
+  price: number;
+  quantity: number;
+  provider: string;
+  packagingType: string;
+}
 
 interface Env {
-  STRIPE_SECRET_KEY?: string;
-  ALLOW_MOCK_CHECKOUT?: string;
+  STRIPE_SECRET_KEY: string;
+  CF_PAGES_URL?: string;
 }
 
 export async function onRequestPost(context: { request: Request; env: Env }) {
+  const { request, env } = context;
+
+  if (!env.STRIPE_SECRET_KEY) {
+    return new Response(JSON.stringify({ error: 'STRIPE_SECRET_KEY is not configured' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   try {
-    const { request, env } = context;
-    const requestUrl = new URL(request.url);
-    const origin = requestUrl.origin;
+    const body = await request.json() as { items: CartLineItem[]; customerEmail?: string };
+    const { items, customerEmail } = body;
 
-    const corsHeaders = {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*'
-    };
-
-    // 1. Parse cart payload
-    const body = (await request.json()) as { items?: unknown };
-    const rawItems = body.items;
-
-    // 2. Fetch authoritative catalog from local endpoint/asset
-    const catalogRes = await fetch(`${origin}/data/artworks.json`);
-    let catalog = [];
-    if (catalogRes.ok) {
-      catalog = await catalogRes.json();
-    } else {
-      // Fallback: If static JSON is being requested during SSG preview
-      console.warn('Could not load /data/artworks.json; checking catalog array');
-    }
-
-    // 3. Server-side validation of prices and variant SKUs
-    const validation = validateCartItems(rawItems, catalog);
-    if (!validation.valid) {
-      return new Response(JSON.stringify({ error: validation.error }), {
+    if (!items || items.length === 0) {
+      return new Response(JSON.stringify({ error: 'Cart is empty' }), {
         status: 400,
-        headers: corsHeaders
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    const validatedItems = validation.items;
-
-    // 4. Calculate split-cart multi-package shipping
-    const fulfillmentItems: OrderItem[] = validatedItems.map((v) => ({
-      id: v.variantSku,
-      sku: v.variantSku,
-      artworkId: v.artworkId,
-      artworkTitle: v.artworkTitle,
-      substrate: v.substrate as any,
-      size: v.size,
-      quantity: v.quantity,
-      unitPriceCents: v.unitAmountCents,
-      lab: v.lab as PodLab,
-      supplierSku: v.supplierSku,
-      printAssetUrl: `${origin}${v.previewImage}`
-    }));
-
-    const shippingResult = calculateSplitCartShipping(fulfillmentItems, 'US');
-
-    // 5. Handle mock or unconfigured Stripe
-    const STRIPE_SECRET_KEY = env.STRIPE_SECRET_KEY;
-    if (!STRIPE_SECRET_KEY || STRIPE_SECRET_KEY.includes('placeholder')) {
-      const mockSessionId = `cs_mock_awp_${Date.now()}`;
-      return new Response(
-        JSON.stringify({
-          url: `${origin}/#checkout-success?session_id=${mockSessionId}`,
-          sessionId: mockSessionId,
-          mock: true,
-          splitCartShipping: shippingResult
-        }),
-        { status: 200, headers: corsHeaders }
-      );
-    }
-
-    // 6. Construct Stripe Checkout Session Form Parameters
-    const stripeParams = new URLSearchParams();
-    stripeParams.append('payment_method_types[0]', 'card');
-    stripeParams.append('mode', 'payment');
-    stripeParams.append('success_url', `${origin}/#checkout-success?session_id={CHECKOUT_SESSION_ID}`);
-    stripeParams.append('cancel_url', `${origin}/#checkout-cancel`);
-    stripeParams.append('shipping_address_collection[allowed_countries][0]', 'US');
-    stripeParams.append('shipping_address_collection[allowed_countries][1]', 'CA');
-
-    // Line items
-    validatedItems.forEach((item, index) => {
-      stripeParams.append(`line_items[${index}][price_data][currency]`, 'usd');
-      stripeParams.append(`line_items[${index}][price_data][product_data][name]`, `${item.artworkTitle} — ${item.substrateName} (${item.size})`);
-      stripeParams.append(`line_items[${index}][price_data][product_data][images][0]`, `${origin}${item.previewImage}`);
-      stripeParams.append(`line_items[${index}][price_data][unit_amount]`, String(item.unitAmountCents));
-      stripeParams.append(`line_items[${index}][quantity]`, String(item.quantity));
+    const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
+      apiVersion: '2024-12-18.acacia' as any,
     });
 
-    // Add shipping options based on split-cart calculations
-    stripeParams.append('shipping_options[0][shipping_rate_data][type]', 'fixed_amount');
-    stripeParams.append('shipping_options[0][shipping_rate_data][fixed_amount][amount]', String(shippingResult.totalShippingCents));
-    stripeParams.append('shipping_options[0][shipping_rate_data][fixed_amount][currency]', 'usd');
-    stripeParams.append('shipping_options[0][shipping_rate_data][display_name]', shippingResult.isMultiVendor ? `Split-Facility Shipping (${shippingResult.vendorCount} Specialized Labs)` : 'Fine-Art Archival Parcel');
+    const matrix = pricingMatrix as Record<string, { retailPrice: number; name: string }>;
 
-    const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${STRIPE_SECRET_KEY}`,
-        'Content-Type': 'application/x-www-form-urlencoded'
+    // Validate prices against authoritative pricing-matrix.json
+    const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map((item) => {
+      const canonical = matrix[item.sku];
+      // If SKU is recognized in matrix, use canonical price; otherwise clamp to submitted price if it's secondary merch
+      const unitAmountCents = canonical 
+        ? Math.round(canonical.retailPrice * 100)
+        : Math.round(item.price * 100);
+
+      return {
+        price_data: {
+          currency: 'usd',
+          unit_amount: unitAmountCents,
+          product_data: {
+            name: `${item.artworkTitle} — ${item.variantTitle}`,
+            metadata: {
+              sku: item.sku,
+              provider: item.provider,
+              packagingType: item.packagingType,
+            },
+          },
+        },
+        quantity: Math.max(1, Math.min(item.quantity, 10)),
+      };
+    });
+
+    const origin = new URL(request.url).origin;
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'payment',
+      line_items,
+      customer_email: customerEmail || undefined,
+      shipping_address_collection: {
+        allowed_countries: ['US', 'CA', 'GB', 'AU', 'DE', 'FR', 'NL', 'DK', 'SE', 'NO', 'CH'],
       },
-      body: stripeParams.toString()
+      metadata: {
+        item_count: items.length.toString(),
+        source: 'alanwoodyard.photo',
+      },
+      success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/checkout/cancel`,
     });
 
-    if (!res.ok) {
-      const err = await res.text();
-      throw new Error(`Stripe API error HTTP ${res.status}: ${err}`);
-    }
-
-    const session = (await res.json()) as { url: string; id: string };
-    return new Response(
-      JSON.stringify({
-        url: session.url,
-        sessionId: session.id,
-        splitCartShipping: shippingResult
-      }),
-      { status: 200, headers: corsHeaders }
-    );
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Checkout session creation failed.';
-    return new Response(JSON.stringify({ error: message }), {
+    return new Response(JSON.stringify({ url: session.url }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (err: any) {
+    return new Response(JSON.stringify({ error: err.message || 'Checkout session error' }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+      headers: { 'Content-Type': 'application/json' },
     });
   }
 }

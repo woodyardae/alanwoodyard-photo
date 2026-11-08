@@ -1,0 +1,525 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const artworks = await getCollection('artworks');
+
+const products = [
+  { id: 'deskmat', name: 'Studio Panoramic Desk Mat', w: 31.5, h: 15.5, note: 'Printify 16:7 ultrawide desk pad' },
+  { id: 'displate', name: 'Displate Steel Poster', w: 20, h: 29, note: 'Displate rigid steel plate (20:29)' },
+  { id: 'canvas-wrap', name: 'Canvas Gallery Wrap', w: 30, h: 20, note: 'Prodigi 1.5" pine bar wrap (3:2)' },
+  { id: 'acrylic-block', name: 'Acrylic Display Block', w: 8, h: 8, note: 'Gooten 1:1 optical acrylic cube' },
+  { id: 'apparel-tee', name: 'Heavyweight Studio Tee', w: 12, h: 16, note: 'Printful DTG chest print (3:4)' },
+  { id: 'ceramic-mug', name: 'Ceramic Waterfront Mug', w: 8.5, h: 3.5, note: 'Printify full wrap mug' },
+];
+---
+
+<Layout title="Merch Framing Studio | Alan Woodyard" theme="walnut">
+  <div class="min-h-screen bg-[#0a0908] text-[#f7f4ee] flex flex-col font-sans">
+    <header class="border-b border-white/[0.08] bg-[#141210] px-8 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <a href="/" class="text-xs font-mono text-[#8e8577] hover:text-[#dfb872] transition-colors">&larr; Storefront</a>
+        <span class="text-white/[0.2]">/</span>
+        <h1 class="text-xs uppercase tracking-[0.22em] text-[#dfb872] font-mono font-medium">
+          Studio Merch & Framing Desk
+        </h1>
+        <span class="text-[10px] font-mono bg-[#1f1d1a] px-2 py-0.5 border border-white/[0.08] text-[#8e8577]">
+          Private Operator View
+        </span>
+      </div>
+      <div class="text-[11px] font-mono text-[#8e8577]">
+        {artworks.length} Plates Ingested
+      </div>
+    </header>
+
+    <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
+      <!-- Left: Canvas Workspace -->
+      <div class="lg:col-span-8 p-8 flex flex-col items-center justify-center bg-[#070605] border-r border-white/[0.08] select-none">
+        <div id="coverageBanner" class="w-full max-w-[760px] mb-4 p-3 border font-mono text-xs flex items-center justify-between transition-colors bg-emerald-950/40 border-emerald-500/40 text-emerald-300">
+          <div class="flex items-center gap-2">
+            <span id="coverageIcon">✓</span>
+            <span id="coverageText">Full Bleed: Image covers 100% of physical print area</span>
+          </div>
+          <span id="coverageSub" class="text-[10px] opacity-75">Zero void margins &bull; Ready for approval</span>
+        </div>
+
+        <div class="relative shadow-[0_20px_50px_rgba(0,0,0,0.85)] border border-white/20">
+          <canvas id="cropCanvas" class="cursor-grab active:cursor-grabbing block"></canvas>
+        </div>
+
+        <p class="mt-4 text-[11px] font-mono text-[#8e8577]">
+          Drag to pan composition &bull; Clean unwatermarked master preview
+        </p>
+      </div>
+
+      <!-- Right: Precision Controls -->
+      <div class="lg:col-span-4 p-8 bg-[#141210] flex flex-col justify-between overflow-y-auto space-y-6">
+        <div class="space-y-6">
+          <div>
+            <label class="block text-[11px] font-mono uppercase tracking-wider text-[#a89f91] mb-2">
+              1. Select Photographic Plate
+            </label>
+            <select id="artworkSelect" class="w-full bg-[#0a0908] border border-white/[0.12] text-[#f7f4ee] px-3 py-2.5 text-xs font-mono focus:border-[#c5a059] focus:outline-none">
+              {artworks.map((art) => (
+                <option value={art.id}>{art.data.title} ({art.data.capture?.aspect_ratio || '3:2'})</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-mono uppercase tracking-wider text-[#a89f91] mb-2">
+              2. Target Physical Product
+            </label>
+            <select id="productSelect" class="w-full bg-[#0a0908] border border-white/[0.12] text-[#f7f4ee] px-3 py-2.5 text-xs font-mono focus:border-[#c5a059] focus:outline-none">
+              {products.map((p) => (
+                <option value={p.id} data-w={p.w} data-h={p.h}>{p.name} ({p.w}:{p.h})</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-mono uppercase tracking-wider text-[#a89f91] mb-2">
+              3. Orientation
+            </label>
+            <div class="flex gap-2">
+              <button type="button" id="orientationPortrait" class="flex-1 py-2 px-3 text-xs font-mono border border-[#c5a059]/40 bg-[#1f1d1a] text-[#dfb872]">
+                Portrait
+              </button>
+              <button type="button" id="orientationLandscape" class="flex-1 py-2 px-3 text-xs font-mono border border-white/[0.1] bg-[#0a0908] text-[#8e8577]">
+                Landscape
+              </button>
+            </div>
+          </div>
+
+          <!-- Zoom & Fit Controls -->
+          <div class="border-t border-white/[0.08] pt-5 space-y-3">
+            <div class="flex items-center justify-between">
+              <label class="text-[11px] font-mono uppercase tracking-wider text-[#a89f91]">
+                4. Zoom Scale
+              </label>
+
+              <!-- Number Box with External Buttons -->
+              <div class="flex items-center">
+                <input
+                  type="number"
+                  id="zoomInput"
+                  min="0.10"
+                  max="5.00"
+                  step="0.05"
+                  value="1.00"
+                  class="w-16 px-2 py-1 text-xs font-mono bg-[#0a0908] border border-white/20 text-[#dfb872] text-right focus:border-[#c5a059] focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <div class="flex flex-col border-y border-r border-white/20 bg-[#0a0908]">
+                  <button
+                    type="button"
+                    id="btnZoomUp"
+                    class="px-1.5 py-0.5 text-[8px] font-mono text-[#a89f91] hover:text-[#dfb872] hover:bg-[#1f1d1a] leading-none border-b border-white/10 select-none"
+                    title="Nudge Zoom Up (+0.05)"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    type="button"
+                    id="btnZoomDown"
+                    class="px-1.5 py-0.5 text-[8px] font-mono text-[#a89f91] hover:text-[#dfb872] hover:bg-[#1f1d1a] leading-none select-none"
+                    title="Nudge Zoom Down (-0.05)"
+                  >
+                    ▼
+                  </button>
+                </div>
+                <span class="ml-1.5 text-xs font-mono text-[#8e8577]">x</span>
+              </div>
+            </div>
+
+            <input
+              type="range"
+              id="zoomSlider"
+              min="0.20"
+              max="3.00"
+              step="0.01"
+              value="1.00"
+              class="w-full accent-[#c5a059] bg-[#0a0908] cursor-pointer"
+            />
+
+            <div class="grid grid-cols-3 gap-2 pt-1">
+              <button type="button" id="btnFitWidth" class="py-1.5 px-2 text-[11px] font-mono border border-white/10 bg-[#0a0908] text-[#dfb872] hover:border-[#c5a059]/60 hover:bg-[#1a1815] transition-colors">
+                Fit Width
+              </button>
+              <button type="button" id="btnFitHeight" class="py-1.5 px-2 text-[11px] font-mono border border-white/10 bg-[#0a0908] text-[#dfb872] hover:border-[#c5a059]/60 hover:bg-[#1a1815] transition-colors">
+                Fit Height
+              </button>
+              <button type="button" id="btnFillBleed" class="py-1.5 px-2 text-[11px] font-mono border border-white/10 bg-[#0a0908] text-[#dfb872] hover:border-[#c5a059]/60 hover:bg-[#1a1815] transition-colors">
+                Cover Bleed
+              </button>
+            </div>
+          </div>
+
+          <!-- Centering Controls -->
+          <div class="border-t border-white/[0.08] pt-5 space-y-3">
+            <label class="block text-[11px] font-mono uppercase tracking-wider text-[#a89f91]">
+              5. Re-Centering
+            </label>
+            <div class="grid grid-cols-3 gap-2">
+              <button type="button" id="btnCenterX" class="py-1.5 px-2 text-[11px] font-mono border border-white/10 bg-[#0a0908] text-[#a89f91] hover:text-[#f7f4ee] hover:border-[#c5a059]/60 hover:bg-[#1a1815] transition-colors">
+                Center H
+              </button>
+              <button type="button" id="btnCenterY" class="py-1.5 px-2 text-[11px] font-mono border border-white/10 bg-[#0a0908] text-[#a89f91] hover:text-[#f7f4ee] hover:border-[#c5a059]/60 hover:bg-[#1a1815] transition-colors">
+                Center V
+              </button>
+              <button type="button" id="btnCenterAll" class="py-1.5 px-2 text-[11px] font-mono border border-white/10 bg-[#0a0908] text-[#a89f91] hover:text-[#f7f4ee] hover:border-[#c5a059]/60 hover:bg-[#1a1815] transition-colors">
+                Center All
+              </button>
+            </div>
+          </div>
+
+          <!-- Framing Guides -->
+          <div class="border-t border-white/[0.08] pt-5 space-y-2">
+            <label class="block text-[11px] font-mono uppercase tracking-wider text-[#a89f91]">
+              6. Framing Guides
+            </label>
+            <label class="flex items-center gap-2 text-xs font-mono text-[#8e8577] cursor-pointer">
+              <input type="checkbox" id="gridToggle" class="accent-[#c5a059]" checked />
+              <span>Thirds Guide (Dashed Gold)</span>
+            </label>
+            <label class="flex items-center gap-2 text-xs font-mono text-[#8e8577] cursor-pointer">
+              <input type="checkbox" id="bleedToggle" class="accent-[#c5a059]" checked />
+              <span>5% Bleed Hazard Zone</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Approval Action -->
+        <div class="border-t border-white/[0.08] pt-6 space-y-3">
+          <button
+            type="button"
+            id="approveBtn"
+            class="w-full py-3 px-4 text-xs font-mono tracking-wider uppercase border border-[#c5a059] bg-[#c5a059] text-[#0a0908] hover:bg-[#dfb872] transition-colors font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Approve Framing & Enable Product &rarr;
+          </button>
+          <div id="statusMsg" class="text-xs font-mono text-center text-[#8e8577] h-4"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('cropCanvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const artworkSelect = document.getElementById('artworkSelect') as HTMLSelectElement;
+    const productSelect = document.getElementById('productSelect') as HTMLSelectElement;
+    const orientationPortrait = document.getElementById('orientationPortrait') as HTMLButtonElement;
+    const orientationLandscape = document.getElementById('orientationLandscape') as HTMLButtonElement;
+
+    const zoomSlider = document.getElementById('zoomSlider') as HTMLInputElement;
+    const zoomInput = document.getElementById('zoomInput') as HTMLInputElement;
+    const btnZoomUp = document.getElementById('btnZoomUp') as HTMLButtonElement;
+    const btnZoomDown = document.getElementById('btnZoomDown') as HTMLButtonElement;
+
+    const btnFitWidth = document.getElementById('btnFitWidth') as HTMLButtonElement;
+    const btnFitHeight = document.getElementById('btnFitHeight') as HTMLButtonElement;
+    const btnFillBleed = document.getElementById('btnFillBleed') as HTMLButtonElement;
+
+    const btnCenterX = document.getElementById('btnCenterX') as HTMLButtonElement;
+    const btnCenterY = document.getElementById('btnCenterY') as HTMLButtonElement;
+    const btnCenterAll = document.getElementById('btnCenterAll') as HTMLButtonElement;
+
+    const gridToggle = document.getElementById('gridToggle') as HTMLInputElement;
+    const bleedToggle = document.getElementById('bleedToggle') as HTMLInputElement;
+    const approveBtn = document.getElementById('approveBtn') as HTMLButtonElement;
+    const statusMsg = document.getElementById('statusMsg') as HTMLElement;
+
+    const coverageBanner = document.getElementById('coverageBanner') as HTMLElement;
+    const coverageIcon = document.getElementById('coverageIcon') as HTMLElement;
+    const coverageText = document.getElementById('coverageText') as HTMLElement;
+    const coverageSub = document.getElementById('coverageSub') as HTMLElement;
+
+    let img = new Image();
+    let panX = 0;
+    let panY = 0;
+    let zoom = 1.0;
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let currentOrientation: 'portrait' | 'landscape' = 'portrait';
+
+    function getTargetRatio(): number {
+      const opt = productSelect.selectedOptions[0];
+      const baseW = parseFloat(opt.dataset.w || '1');
+      const baseH = parseFloat(opt.dataset.h || '1');
+      const minDim = Math.min(baseW, baseH);
+      const maxDim = Math.max(baseW, baseH);
+      return currentOrientation === 'portrait' ? (minDim / maxDim) : (maxDim / minDim);
+    }
+
+    function setOrientation(orientation: 'portrait' | 'landscape') {
+      currentOrientation = orientation;
+      if (orientation === 'portrait') {
+        orientationPortrait.className = 'flex-1 py-2 px-3 text-xs font-mono border border-[#c5a059]/40 bg-[#1f1d1a] text-[#dfb872]';
+        orientationLandscape.className = 'flex-1 py-2 px-3 text-xs font-mono border border-white/[0.1] bg-[#0a0908] text-[#8e8577]';
+      } else {
+        orientationLandscape.className = 'flex-1 py-2 px-3 text-xs font-mono border border-[#c5a059]/40 bg-[#1f1d1a] text-[#dfb872]';
+        orientationPortrait.className = 'flex-1 py-2 px-3 text-xs font-mono border border-white/[0.1] bg-[#0a0908] text-[#8e8577]';
+      }
+      panX = 0;
+      panY = 0;
+      draw();
+    }
+
+    function updateZoom(val: number) {
+      zoom = Math.max(0.1, Math.min(5.0, val));
+      zoomSlider.value = zoom.toFixed(2);
+      zoomInput.value = zoom.toFixed(2);
+      draw();
+    }
+
+    function fitToWidth() {
+      if (!img.complete || !img.naturalWidth) return;
+      const ratio = getTargetRatio();
+      const srcRatio = img.naturalWidth / img.naturalHeight;
+      const targetZoom = srcRatio > ratio ? (ratio / srcRatio) : 1.0;
+      panX = 0;
+      updateZoom(targetZoom);
+    }
+
+    function fitToHeight() {
+      if (!img.complete || !img.naturalWidth) return;
+      const ratio = getTargetRatio();
+      const srcRatio = img.naturalWidth / img.naturalHeight;
+      const targetZoom = srcRatio > ratio ? 1.0 : (srcRatio / ratio);
+      panY = 0;
+      updateZoom(targetZoom);
+    }
+
+    function fillBleed() {
+      panX = 0;
+      panY = 0;
+      updateZoom(1.0);
+    }
+
+    function drawCheckerboard(w: number, h: number) {
+      const size = 16;
+      for (let x = 0; x < w; x += size) {
+        for (let y = 0; y < h; y += size) {
+          ctx.fillStyle = ((x / size + y / size) % 2 === 0) ? '#181512' : '#0e0c0a';
+          ctx.fillRect(x, y, size, size);
+        }
+      }
+    }
+
+    function drawHighContrastLine(x1: number, y1: number, x2: number, y2: number) {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.85)';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([6, 6]);
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(223, 184, 114, 0.95)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function draw() {
+      if (!img.complete || !img.naturalWidth) return;
+
+      const ratio = getTargetRatio();
+      const maxW = 760;
+      const maxH = 560;
+
+      let targetW = maxW;
+      let targetH = targetW / ratio;
+      if (targetH > maxH) {
+        targetH = maxH;
+        targetW = targetH * ratio;
+      }
+
+      canvas.width = targetW;
+      canvas.height = targetH;
+
+      drawCheckerboard(targetW, targetH);
+
+      const srcRatio = img.naturalWidth / img.naturalHeight;
+      let drawW: number;
+      let drawH: number;
+
+      if (srcRatio > ratio) {
+        drawH = targetH * zoom;
+        drawW = drawH * srcRatio;
+      } else {
+        drawW = targetW * zoom;
+        drawH = drawW / srcRatio;
+      }
+
+      const drawX = (targetW - drawW) / 2 + panX;
+      const drawY = (targetH - drawH) / 2 + panY;
+
+      ctx.drawImage(img, drawX, drawY, drawW, drawH);
+
+      const leftGap = drawX > 0.5;
+      const topGap = drawY > 0.5;
+      const rightGap = (drawX + drawW) < (targetW - 0.5);
+      const bottomGap = (drawY + drawH) < (targetH - 0.5);
+      const hasVoid = leftGap || topGap || rightGap || bottomGap;
+
+      if (hasVoid) {
+        coverageBanner.className = 'w-full max-w-[760px] mb-4 p-3 border font-mono text-xs flex items-center justify-between transition-colors bg-red-950/60 border-red-500/60 text-red-200 animate-pulse';
+        coverageIcon.textContent = '⚠️';
+        coverageText.textContent = 'UNCOVERED BORDER DETECTED: Print will have blank canvas margins';
+        coverageSub.textContent = 'Use "Cover Bleed" or zoom in and pan to eliminate voids';
+        approveBtn.disabled = true;
+      } else {
+        coverageBanner.className = 'w-full max-w-[760px] mb-4 p-3 border font-mono text-xs flex items-center justify-between transition-colors bg-emerald-950/40 border-emerald-500/40 text-emerald-300';
+        coverageIcon.textContent = '✓';
+        coverageText.textContent = 'Full Bleed: Image covers 100% of physical print area';
+        coverageSub.textContent = 'Zero void margins • Ready for approval';
+        approveBtn.disabled = false;
+      }
+
+      if (gridToggle.checked) {
+        drawHighContrastLine(targetW / 3, 0, targetW / 3, targetH);
+        drawHighContrastLine((targetW * 2) / 3, 0, (targetW * 2) / 3, targetH);
+        drawHighContrastLine(0, targetH / 3, targetW, targetH / 3);
+        drawHighContrastLine(0, (targetH * 2) / 3, targetW, (targetH * 2) / 3);
+      }
+
+      if (bleedToggle.checked) {
+        const inset = Math.round(Math.min(targetW, targetH) * 0.05);
+        ctx.save();
+        ctx.fillStyle = 'rgba(217, 119, 6, 0.22)';
+        ctx.fillRect(0, 0, targetW, inset);
+        ctx.fillRect(0, targetH - inset, targetW, inset);
+        ctx.fillRect(0, inset, inset, targetH - inset * 2);
+        ctx.fillRect(targetW - inset, inset, inset, targetH - inset * 2);
+
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.9)';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([8, 6]);
+        ctx.strokeRect(inset, inset, targetW - inset * 2, targetH - inset * 2);
+
+        ctx.strokeStyle = 'rgba(245, 158, 11, 0.95)';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(inset, inset, targetW - inset * 2, targetH - inset * 2);
+        ctx.restore();
+      }
+    }
+
+    function switchPhoto() {
+      const id = artworkSelect.value;
+      const cleanSrc = `/images/artworks/clean/${id}.webp`;
+      const fallbackSrc = `/images/artworks/${id}.webp`;
+
+      img = new Image();
+      img.onload = () => {
+        panX = 0;
+        panY = 0;
+        updateZoom(1.0);
+        if (img.naturalWidth > img.naturalHeight) {
+          setOrientation('landscape');
+        } else {
+          setOrientation('portrait');
+        }
+      };
+
+      // Try clean master first, fall back if not generated
+      img.onerror = () => {
+        if (img.src.includes('/clean/')) {
+          img.src = fallbackSrc;
+        }
+      };
+
+      img.src = cleanSrc;
+    }
+
+    btnFitWidth.addEventListener('click', fitToWidth);
+    btnFitHeight.addEventListener('click', fitToHeight);
+    btnFillBleed.addEventListener('click', fillBleed);
+
+    btnCenterX.addEventListener('click', () => { panX = 0; draw(); });
+    btnCenterY.addEventListener('click', () => { panY = 0; draw(); });
+    btnCenterAll.addEventListener('click', () => { panX = 0; panY = 0; draw(); });
+
+    btnZoomUp.addEventListener('click', () => updateZoom(zoom + 0.05));
+    btnZoomDown.addEventListener('click', () => updateZoom(zoom - 0.05));
+
+    zoomSlider.addEventListener('input', () => updateZoom(parseFloat(zoomSlider.value)));
+    zoomInput.addEventListener('input', () => {
+      const v = parseFloat(zoomInput.value);
+      if (!isNaN(v) && v > 0) updateZoom(v);
+    });
+
+    artworkSelect.addEventListener('change', switchPhoto);
+    productSelect.addEventListener('change', () => { panX = 0; panY = 0; draw(); });
+    orientationPortrait.addEventListener('click', () => setOrientation('portrait'));
+    orientationLandscape.addEventListener('click', () => setOrientation('landscape'));
+    gridToggle.addEventListener('change', draw);
+    bleedToggle.addEventListener('change', draw);
+
+    canvas.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      startX = e.clientX - panX;
+      startY = e.clientY - panY;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      panX = e.clientX - startX;
+      panY = e.clientY - startY;
+      draw();
+    });
+
+    window.addEventListener('mouseup', () => { isDragging = false; });
+
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? 0.05 : -0.05;
+      updateZoom(zoom + delta);
+    }, { passive: false });
+
+    approveBtn.addEventListener('click', async () => {
+      const id = artworkSelect.value;
+      const baseProduct = productSelect.options[productSelect.selectedIndex].text.split(' (')[0];
+      const productLabel = `${baseProduct} (${currentOrientation})`;
+
+      approveBtn.disabled = true;
+      statusMsg.textContent = 'Saving crop...';
+
+      try {
+        const res = await fetch('/api/approve-merch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id,
+            product: productLabel,
+            crop: {
+              panX,
+              panY,
+              zoom,
+              ratio: getTargetRatio(),
+              orientation: currentOrientation,
+            },
+            watermark: 'none',
+          }),
+        });
+
+        if (res.ok) {
+          statusMsg.textContent = `✓ Approved: ${productLabel}`;
+          statusMsg.className = 'text-xs font-mono text-center text-[#c5a059]';
+        } else {
+          statusMsg.textContent = 'Save failed.';
+          statusMsg.className = 'text-xs font-mono text-center text-red-400';
+        }
+      } catch (err) {
+        statusMsg.textContent = 'Network error.';
+        statusMsg.className = 'text-xs font-mono text-center text-red-400';
+      } finally {
+        approveBtn.disabled = false;
+      }
+    });
+
+    switchPhoto();
+  </script>
+</Layout>

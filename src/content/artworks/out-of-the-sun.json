@@ -1,0 +1,36 @@
+{
+  "id": "out-of-the-sun",
+  "title": "Out Of The Sun",
+  "caption": "",
+  "description": "",
+  "mood": "all",
+  "collections": [],
+  "master_file": "assets/source-masters/Out-of-the-Sun.jpg",
+  "sha256": "8d58f5d9f0b2d3541977b107aeed0e7c8ea698d21e3f83427156eeba720b2490",
+  "version": 1,
+  "display": {
+    "watermark": "default"
+  },
+  "capture": {
+    "date": "EXIF",
+    "location": "",
+    "camera": "",
+    "lens": "",
+    "settings": {},
+    "native_dimensions": {
+      "width": 15000,
+      "height": 10001
+    },
+    "aspect_ratio": "1.50:1"
+  },
+  "merch_approved": [],
+  "print_variants": [
+    {
+      "sku": "prodigi:rag-50x33",
+      "substrate": "Hahnemühle Photo Rag",
+      "size": "50x33",
+      "price_cents": 18500
+    }
+  ],
+  "solo_display": true
+}

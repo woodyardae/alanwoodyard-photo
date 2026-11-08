@@ -1,0 +1,40 @@
+{
+  "id": "a-dock-washout",
+  "title": "A Dock Washout",
+  "caption": "",
+  "description": "",
+  "mood": "all",
+  "collections": [],
+  "master_file": "assets/source-masters/A-Dock-Washout.JPEG",
+  "sha256": "78f6186c575948c05c9c5299fc25fc8097e708711f731293d023c3554712274f",
+  "version": 1,
+  "display": {
+    "watermark": "default"
+  },
+  "capture": {
+    "date": "EXIF",
+    "location": "",
+    "camera": "Extracted from EXIF",
+    "lens": "",
+    "settings": {
+      "aperture": "",
+      "shutter_speed": "",
+      "iso": ""
+    },
+    "native_dimensions": {
+      "width": 4702,
+      "height": 7054
+    },
+    "aspect_ratio": "0.67:1"
+  },
+  "merch_approved": [],
+  "print_variants": [
+    {
+      "sku": "prodigi:rag-16x24",
+      "substrate": "hahnemuhle-photo-rag",
+      "size": "16x24",
+      "price_cents": 18500
+    }
+  ],
+  "solo_display": true
+}

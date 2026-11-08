@@ -1,0 +1,40 @@
+{
+  "id": "a-dock-saturate",
+  "title": "A Dock Saturate",
+  "caption": "",
+  "description": "",
+  "mood": "all",
+  "collections": [],
+  "master_file": "assets/source-masters/A-Dock-Saturate.JPEG",
+  "sha256": "9412d37b113aa7be8babd6503214c9a0e6c8d4949c6d573cabd8a988c348f8fd",
+  "version": 1,
+  "display": {
+    "watermark": "default"
+  },
+  "capture": {
+    "date": "EXIF",
+    "location": "",
+    "camera": "Extracted from EXIF",
+    "lens": "",
+    "settings": {
+      "aperture": "",
+      "shutter_speed": "",
+      "iso": ""
+    },
+    "native_dimensions": {
+      "width": 4702,
+      "height": 7054
+    },
+    "aspect_ratio": "0.67:1"
+  },
+  "merch_approved": [],
+  "print_variants": [
+    {
+      "sku": "prodigi:rag-16x24",
+      "substrate": "hahnemuhle-photo-rag",
+      "size": "16x24",
+      "price_cents": 18500
+    }
+  ],
+  "solo_display": true
+}

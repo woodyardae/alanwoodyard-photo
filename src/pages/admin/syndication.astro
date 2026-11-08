@@ -1,0 +1,100 @@
+﻿---
+// src/pages/admin/syndication.astro
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const artworks = await getCollection('artworks');
+---
+
+<Layout title="Catalog Syndication Desk | Alan Woodyard">
+  <main class="w-full max-w-7xl mx-auto px-6 py-10 font-sans text-[#f7f4ee]">
+    <div class="mb-8 flex items-baseline justify-between border-b border-white/[0.1] pb-4">
+      <div>
+        <h1 class="text-xl font-serif tracking-wide text-[#f7f4ee]">Syndication Clipboard Desk</h1>
+        <p class="text-xs font-mono text-[#a89f91] mt-1">Copy-paste utility for manual Displate and Etsy uploads</p>
+      </div>
+      <a href="/" class="text-xs font-mono uppercase tracking-widest text-[#c5a059] hover:underline">&larr; Storefront</a>
+    </div>
+
+    <div class="space-y-6">
+      {artworks.map((art) => {
+        const itemSlug = art.id;
+        const previewUrl = `/images/artworks/${itemSlug}.webp`;
+        const tagString = art.data.tags?.join(', ') || 'fine art, photography, archival print, wall art, landscape';
+        const fullBlock = `${art.data.title}\n\n${art.data.caption}\n\n${art.data.description}\n\nCaptured at native ${art.data.capture?.aspect_ratio || '3:2'} aspect ratio (${art.data.capture?.native_dimensions?.width || ''}x${art.data.capture?.native_dimensions?.height || ''} px). Archival pigment ink on 308gsm Hahnemühle Photo Rag.`;
+
+        return (
+          <div class="bg-[#141210] border border-white/[0.08] p-5 flex flex-col md:flex-row gap-6 items-start">
+            <div class="w-full md:w-48 shrink-0 bg-[#0a0908] border border-white/[0.04] p-2 flex flex-col items-center">
+              <img src={previewUrl} alt={art.data.title} class="max-h-36 w-auto object-contain" />
+              <span class="text-[10px] font-mono text-[#8e8577] mt-2 block uppercase">{art.data.capture?.aspect_ratio || 'Native'}</span>
+            </div>
+
+            <div class="flex-1 space-y-3 w-full">
+              <div class="flex flex-wrap items-baseline justify-between gap-2">
+                <h2 class="font-serif text-lg text-[#f7f4ee]">{art.data.title}</h2>
+                <span class="text-xs font-mono text-[#8e8577]">{itemSlug}</span>
+              </div>
+
+              <!-- Master File Path -->
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] font-mono text-[#a89f91] w-24 shrink-0">Master File:</span>
+                <input type="text" readonly value={art.data.master_file || ''} class="text-xs font-mono bg-[#0a0908] border border-white/[0.08] px-2 py-1 flex-1 text-[#d4cdbf]" />
+                <button type="button" class="copy-btn text-xs font-mono bg-[#1f1d1a] border border-white/[0.1] px-2.5 py-1 text-[#c5a059] hover:bg-[#c5a059] hover:text-[#0a0908] transition-colors" data-copy={art.data.master_file || ''}>Copy Path</button>
+              </div>
+
+              <!-- Title Field -->
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] font-mono text-[#a89f91] w-24 shrink-0">Title:</span>
+                <input type="text" readonly value={art.data.title} class="text-xs font-mono bg-[#0a0908] border border-white/[0.08] px-2 py-1 flex-1 text-[#d4cdbf]" />
+                <button type="button" class="copy-btn text-xs font-mono bg-[#1f1d1a] border border-white/[0.1] px-2.5 py-1 text-[#c5a059] hover:bg-[#c5a059] hover:text-[#0a0908] transition-colors" data-copy={art.data.title}>Copy</button>
+              </div>
+
+              <!-- Caption -->
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] font-mono text-[#a89f91] w-24 shrink-0">Caption:</span>
+                <input type="text" readonly value={art.data.caption || ''} class="text-xs font-mono bg-[#0a0908] border border-white/[0.08] px-2 py-1 flex-1 text-[#d4cdbf]" />
+                <button type="button" class="copy-btn text-xs font-mono bg-[#1f1d1a] border border-white/[0.1] px-2.5 py-1 text-[#c5a059] hover:bg-[#c5a059] hover:text-[#0a0908] transition-colors" data-copy={art.data.caption || ''}>Copy</button>
+              </div>
+
+              <!-- Description -->
+              <div class="flex items-start gap-2">
+                <span class="text-[11px] font-mono text-[#a89f91] w-24 shrink-0 pt-1">Description:</span>
+                <textarea readonly rows="2" class="text-xs font-mono bg-[#0a0908] border border-white/[0.08] px-2 py-1 flex-1 text-[#d4cdbf] resize-none">{art.data.description || art.data.caption || art.data.title}</textarea>
+                <button type="button" class="copy-btn text-xs font-mono bg-[#1f1d1a] border border-white/[0.1] px-2.5 py-1 text-[#c5a059] hover:bg-[#c5a059] hover:text-[#0a0908] transition-colors" data-copy={art.data.description || art.data.caption || art.data.title}>Copy</button>
+              </div>
+
+              <!-- Tags for Displate/Etsy -->
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] font-mono text-[#a89f91] w-24 shrink-0">Tags (CSV):</span>
+                <input type="text" readonly value={tagString} class="text-xs font-mono bg-[#0a0908] border border-white/[0.08] px-2 py-1 flex-1 text-[#d4cdbf]" />
+                <button type="button" class="copy-btn text-xs font-mono bg-[#1f1d1a] border border-white/[0.1] px-2.5 py-1 text-[#c5a059] hover:bg-[#c5a059] hover:text-[#0a0908] transition-colors" data-copy={tagString}>Copy</button>
+              </div>
+
+              <!-- Full Bundle Copy -->
+              <div class="pt-2 flex justify-end">
+                <button type="button" class="copy-btn text-xs font-mono bg-[#2a241c] border border-[#c5a059]/40 px-3 py-1.5 text-[#dfb872] hover:bg-[#c5a059] hover:text-[#0a0908] transition-colors" data-copy={fullBlock}>
+                  Copy Complete Listing Block
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </main>
+
+  <script>
+    document.querySelectorAll('.copy-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const text = btn.getAttribute('data-copy');
+        if (text) {
+          await navigator.clipboard.writeText(text);
+          const original = btn.textContent;
+          btn.textContent = 'Copied!';
+          setTimeout(() => { btn.textContent = original; }, 1200);
+        }
+      });
+    });
+  </script>
+</Layout>

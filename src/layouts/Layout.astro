@@ -1,43 +1,98 @@
-﻿---
-// src/layouts/Layout.astro
-import '../styles/global.css';
+---
+import CartDrawer from '../components/CartDrawer.astro';
 
 interface Props {
-  title: string;
-  description?: string;
+  title?: string;
+  theme?: 'petrol' | 'walnut' | 'moss' | 'slate';
 }
 
 const { 
-  title, 
-  description = "Alan Woodyard Fine Art Photography. Limited edition archival giclée prints, direct metal, and optical acrylic float mounts." 
+  title = "Alan Woodyard | Photography", 
+  theme = "petrol" 
 } = Astro.props;
 ---
+
 <!doctype html>
-<html lang="en" class="scroll-smooth bg-[#0a0908]">
+<html lang="en" class="h-full">
   <head>
-    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+                                                            <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
-    <meta name="description" content={description} />
+    
+    
 
-    <!-- Google Web Fonts: Cormorant Garamond, Plus Jakarta Sans, JetBrains Mono -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link 
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=JetBrains+Mono:wght@300;400;500&family=Plus+Jakarta+Sans:wght@200;300;400;500;600&display=swap" 
-      rel="stylesheet" 
-    />
-
-    <!-- Umami Sovereign Telemetry -->
-    <script 
-      defer 
-      src="http://chantecler-01:3008/script.js" 
-      data-website-id="alanwoodyard-photo"
-    ></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=Italiana&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   </head>
-  <body class="bg-[#0e0c0a] text-[#f7f4ee] antialiased selection:bg-[#c5a059]/30 selection:text-[#f7f4ee] min-h-screen flex flex-col justify-between">
+
+  <body 
+    data-theme={theme} 
+    class="min-h-full flex flex-col bg-[var(--theme-bg)] text-[var(--theme-text)] selection:bg-[var(--theme-accent)] selection:text-[var(--theme-bg)] transition-colors duration-500 ease-out font-sans antialiased"
+  >
     <slot />
+    <CartDrawer />
   </body>
 </html>
+
+<style is:global>
+  :root {
+    --font-serif: 'Italiana', serif;
+    --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'Space Mono', monospace;
+  }
+
+  /* 1. Main Exhibition (Deep Petrol & Brass) */
+  body[data-theme="petrol"] {
+    --theme-bg: #091013;
+    background-image: radial-gradient(ellipse 80% 50% at 50% 0%, #111e24 0%, #070d0f 100%);
+    --theme-surface: #10191d;
+    --theme-surface-raised: #152227;
+    --theme-border: rgba(212, 163, 89, 0.15);
+    --theme-accent: #d4a359;
+    --theme-accent-hover: #e5b66d;
+    --theme-text: #f5efe6;
+    --theme-text-muted: #85989e;
+  }
+
+  /* 2. Collector Salon / Detail View (Velvety Espresso, Ambient Track Light & Brushed Bronze) */
+  body[data-theme="walnut"] {
+    --theme-bg: #0d0b0a;
+    background-image: radial-gradient(ellipse 75% 55% at 50% -5%, #241c18 0%, #0c0a09 100%);
+    background-attachment: fixed;
+    --theme-surface: rgba(22, 18, 16, 0.75);
+    --theme-surface-raised: #211b18;
+    --theme-border: rgba(255, 255, 255, 0.08);
+    --theme-accent: #d9a76a;
+    --theme-accent-hover: #e8bd84;
+    --theme-text: #f7f3ee;
+    --theme-text-muted: #9e948c;
+  }
+
+  /* 3. The Garden / Field Notes (Olive Moss & Sage) */
+  body[data-theme="moss"] {
+    --theme-bg: #0b0f0c;
+    background-image: radial-gradient(ellipse 80% 50% at 50% 0%, #151e18 0%, #080c09 100%);
+    --theme-surface: #121914;
+    --theme-surface-raised: #18221b;
+    --theme-border: rgba(143, 158, 122, 0.18);
+    --theme-accent: #8f9e7a;
+    --theme-accent-hover: #a1b08c;
+    --theme-text: #f3efe7;
+    --theme-text-muted: #85948a;
+  }
+
+  /* 4. Drafting Studio / Admin (Cast Iron & Technical Amber) */
+  body[data-theme="slate"] {
+    --theme-bg: #0f1012;
+    --theme-surface: #16181b;
+    --theme-surface-raised: #1e2024;
+    --theme-border: rgba(223, 155, 50, 0.18);
+    --theme-accent: #df9b32;
+    --theme-accent-hover: #f0ac43;
+    --theme-text: #ece8e1;
+    --theme-text-muted: #8a8e96;
+  }
+</style>

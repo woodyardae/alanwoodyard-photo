@@ -1,0 +1,1055 @@
+[
+  {
+    "file": "06-01K1ImgRev-ClawingatTheSky.jpg",
+    "dimensions": "2049x3073",
+    "aspect": "0.67",
+    "print300": "6.8\"x10.2\"",
+    "print240": "8.5\"x12.8\"",
+    "evaluations": {
+      "displate": {
+        "loss": 3,
+        "orientation": "Portrait",
+        "resOk": false
+      },
+      "print_2x3": {
+        "loss": 0,
+        "orientation": "Portrait",
+        "resOk": false
+      },
+      "frame_4x5": {
+        "loss": 17,
+        "orientation": "Portrait",
+        "resOk": false
+      },
+      "deskmat": {
+        "loss": 71,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "square": {
+        "loss": 33,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "wrap_pano": {
+        "loss": 67,
+        "orientation": "Landscape",
+        "resOk": false
+      }
+    }
+  },
+  {
+    "file": "07-01K1ImgRev-Vertigo.tiff",
+    "dimensions": "2801x2801",
+    "aspect": "1.00",
+    "print300": "9.3\"x9.3\"",
+    "print240": "11.7\"x11.7\"",
+    "evaluations": {
+      "displate": {
+        "loss": 31,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "print_2x3": {
+        "loss": 33,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "frame_4x5": {
+        "loss": 20,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "deskmat": {
+        "loss": 56,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "square": {
+        "loss": 0,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "wrap_pano": {
+        "loss": 50,
+        "orientation": "Landscape",
+        "resOk": false
+      }
+    }
+  },
+  {
+    "file": "08-01K1ImgRev-Path.tiff",
+    "dimensions": "2234x1489",
+    "aspect": "1.50",
+    "print300": "7.4\"x5.0\"",
+    "print240": "9.3\"x6.2\"",
+    "evaluations": {
+      "displate": {
+        "loss": 3,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "print_2x3": {
+        "loss": 0,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "frame_4x5": {
+        "loss": 17,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "deskmat": {
+        "loss": 34,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "square": {
+        "loss": 33,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "wrap_pano": {
+        "loss": 25,
+        "orientation": "Landscape",
+        "resOk": false
+      }
+    }
+  },
+  {
+    "file": "09-01K1ImgRev-MagentaArches.tiff",
+    "dimensions": "8823x4963",
+    "aspect": "1.78",
+    "print300": "29.4\"x16.5\"",
+    "print240": "36.8\"x20.7\"",
+    "evaluations": {
+      "displate": {
+        "loss": 18,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "print_2x3": {
+        "loss": 16,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "frame_4x5": {
+        "loss": 30,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "deskmat": {
+        "loss": 22,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "square": {
+        "loss": 44,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "wrap_pano": {
+        "loss": 11,
+        "orientation": "Landscape",
+        "resOk": true
+      }
+    }
+  },
+  {
+    "file": "10-01K1ImgRev-BuildingWave.tiff",
+    "dimensions": "5353x4015",
+    "aspect": "1.33",
+    "print300": "17.8\"x13.4\"",
+    "print240": "22.3\"x16.7\"",
+    "evaluations": {
+      "displate": {
+        "loss": 8,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "print_2x3": {
+        "loss": 11,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "frame_4x5": {
+        "loss": 6,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "deskmat": {
+        "loss": 42,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "square": {
+        "loss": 25,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "wrap_pano": {
+        "loss": 33,
+        "orientation": "Landscape",
+        "resOk": true
+      }
+    }
+  },
+  {
+    "file": "11-01K1ImgRev-MagentaBarreled.tiff",
+    "dimensions": "9495x6330",
+    "aspect": "1.50",
+    "print300": "31.6\"x21.1\"",
+    "print240": "39.6\"x26.4\"",
+    "evaluations": {
+      "displate": {
+        "loss": 3,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "print_2x3": {
+        "loss": 0,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "frame_4x5": {
+        "loss": 17,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "deskmat": {
+        "loss": 34,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "square": {
+        "loss": 33,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "wrap_pano": {
+        "loss": 25,
+        "orientation": "Landscape",
+        "resOk": true
+      }
+    }
+  },
+  {
+    "file": "12-01K1ImgRev-BlueBarreled.tiff",
+    "dimensions": "4032x3024",
+    "aspect": "1.33",
+    "print300": "13.4\"x10.1\"",
+    "print240": "16.8\"x12.6\"",
+    "evaluations": {
+      "displate": {
+        "loss": 8,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "print_2x3": {
+        "loss": 11,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "frame_4x5": {
+        "loss": 6,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "deskmat": {
+        "loss": 42,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "square": {
+        "loss": 25,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "wrap_pano": {
+        "loss": 33,
+        "orientation": "Landscape",
+        "resOk": false
+      }
+    }
+  },
+  {
+    "file": "13-01K1ImgRev-WhiteWings.tiff",
+    "dimensions": "8448x6336",
+    "aspect": "1.33",
+    "print300": "28.2\"x21.1\"",
+    "print240": "35.2\"x26.4\"",
+    "evaluations": {
+      "displate": {
+        "loss": 8,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "print_2x3": {
+        "loss": 11,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "frame_4x5": {
+        "loss": 6,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "deskmat": {
+        "loss": 42,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "square": {
+        "loss": 25,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "wrap_pano": {
+        "loss": 33,
+        "orientation": "Landscape",
+        "resOk": true
+      }
+    }
+  },
+  {
+    "file": "A-Dock-Mono.JPEG",
+    "dimensions": "4702x7054",
+    "aspect": "0.67",
+    "print300": "15.7\"x23.5\"",
+    "print240": "19.6\"x29.4\"",
+    "evaluations": {
+      "displate": {
+        "loss": 3,
+        "orientation": "Portrait",
+        "resOk": true
+      },
+      "print_2x3": {
+        "loss": 0,
+        "orientation": "Portrait",
+        "resOk": true
+      },
+      "frame_4x5": {
+        "loss": 17,
+        "orientation": "Portrait",
+        "resOk": true
+      },
+      "deskmat": {
+        "loss": 71,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "square": {
+        "loss": 33,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "wrap_pano": {
+        "loss": 67,
+        "orientation": "Landscape",
+        "resOk": false
+      }
+    }
+  },
+  {
+    "file": "A-Dock-Saturate.JPEG",
+    "dimensions": "4702x7054",
+    "aspect": "0.67",
+    "print300": "15.7\"x23.5\"",
+    "print240": "19.6\"x29.4\"",
+    "evaluations": {
+      "displate": {
+        "loss": 3,
+        "orientation": "Portrait",
+        "resOk": true
+      },
+      "print_2x3": {
+        "loss": 0,
+        "orientation": "Portrait",
+        "resOk": true
+      },
+      "frame_4x5": {
+        "loss": 17,
+        "orientation": "Portrait",
+        "resOk": true
+      },
+      "deskmat": {
+        "loss": 71,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "square": {
+        "loss": 33,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "wrap_pano": {
+        "loss": 67,
+        "orientation": "Landscape",
+        "resOk": false
+      }
+    }
+  },
+  {
+    "file": "A-Dock-Washout.JPEG",
+    "dimensions": "4702x7054",
+    "aspect": "0.67",
+    "print300": "15.7\"x23.5\"",
+    "print240": "19.6\"x29.4\"",
+    "evaluations": {
+      "displate": {
+        "loss": 3,
+        "orientation": "Portrait",
+        "resOk": true
+      },
+      "print_2x3": {
+        "loss": 0,
+        "orientation": "Portrait",
+        "resOk": true
+      },
+      "frame_4x5": {
+        "loss": 17,
+        "orientation": "Portrait",
+        "resOk": true
+      },
+      "deskmat": {
+        "loss": 71,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "square": {
+        "loss": 33,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "wrap_pano": {
+        "loss": 67,
+        "orientation": "Landscape",
+        "resOk": false
+      }
+    }
+  },
+  {
+    "file": "BridgeRowerTriptych-1.tiff",
+    "dimensions": "4743x3794",
+    "aspect": "1.25",
+    "print300": "15.8\"x12.6\"",
+    "print240": "19.8\"x15.8\"",
+    "evaluations": {
+      "displate": {
+        "loss": 14,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "print_2x3": {
+        "loss": 17,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "frame_4x5": {
+        "loss": 0,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "deskmat": {
+        "loss": 45,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "square": {
+        "loss": 20,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "wrap_pano": {
+        "loss": 37,
+        "orientation": "Landscape",
+        "resOk": false
+      }
+    }
+  },
+  {
+    "file": "BridgeRowerTriptych-2.tif",
+    "dimensions": "4244x3395",
+    "aspect": "1.25",
+    "print300": "14.1\"x11.3\"",
+    "print240": "17.7\"x14.1\"",
+    "evaluations": {
+      "displate": {
+        "loss": 14,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "print_2x3": {
+        "loss": 17,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "frame_4x5": {
+        "loss": 0,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "deskmat": {
+        "loss": 45,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "square": {
+        "loss": 20,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "wrap_pano": {
+        "loss": 37,
+        "orientation": "Landscape",
+        "resOk": false
+      }
+    }
+  },
+  {
+    "file": "BridgeRowerTriptych-3.tiff",
+    "dimensions": "4610x3688",
+    "aspect": "1.25",
+    "print300": "15.4\"x12.3\"",
+    "print240": "19.2\"x15.4\"",
+    "evaluations": {
+      "displate": {
+        "loss": 14,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "print_2x3": {
+        "loss": 17,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "frame_4x5": {
+        "loss": 0,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "deskmat": {
+        "loss": 45,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "square": {
+        "loss": 20,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "wrap_pano": {
+        "loss": 38,
+        "orientation": "Landscape",
+        "resOk": false
+      }
+    }
+  },
+  {
+    "file": "Caged-Heron.jpg",
+    "dimensions": "12952x7286",
+    "aspect": "1.78",
+    "print300": "43.2\"x24.3\"",
+    "print240": "54.0\"x30.4\"",
+    "evaluations": {
+      "displate": {
+        "loss": 18,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "print_2x3": {
+        "loss": 16,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "frame_4x5": {
+        "loss": 30,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "deskmat": {
+        "loss": 22,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "square": {
+        "loss": 44,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "wrap_pano": {
+        "loss": 11,
+        "orientation": "Landscape",
+        "resOk": true
+      }
+    }
+  },
+  {
+    "file": "Cloud-Web.jpg",
+    "dimensions": "3448x2298",
+    "aspect": "1.50",
+    "print300": "11.5\"x7.7\"",
+    "print240": "14.4\"x9.6\"",
+    "evaluations": {
+      "displate": {
+        "loss": 3,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "print_2x3": {
+        "loss": 0,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "frame_4x5": {
+        "loss": 17,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "deskmat": {
+        "loss": 34,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "square": {
+        "loss": 33,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "wrap_pano": {
+        "loss": 25,
+        "orientation": "Landscape",
+        "resOk": false
+      }
+    }
+  },
+  {
+    "file": "Cross-Bridge.jpg",
+    "dimensions": "14999x5837",
+    "aspect": "2.57",
+    "print300": "50.0\"x19.5\"",
+    "print240": "62.5\"x24.3\"",
+    "evaluations": {
+      "displate": {
+        "loss": 44,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "print_2x3": {
+        "loss": 42,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "frame_4x5": {
+        "loss": 51,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "deskmat": {
+        "loss": 11,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "square": {
+        "loss": 61,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "wrap_pano": {
+        "loss": 22,
+        "orientation": "Landscape",
+        "resOk": true
+      }
+    }
+  },
+  {
+    "file": "Cross-Lake-Bridge.JPEG",
+    "dimensions": "2048x806",
+    "aspect": "2.54",
+    "print300": "6.8\"x2.7\"",
+    "print240": "8.5\"x3.4\"",
+    "evaluations": {
+      "displate": {
+        "loss": 43,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "print_2x3": {
+        "loss": 41,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "frame_4x5": {
+        "loss": 51,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "deskmat": {
+        "loss": 10,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "square": {
+        "loss": 61,
+        "orientation": "Landscape",
+        "resOk": false
+      },
+      "wrap_pano": {
+        "loss": 21,
+        "orientation": "Landscape",
+        "resOk": false
+      }
+    }
+  },
+  {
+    "file": "Dock.jpg",
+    "dimensions": "14999x8437",
+    "aspect": "1.78",
+    "print300": "50.0\"x28.1\"",
+    "print240": "62.5\"x35.2\"",
+    "evaluations": {
+      "displate": {
+        "loss": 18,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "print_2x3": {
+        "loss": 16,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "frame_4x5": {
+        "loss": 30,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "deskmat": {
+        "loss": 22,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "square": {
+        "loss": 44,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "wrap_pano": {
+        "loss": 11,
+        "orientation": "Landscape",
+        "resOk": true
+      }
+    }
+  },
+  {
+    "file": "Golden-Pond.jpg",
+    "dimensions": "14999x9999",
+    "aspect": "1.50",
+    "print300": "50.0\"x33.3\"",
+    "print240": "62.5\"x41.7\"",
+    "evaluations": {
+      "displate": {
+        "loss": 3,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "print_2x3": {
+        "loss": 0,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "frame_4x5": {
+        "loss": 17,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "deskmat": {
+        "loss": 34,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "square": {
+        "loss": 33,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "wrap_pano": {
+        "loss": 25,
+        "orientation": "Landscape",
+        "resOk": true
+      }
+    }
+  },
+  {
+    "file": "Golden-Pond2.jpg",
+    "dimensions": "14999x9999",
+    "aspect": "1.50",
+    "print300": "50.0\"x33.3\"",
+    "print240": "62.5\"x41.7\"",
+    "evaluations": {
+      "displate": {
+        "loss": 3,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "print_2x3": {
+        "loss": 0,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "frame_4x5": {
+        "loss": 17,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "deskmat": {
+        "loss": 34,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "square": {
+        "loss": 33,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "wrap_pano": {
+        "loss": 25,
+        "orientation": "Landscape",
+        "resOk": true
+      }
+    }
+  },
+  {
+    "file": "Golden-Pond3.jpg",
+    "dimensions": "14999x9999",
+    "aspect": "1.50",
+    "print300": "50.0\"x33.3\"",
+    "print240": "62.5\"x41.7\"",
+    "evaluations": {
+      "displate": {
+        "loss": 3,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "print_2x3": {
+        "loss": 0,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "frame_4x5": {
+        "loss": 17,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "deskmat": {
+        "loss": 34,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "square": {
+        "loss": 33,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "wrap_pano": {
+        "loss": 25,
+        "orientation": "Landscape",
+        "resOk": true
+      }
+    }
+  },
+  {
+    "file": "IMG_0989.JPG",
+    "dimensions": "12672x19008",
+    "aspect": "0.67",
+    "print300": "42.2\"x63.4\"",
+    "print240": "52.8\"x79.2\"",
+    "evaluations": {
+      "displate": {
+        "loss": 3,
+        "orientation": "Portrait",
+        "resOk": true
+      },
+      "print_2x3": {
+        "loss": 0,
+        "orientation": "Portrait",
+        "resOk": true
+      },
+      "frame_4x5": {
+        "loss": 17,
+        "orientation": "Portrait",
+        "resOk": true
+      },
+      "deskmat": {
+        "loss": 71,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "square": {
+        "loss": 33,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "wrap_pano": {
+        "loss": 67,
+        "orientation": "Landscape",
+        "resOk": true
+      }
+    }
+  },
+  {
+    "file": "IMG_0993.JPG",
+    "dimensions": "19008x12672",
+    "aspect": "1.50",
+    "print300": "63.4\"x42.2\"",
+    "print240": "79.2\"x52.8\"",
+    "evaluations": {
+      "displate": {
+        "loss": 3,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "print_2x3": {
+        "loss": 0,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "frame_4x5": {
+        "loss": 17,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "deskmat": {
+        "loss": 34,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "square": {
+        "loss": 33,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "wrap_pano": {
+        "loss": 25,
+        "orientation": "Landscape",
+        "resOk": true
+      }
+    }
+  },
+  {
+    "file": "IMG_0994.JPG",
+    "dimensions": "19008x12672",
+    "aspect": "1.50",
+    "print300": "63.4\"x42.2\"",
+    "print240": "79.2\"x52.8\"",
+    "evaluations": {
+      "displate": {
+        "loss": 3,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "print_2x3": {
+        "loss": 0,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "frame_4x5": {
+        "loss": 17,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "deskmat": {
+        "loss": 34,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "square": {
+        "loss": 33,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "wrap_pano": {
+        "loss": 25,
+        "orientation": "Landscape",
+        "resOk": true
+      }
+    }
+  },
+  {
+    "file": "Moody-Dock.jpg",
+    "dimensions": "14999x9999",
+    "aspect": "1.50",
+    "print300": "50.0\"x33.3\"",
+    "print240": "62.5\"x41.7\"",
+    "evaluations": {
+      "displate": {
+        "loss": 3,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "print_2x3": {
+        "loss": 0,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "frame_4x5": {
+        "loss": 17,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "deskmat": {
+        "loss": 34,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "square": {
+        "loss": 33,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "wrap_pano": {
+        "loss": 25,
+        "orientation": "Landscape",
+        "resOk": true
+      }
+    }
+  },
+  {
+    "file": "Out-of-the-Sun.jpg",
+    "dimensions": "15000x10001",
+    "aspect": "1.50",
+    "print300": "50.0\"x33.3\"",
+    "print240": "62.5\"x41.7\"",
+    "evaluations": {
+      "displate": {
+        "loss": 3,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "print_2x3": {
+        "loss": 0,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "frame_4x5": {
+        "loss": 17,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "deskmat": {
+        "loss": 34,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "square": {
+        "loss": 33,
+        "orientation": "Landscape",
+        "resOk": true
+      },
+      "wrap_pano": {
+        "loss": 25,
+        "orientation": "Landscape",
+        "resOk": true
+      }
+    }
+  }
+]

@@ -1,0 +1,36 @@
+{
+  "id": "cross-lake-bridge",
+  "title": "Cross Lake Bridge",
+  "caption": "",
+  "description": "",
+  "mood": "all",
+  "collections": [],
+  "master_file": "assets/source-masters/Cross-Lake-Bridge.JPEG",
+  "sha256": "3cc9c13fd5875a867388e3434265d856616ceac5278eaeb73b1af5e302cc5f0a",
+  "version": 1,
+  "display": {
+    "watermark": "default"
+  },
+  "capture": {
+    "date": "EXIF",
+    "location": "",
+    "camera": "",
+    "lens": "",
+    "settings": {},
+    "native_dimensions": {
+      "width": 2048,
+      "height": 806
+    },
+    "aspect_ratio": "2.54:1"
+  },
+  "merch_approved": [],
+  "print_variants": [
+    {
+      "sku": "prodigi:rag-7x3",
+      "substrate": "Hahnemühle Photo Rag",
+      "size": "7x3",
+      "price_cents": 18500
+    }
+  ],
+  "solo_display": true
+}

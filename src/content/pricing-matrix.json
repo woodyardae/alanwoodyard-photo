@@ -1,0 +1,80 @@
+{
+  "GLOBAL-FAP-12x18": {
+    "sku": "GLOBAL-FAP-12x18",
+    "provider": "prodigi",
+    "size": "12x18\"",
+    "name": "Exhibition Folio Edition",
+    "wholesaleCost": 14,
+    "packagingAllowance": 4.5,
+    "estimatedFreight": 5.3,
+    "retailPrice": 125,
+    "currency": "USD",
+    "marginPct": 85.2,
+    "lastSyncedAt": "2026-11-05T21:27:20.320Z"
+  },
+  "GLOBAL-FAP-16x24": {
+    "sku": "GLOBAL-FAP-16x24",
+    "provider": "prodigi",
+    "size": "16x24\"",
+    "name": "Collector Salon Edition",
+    "wholesaleCost": 15,
+    "packagingAllowance": 5.5,
+    "estimatedFreight": 5.3,
+    "retailPrice": 195,
+    "currency": "USD",
+    "marginPct": 89.5,
+    "lastSyncedAt": "2026-11-05T21:27:20.324Z"
+  },
+  "GLOBAL-FAP-24x36": {
+    "sku": "GLOBAL-FAP-24x36",
+    "provider": "prodigi",
+    "size": "24x36\"",
+    "name": "Grand Master Edition",
+    "wholesaleCost": 22,
+    "packagingAllowance": 8,
+    "estimatedFreight": 5.3,
+    "retailPrice": 340,
+    "currency": "USD",
+    "marginPct": 91.2,
+    "lastSyncedAt": "2026-11-05T21:27:20.325Z"
+  },
+  "GLOBAL-CAN-20x30": {
+    "sku": "GLOBAL-CAN-20x30",
+    "provider": "prodigi",
+    "size": "20x30\"",
+    "name": "Gallery Stretched Canvas Wrap",
+    "wholesaleCost": 50,
+    "packagingAllowance": 12,
+    "estimatedFreight": 32.35,
+    "retailPrice": 210,
+    "currency": "USD",
+    "marginPct": 70.5,
+    "lastSyncedAt": "2026-11-05T21:27:20.325Z"
+  },
+  "GLOBAL-CFP-16x24": {
+    "sku": "GLOBAL-CFP-16x24",
+    "provider": "prodigi",
+    "size": "16x24\"",
+    "name": "Archival Framed Exhibition Print",
+    "wholesaleCost": 50,
+    "packagingAllowance": 18,
+    "estimatedFreight": 23.28,
+    "retailPrice": 385,
+    "currency": "USD",
+    "marginPct": 82.3,
+    "lastSyncedAt": "2026-11-05T21:27:20.325Z"
+  },
+  "GLOBAL-CFP-24x36": {
+    "sku": "GLOBAL-CFP-24x36",
+    "provider": "prodigi",
+    "size": "24x36\"",
+    "name": "Archival Framed Grand Master",
+    "wholesaleCost": 80,
+    "packagingAllowance": 28,
+    "estimatedFreight": 23.28,
+    "retailPrice": 650,
+    "currency": "USD",
+    "marginPct": 83.4,
+    "lastSyncedAt": "2026-11-05T21:27:20.325Z"
+  }
+}

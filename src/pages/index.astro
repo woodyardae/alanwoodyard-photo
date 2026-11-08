@@ -3,54 +3,72 @@
 import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import CollectionFilter from '../components/CollectionFilter.astro';
-import ArtworkCard from '../components/ArtworkCard.astro';
 import { getCollection } from 'astro:content';
 
-const artworks = await getCollection('artworks');
-const getSlug = (art: any) => art.data?.slug || art.slug || art.id.replace(/\.[^/.]+$/, '');
-const hero = artworks.length > 0 ? artworks[0] : null;
-const heroSlug = hero ? getSlug(hero) : '';
-const heroLoc = hero ? (typeof hero.data.capture?.location === 'object' ? hero.data.capture.location.name : hero.data.capture?.location) : '';
-const catalogItems = artworks.slice(1);
+const allArtworks = await getCollection('artworks');
+const artworks = allArtworks.filter((art) => art.data.solo_display !== false);
 ---
-<Layout title="Alan Woodyard">
+
+<Layout title="Alan Woodyard | Selected Works">
   <Header />
 
-  <!-- Hero Plate: Full-Bleed Horizon -->
-  {hero && (
-    <section class="w-full px-6 md:px-16 pt-8 pb-14 max-w-[1700px] mx-auto">
-      <a href={`/artwork/${heroSlug}`} class="block group">
-        <div class="w-full flex items-center justify-center bg-[#0a0908]">
-          <img 
-            src={`/images/artworks/${heroSlug}.webp`} 
-            alt={hero.data.title}
-            class="w-full max-h-[82vh] object-contain transition-transform duration-700 ease-out group-hover:scale-[1.008]"
-          />
-        </div>
-        <div class="mt-6 flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-2">
-          <div>
-            <h1 class="font-serif text-2xl md:text-4xl text-[#f7f4ee] font-light">{hero.data.title}</h1>
-            <p class="text-xs text-[#8e8577] mt-1 font-sans">{heroLoc}{heroLoc && ' — '}{new Date(hero.data.capture.date).getFullYear()}</p>
-          </div>
-          <div class="text-left sm:text-right">
-            <span class="text-xs font-mono text-[#c5a059] group-hover:text-[#dfb872] transition-colors">
-              View Details &rarr;
-            </span>
-          </div>
-        </div>
-      </a>
-    </section>
-  )}
+  <main class="w-full max-w-7xl mx-auto px-6 md:px-12 py-16">
+    <div class="mb-12 flex flex-wrap items-baseline justify-between border-b border-white/[0.08] pb-6 gap-4">
+      <h1 class="text-xs uppercase tracking-[0.28em] text-[#a89f91] font-mono">
+        Catalog Archive &mdash; {artworks.length} Works
+      </h1>
+      <span class="text-xs font-mono text-[#8e8577]">
+        Archival Pigment on Cotton Rag &amp; Selected Substrates
+      </span>
+    </div>
 
-  <CollectionFilter />
+    <div class="columns-1 md:columns-2 lg:columns-3 gap-8 [column-fill:_balance] space-y-8">
+      {artworks.map((art) => {
+        const itemSlug = art.id;
+        const previewUrl = `/images/artworks/${itemSlug}.webp`;
+        const startingPrice = art.data.print_variants?.[0]?.price_cents 
+          ? `$${Math.round(art.data.print_variants[0].price_cents / 100)}` 
+          : 'Inquire';
 
-  <!-- Exhibition Grid: Uniform 2-Column Balance -->
-  <main class="w-full max-w-[1700px] mx-auto px-6 md:px-16 py-16">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 lg:gap-x-20">
-      {catalogItems.map((art) => (
-        <ArtworkCard artwork={art} />
-      ))}
+        return (
+          <article class="break-inside-avoid group flex flex-col bg-[#141210]/60 border border-white/[0.06] p-4 transition-all duration-300 hover:border-[#c5a059]/50 hover:bg-[#141210]">
+            <a href={`/artwork/${itemSlug}`} class="block overflow-hidden bg-[#0a0908] flex items-center justify-center">
+              <img 
+                src={previewUrl} 
+                alt={art.data.title}
+                loading="lazy"
+                class="w-full h-auto object-contain transition-transform duration-500 group-hover:scale-[1.01]"
+              />
+            </a>
+            
+            <div class="mt-4 pt-3 border-t border-white/[0.04] flex items-baseline justify-between gap-4">
+              <div>
+                <h2 class="font-serif text-lg tracking-wide text-[#f7f4ee] group-hover:text-[#dfb872] transition-colors">
+                  <a href={`/artwork/${itemSlug}`}>
+                    {art.data.title}
+                  </a>
+                </h2>
+                {art.data.caption && (
+                  <p class="text-xs text-[#8e8577] mt-1 line-clamp-1 font-sans">
+                    {art.data.caption}
+                  </p>
+                )}
+                {art.data.capture?.aspect_ratio && (
+                  <p class="text-[11px] font-mono text-[#6e675d] mt-1 uppercase tracking-wider">
+                    Ratio {art.data.capture.aspect_ratio}
+                  </p>
+                )}
+              </div>
+
+              <div class="text-right shrink-0">
+                <span class="text-xs font-mono text-[#c5a059]">
+                  {startingPrice}
+                </span>
+              </div>
+            </div>
+          </article>
+        );
+      })}
     </div>
   </main>
 

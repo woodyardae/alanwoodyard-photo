@@ -1,0 +1,62 @@
+﻿---
+// src/pages/photo-garden/index.astro
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { getCollection } from 'astro:content';
+
+const notes = await getCollection('garden');
+
+const stageColors: Record<string, string> = {
+  sprout: 'text-emerald-400 border-emerald-400/30',
+  budding: 'text-[#c5a059] border-[#c5a059]/40',
+  evergreen: 'text-[#dfb872] border-[#dfb872]/60',
+};
+---
+
+<Layout title="Photo Garden | Alan Woodyard">
+  <Header />
+
+  <main class="w-full max-w-5xl mx-auto px-6 py-16">
+    <div class="mb-12 border-b border-white/[0.08] pb-6">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="text-xs font-mono uppercase tracking-[0.25em] text-[#c5a059]">Digital Garden &bull; photo-garden.alanwoodyard.photo</span>
+      </div>
+      <h1 class="font-serif text-3xl md:text-5xl text-[#f7f4ee] font-light tracking-wide">
+        Photo Garden
+      </h1>
+      <p class="text-xs font-mono text-[#a89f91] mt-3 leading-relaxed max-w-2xl">
+        Working field observations, sensor develop notes, and gradual culling studies from expeditions.
+      </p>
+    </div>
+
+    <div class="space-y-10">
+      {notes.map((note) => (
+        <article class="bg-[#141210]/60 border border-white/[0.06] p-6 hover:border-[#c5a059]/40 transition-colors">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+            <span class={`text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 border ${stageColors[note.data.stage] || 'text-[#8e8577]'}`}>
+              {note.data.stage}
+            </span>
+            <span class="text-xs font-mono text-[#8e8577]">{note.data.date} &bull; {note.data.location}</span>
+          </div>
+
+          <h2 class="font-serif text-2xl text-[#f7f4ee] mb-3">
+            {note.data.title}
+          </h2>
+
+          <p class="text-sm text-[#a89f91] font-sans leading-relaxed mb-4">
+            {note.data.summary}
+          </p>
+
+          <div class="flex flex-wrap gap-2 pt-2 border-t border-white/[0.04]">
+            {note.data.tags.map((t) => (
+              <span class="text-[11px] font-mono text-[#6e675d]">#{t}</span>
+            ))}
+          </div>
+        </article>
+      ))}
+    </div>
+  </main>
+
+  <Footer />
+</Layout>

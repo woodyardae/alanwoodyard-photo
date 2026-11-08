@@ -1,0 +1,56 @@
+{
+  "id": "a-dock-mono",
+  "title": "A Dock Mono",
+  "caption": "",
+  "description": "",
+  "mood": "all",
+  "collections": [],
+  "master_file": "assets/source-masters/A-Dock-Mono.JPEG",
+  "sha256": "44924aa486094315162fba70353a3db4b1346fa8b68c17d1bbb781cd7a600bd9",
+  "version": 1,
+  "display": {
+    "watermark": "default"
+  },
+  "capture": {
+    "date": "EXIF",
+    "location": "",
+    "camera": "Extracted from EXIF",
+    "lens": "",
+    "settings": {
+      "aperture": "",
+      "shutter_speed": "",
+      "iso": ""
+    },
+    "native_dimensions": {
+      "width": 4702,
+      "height": 7054
+    },
+    "aspect_ratio": "0.67:1"
+  },
+  "merch_approved": [
+    "Displate Steel Poster (portrait)"
+  ],
+  "print_variants": [
+    {
+      "sku": "prodigi:rag-16x24",
+      "substrate": "hahnemuhle-photo-rag",
+      "size": "16x24",
+      "price_cents": 18500
+    }
+  ],
+  "solo_display": true,
+  "merch_crops": {
+    "Displate Steel Poster (portrait)": {
+      "crop": {
+        "panX": 0,
+        "panY": 0,
+        "zoom": 1,
+        "ratio": 0.6896551724137931,
+        "orientation": "portrait",
+        "marginColor": "#0a0908"
+      },
+      "watermark": "br",
+      "approved_at": "2026-11-04T06:21:08.066Z"
+    }
+  }
+}

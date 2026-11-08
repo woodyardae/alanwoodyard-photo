@@ -1,403 +1,199 @@
 ---
-// src/components/CartDrawer.astro
 ---
 
-<!-- Slide-Over Cart Drawer -->
-<div id="cart-drawer-backdrop" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm transition-opacity duration-300 hidden opacity-0"></div>
+<div id="cartModal" class="fixed inset-0 z-50 pointer-events-none transition-opacity duration-300 opacity-0">
+  <!-- Backdrop -->
+  <div id="cartBackdrop" class="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity"></div>
 
-<aside
-  id="cart-drawer"
-  class="fixed top-0 right-0 z-50 h-full w-full max-w-md bg-[#0f1017] border-l border-[#23263b] shadow-2xl transition-transform duration-300 translate-x-full flex flex-col"
-  aria-label="Shopping Cart Drawer"
->
-  <!-- Drawer Header -->
-  <div class="flex items-center justify-between border-b border-[#222538] px-6 py-4 bg-[#141520]">
-    <div class="flex items-center space-x-2">
-      <svg class="h-5 w-5 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-      </svg>
-      <h2 class="text-base font-bold text-white tracking-wide">Collector Cart</h2>
-    </div>
-    <button
-      type="button"
-      id="close-cart-btn"
-      class="text-slate-400 hover:text-white p-1 rounded-md transition-colors"
-      aria-label="Close Cart Drawer"
-    >
-      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-      </svg>
-    </button>
-  </div>
-
-  <!-- Cart Items List -->
-  <div id="cart-items-container" class="flex-1 overflow-y-auto p-6 space-y-4">
-    <!-- Empty State -->
-    <div id="cart-empty-state" class="py-16 text-center">
-      <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#1b1d2a] text-slate-500 mb-4">
-        <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
+  <!-- Panel -->
+  <aside class="absolute top-0 right-0 h-full w-full max-w-lg bg-[var(--theme-surface)] border-l border-[var(--theme-border)] shadow-2xl flex flex-col font-sans text-[var(--theme-text)] pointer-events-auto transform translate-x-full transition-transform duration-300 ease-out" id="cartPanel">
+    <!-- Header -->
+    <div class="p-6 border-b border-[var(--theme-border)] flex items-center justify-between">
+      <div>
+        <h2 class="font-serif text-lg tracking-wider uppercase text-[var(--theme-text)]">Collector Cart</h2>
+        <p class="text-xs font-mono text-[var(--theme-text-muted)] mt-0.5" id="cartHeaderSubtitle">Direct Fulfillment Staging</p>
       </div>
-      <p class="text-sm font-medium text-slate-300">Your collection cart is empty.</p>
-      <p class="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
-        Select archival prints, aluminum panels, or acrylic float mounts from the gallery.
-      </p>
+      <button type="button" id="closeCartBtn" class="p-2 text-[var(--theme-text-muted)] hover:text-[var(--theme-accent)] font-mono text-sm">
+        &times; CLOSE
+      </button>
     </div>
 
-    <!-- Dynamic Cart Items injected by JS -->
-    <div id="cart-items-list" class="space-y-3 hidden"></div>
-  </div>
-
-  <!-- Split-Cart Shipping & Summary Footer -->
-  <div id="cart-footer" class="border-t border-[#222538] bg-[#12131c] p-6 space-y-4 hidden">
-    <!-- Split Cart Shipping Intelligence -->
-    <div id="split-shipping-breakdown" class="rounded-lg border border-[#23273d] bg-[#181a26] p-3 text-xs space-y-2">
-      <div class="flex items-center justify-between text-slate-300 font-medium">
-        <span class="flex items-center gap-1.5">
-          <svg class="h-3.5 w-3.5 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
-          </svg>
-          <span id="shipping-parcels-count">Discrete Lab Parcel Routing</span>
-        </span>
-        <span id="shipping-total-text" class="font-mono text-white">$0.00</span>
-      </div>
-      <div id="parcels-details-list" class="text-[11px] text-slate-400 space-y-1 border-t border-[#282c44] pt-2">
-        <!-- Parcels detail injected -->
-      </div>
-    </div>
-
-    <!-- Financial Totals -->
-    <div class="space-y-1.5 text-sm">
-      <div class="flex justify-between text-slate-400 text-xs">
-        <span>Artwork Subtotal</span>
-        <span id="cart-subtotal" class="font-mono text-slate-200">$0.00</span>
-      </div>
-      <div class="flex justify-between text-slate-400 text-xs">
-        <span>Parcel Packaging &amp; Shipping</span>
-        <span id="cart-shipping-subtotal" class="font-mono text-slate-200">$0.00</span>
-      </div>
-      <div class="flex justify-between text-white font-bold pt-2 border-t border-[#23273d]">
-        <span>Estimated Total</span>
-        <span id="cart-grand-total" class="font-mono text-sky-400 text-base">$0.00</span>
-      </div>
-    </div>
-
-    <!-- Checkout Trigger -->
-    <button
-      type="button"
-      id="checkout-btn"
-      class="w-full rounded-lg bg-sky-500 py-3 text-center text-sm font-bold text-slate-950 hover:bg-sky-400 transition-colors shadow-lg shadow-sky-500/20 cursor-pointer flex items-center justify-center gap-2"
-    >
-      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-      </svg>
-      <span>Proceed to Secure Stripe Checkout</span>
-    </button>
-  </div>
-</aside>
-
-<script>
-  import { calculateSplitCartShipping, type OrderItem } from '../lib/fulfillment';
-  import { trackInitiateCheckout } from '../lib/analytics';
-
-  interface CartItem {
-    id: string;
-    artworkId: string;
-    slug: string;
-    title: string;
-    previewImage: string;
-    variantSku: string;
-    substrate: string;
-    substrateName: string;
-    size: string;
-    lab: 'prodigi' | 'printify' | 'printful' | 'gelato' | 'gooten';
-    supplierSku: string;
-    priceUsd: number;
-    quantity: number;
-  }
-
-  const CART_KEY = 'awp_cart_v1';
-
-  function getCart(): CartItem[] {
-    try {
-      const data = localStorage.getItem(CART_KEY);
-      return data ? JSON.parse(data) : [];
-    } catch {
-      return [];
-    }
-  }
-
-  function saveCart(cart: CartItem[]) {
-    localStorage.setItem(CART_KEY, JSON.stringify(cart));
-    window.dispatchEvent(new Event('cart-updated'));
-  }
-
-  export function addToCart(item: CartItem) {
-    const cart = getCart();
-    const existing = cart.find(
-      (c) => c.artworkId === item.artworkId && c.variantSku === item.variantSku
-    );
-
-    if (existing) {
-      existing.quantity = Math.min(20, existing.quantity + item.quantity);
-    } else {
-      cart.push(item);
-    }
-
-    saveCart(cart);
-    openCart();
-  }
-
-  // Expose global helper for add-to-cart buttons across pages
-  (window as any).awpAddToCart = addToCart;
-
-  const drawer = document.getElementById('cart-drawer');
-  const backdrop = document.getElementById('cart-drawer-backdrop');
-  const openCartBtn = document.getElementById('open-cart-btn');
-  const closeCartBtn = document.getElementById('close-cart-btn');
-  const cartBadge = document.getElementById('cart-badge');
-  const emptyState = document.getElementById('cart-empty-state');
-  const itemsList = document.getElementById('cart-items-list');
-  const footer = document.getElementById('cart-footer');
-  const subtotalEl = document.getElementById('cart-subtotal');
-  const shippingSubtotalEl = document.getElementById('cart-shipping-subtotal');
-  const grandTotalEl = document.getElementById('cart-grand-total');
-  const checkoutBtn = document.getElementById('checkout-btn');
-  const shippingTotalText = document.getElementById('shipping-total-text');
-  const shippingParcelsCount = document.getElementById('shipping-parcels-count');
-  const parcelsDetailsList = document.getElementById('parcels-details-list');
-
-  function openCart() {
-    if (!drawer || !backdrop) return;
-    backdrop.classList.remove('hidden');
-    setTimeout(() => {
-      backdrop.classList.remove('opacity-0');
-      drawer.classList.remove('translate-x-full');
-    }, 10);
-    renderCart();
-  }
-
-  function closeCart() {
-    if (!drawer || !backdrop) return;
-    drawer.classList.add('translate-x-full');
-    backdrop.classList.add('opacity-0');
-    setTimeout(() => {
-      backdrop.classList.add('hidden');
-    }, 300);
-  }
-
-  if (openCartBtn) openCartBtn.addEventListener('click', openCart);
-  if (closeCartBtn) closeCartBtn.addEventListener('click', closeCart);
-  if (backdrop) backdrop.addEventListener('click', closeCart);
-
-  function renderCart() {
-    const cart = getCart();
-    const totalCount = cart.reduce((acc, curr) => acc + curr.quantity, 0);
-
-    // Update Header Badge
-    if (cartBadge) {
-      if (totalCount > 0) {
-        cartBadge.textContent = String(totalCount);
-        cartBadge.classList.remove('hidden');
-        cartBadge.classList.add('inline-flex');
-      } else {
-        cartBadge.classList.add('hidden');
-        cartBadge.classList.remove('inline-flex');
-      }
-    }
-
-    if (!itemsList || !emptyState || !footer) return;
-
-    if (cart.length === 0) {
-      emptyState.classList.remove('hidden');
-      itemsList.classList.add('hidden');
-      footer.classList.add('hidden');
-      return;
-    }
-
-    emptyState.classList.add('hidden');
-    itemsList.classList.remove('hidden');
-    footer.classList.remove('hidden');
-
-    // Build line items
-    itemsList.innerHTML = cart
-      .map(
-        (item, index) => `
-      <div class="flex gap-3 rounded-lg border border-[#23273d] bg-[#141624] p-3 text-xs">
-        <img src="${item.previewImage}" alt="${item.title}" class="h-16 w-16 rounded object-cover border border-[#2b304d]" />
-        <div class="flex-1 min-w-0">
-          <div class="font-bold text-white truncate">${item.title}</div>
-          <div class="text-[11px] text-slate-400 mt-0.5">${item.substrateName} &bull; ${item.size}</div>
-          <div class="text-[10px] font-mono text-sky-400 uppercase mt-0.5 tracking-wider">Lab: ${item.lab}</div>
-          <div class="flex items-center justify-between mt-2">
-            <div class="flex items-center border border-[#2e3352] rounded overflow-hidden">
-              <button class="px-2 py-0.5 text-slate-300 hover:bg-[#202438] change-qty-btn" data-index="${index}" data-delta="-1">-</button>
-              <span class="px-2 font-mono text-white">${item.quantity}</span>
-              <button class="px-2 py-0.5 text-slate-300 hover:bg-[#202438] change-qty-btn" data-index="${index}" data-delta="1">+</button>
-            </div>
-            <div class="font-mono font-bold text-slate-100">$${(item.priceUsd * item.quantity).toFixed(2)}</div>
-          </div>
+    <!-- Scrollable Body -->
+    <div class="flex-1 overflow-y-auto p-6 space-y-6" id="cartBody">
+      <!-- Consolidation Recommendation Banner (Hidden by default) -->
+      <div id="consolidationBanner" class="hidden p-4 border border-[var(--theme-accent)]/40 bg-[var(--theme-bg)] text-xs font-mono space-y-2">
+        <div class="flex items-start gap-2 text-[var(--theme-accent)]">
+          <span>📦</span>
+          <span class="font-bold uppercase tracking-wider">Consolidated Studio Shipping Available</span>
         </div>
-        <button class="text-slate-500 hover:text-rose-400 self-start p-1 remove-item-btn" data-index="${index}" title="Remove item">
-          &times;
+        <p class="text-[11px] text-[var(--theme-text-muted)] leading-relaxed" id="consolidationText">
+          Switching your secondary item to the matching fine-art lab consolidates your order into a single shipment.
+        </p>
+        <button type="button" id="consolidateBtn" class="w-full mt-2 py-2 px-3 border border-[var(--theme-accent)] bg-[var(--theme-accent)]/10 text-[var(--theme-accent)] hover:bg-[var(--theme-accent)] hover:text-[var(--theme-bg)] transition-colors font-bold tracking-wider uppercase text-[11px]">
+          ⇄ Consolidate & Save Freight
         </button>
       </div>
-    `
-      )
-      .join('');
 
-    // Attach quantity / remove handlers
-    itemsList.querySelectorAll('.change-qty-btn').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        const target = e.currentTarget as HTMLButtonElement;
-        const index = Number(target.getAttribute('data-index'));
-        const delta = Number(target.getAttribute('data-delta'));
-        const currentCart = getCart();
-        if (currentCart[index]) {
-          currentCart[index].quantity += delta;
-          if (currentCart[index].quantity <= 0) {
-            currentCart.splice(index, 1);
-          }
-          saveCart(currentCart);
-          renderCart();
-        }
-      });
-    });
+      <!-- Items List -->
+      <div id="cartItemList" class="space-y-4"></div>
 
-    itemsList.querySelectorAll('.remove-item-btn').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        const target = e.currentTarget as HTMLButtonElement;
-        const index = Number(target.getAttribute('data-index'));
-        const currentCart = getCart();
-        currentCart.splice(index, 1);
-        saveCart(currentCart);
-        renderCart();
-      });
-    });
+      <!-- Multi-Origin Parcel Warning / Breakdown -->
+      <div id="shipmentBreakdown" class="hidden border-t border-[var(--theme-border)] pt-4 space-y-3 font-mono text-xs">
+        <span class="text-[11px] uppercase tracking-widest text-[var(--theme-accent)] block">
+          Dispatch & Packaging Breakdown
+        </span>
+        <div id="packageList" class="space-y-2"></div>
+      </div>
+    </div>
 
-    // Run Split-Cart Shipping Calculation
-    const fulfillmentItems: OrderItem[] = cart.map((c) => ({
-      id: c.variantSku,
-      sku: c.variantSku,
-      artworkId: c.artworkId,
-      artworkTitle: c.title,
-      substrate: c.substrate as any,
-      size: c.size,
-      quantity: c.quantity,
-      unitPriceCents: Math.round(c.priceUsd * 100),
-      lab: c.lab,
-      supplierSku: c.supplierSku,
-      printAssetUrl: c.previewImage
-    }));
-
-    const shipping = calculateSplitCartShipping(fulfillmentItems, 'US');
-    const artworkSubtotal = cart.reduce((sum, item) => sum + item.priceUsd * item.quantity, 0);
-    const shippingTotal = shipping.totalShippingCents / 100;
-    const grandTotal = artworkSubtotal + shippingTotal;
-
-    if (subtotalEl) subtotalEl.textContent = `$${artworkSubtotal.toFixed(2)}`;
-    if (shippingSubtotalEl) shippingSubtotalEl.textContent = `$${shippingTotal.toFixed(2)}`;
-    if (grandTotalEl) grandTotalEl.textContent = `$${grandTotal.toFixed(2)}`;
-    if (shippingTotalText) shippingTotalText.textContent = `$${shippingTotal.toFixed(2)}`;
-
-    if (shippingParcelsCount) {
-      shippingParcelsCount.textContent = shipping.isMultiVendor
-        ? `Split-Shipment (${shipping.vendorCount} Specialized Labs)`
-        : `Single Lab Parcel (${shipping.parcels[0]?.providerName || 'Lab'})`;
-    }
-
-    if (parcelsDetailsList) {
-      parcelsDetailsList.innerHTML = shipping.parcels
-        .map(
-          (p) => `
-        <div class="flex justify-between items-center text-[10px]">
-          <span>&bull; ${p.providerName} (${p.itemCount} items &bull; ${p.packageType})</span>
-          <span class="font-mono text-slate-300">$${(p.totalShippingCents / 100).toFixed(2)}</span>
+    <!-- Footer Summary & Checkout -->
+    <div class="p-6 border-t border-[var(--theme-border)] bg-[var(--theme-bg)]/80 space-y-4 font-mono text-xs">
+      <div class="space-y-1.5 text-[var(--theme-text-muted)]">
+        <div class="flex justify-between">
+          <span>Print Subtotal</span>
+          <span class="text-[var(--theme-text)] font-sans text-sm" id="subtotalVal">$0.00</span>
         </div>
-      `
-        )
-        .join('');
-    }
-  }
+        <div class="flex justify-between">
+          <span>Carrier Freight</span>
+          <span class="text-[var(--theme-accent)]" id="shippingVal">Included</span>
+        </div>
+      </div>
 
-  // Handle Checkout Click
-  if (checkoutBtn) {
-    checkoutBtn.addEventListener('click', async () => {
-      const cart = getCart();
-      if (cart.length === 0) return;
+      <div class="border-t border-[var(--theme-border)] pt-3 flex justify-between items-baseline">
+        <span class="font-serif text-sm tracking-wider uppercase text-[var(--theme-text)]">Estimated Total</span>
+        <span class="font-serif text-xl text-[var(--theme-accent)]" id="totalVal">$0.00</span>
+      </div>
 
-      checkoutBtn.setAttribute('disabled', 'true');
-      checkoutBtn.innerHTML = `
-        <svg class="animate-spin h-4 w-4 text-slate-950" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        <span>Initiating Secure Stripe Session...</span>
+      <button type="button" id="checkoutBtn" class="w-full py-3.5 bg-[var(--theme-accent)] text-[var(--theme-bg)] hover:bg-[var(--theme-accent-hover)] font-mono text-xs uppercase tracking-widest font-bold transition-colors">
+        Proceed to Secure Checkout &rarr;
+      </button>
+      <p class="text-[10px] text-center text-[var(--theme-text-muted)]">
+        Insured Fine-Art Delivery &bull; Certificate of Authenticity Included
+      </p>
+    </div>
+  </aside>
+</div>
+
+<script>
+  import { 
+    $cartItems, 
+    $isCartOpen, 
+    $cartSubtotal, 
+    $fulfillmentPackages, 
+    $totalShipping, 
+    removeItem, 
+    consolidateItem 
+  } from '../stores/cart';
+
+  const modal = document.getElementById('cartModal')!;
+  const panel = document.getElementById('cartPanel')!;
+  const backdrop = document.getElementById('cartBackdrop')!;
+  const closeBtn = document.getElementById('closeCartBtn')!;
+  const itemList = document.getElementById('cartItemList')!;
+  const subtotalVal = document.getElementById('subtotalVal')!;
+  const shippingVal = document.getElementById('shippingVal')!;
+  const totalVal = document.getElementById('totalVal')!;
+  const consolidationBanner = document.getElementById('consolidationBanner')!;
+  const consolidationText = document.getElementById('consolidationText')!;
+  const consolidateBtn = document.getElementById('consolidateBtn')!;
+  const shipmentBreakdown = document.getElementById('shipmentBreakdown')!;
+  const packageList = document.getElementById('packageList')!;
+
+  let currentConsolidationTargetId: string | null = null;
+
+  function renderCart() {
+    const items = $cartItems.get();
+    const subtotal = $cartSubtotal.get();
+    const packages = $fulfillmentPackages.get();
+    const shipping = $totalShipping.get();
+
+    // 1. Render Line Items
+    if (items.length === 0) {
+      itemList.innerHTML = `
+        <div class="py-12 text-center text-[var(--theme-text-muted)] font-mono text-xs">
+          Your collector cart is currently empty.
+        </div>
       `;
+      consolidationBanner.classList.add('hidden');
+      shipmentBreakdown.classList.add('hidden');
+    } else {
+      itemList.innerHTML = items.map((item) => `
+        <div class="p-3 border border-[var(--theme-border)] bg-[var(--theme-bg)] flex gap-4 items-center">
+          <img src="${item.imageSrc}" alt="${item.artworkTitle}" class="w-16 h-16 object-cover border border-white/10" />
+          <div class="flex-1 min-w-0">
+            <h3 class="font-serif text-sm text-[var(--theme-text)] truncate">${item.artworkTitle}</h3>
+            <p class="text-[11px] font-mono text-[var(--theme-text-muted)]">${item.variantTitle}</p>
+            <p class="text-[11px] font-mono text-[var(--theme-accent)] mt-1">$${item.price.toFixed(2)} &times; ${item.quantity}</p>
+          </div>
+          <button type="button" data-remove="${item.id}" class="text-xs font-mono text-[var(--theme-text-muted)] hover:text-red-400 p-2">
+            &times;
+          </button>
+        </div>
+      `).join('');
+    }
 
-      try {
-        const payload = {
-          items: cart.map((c) => ({
-            artworkId: c.artworkId,
-            variantSku: c.variantSku,
-            quantity: c.quantity
-          }))
-        };
+    // 2. Multi-Package Warning & Breakdown
+    if (packages.length > 1) {
+      shipmentBreakdown.classList.remove('hidden');
+      packageList.innerHTML = packages.map((pkg, idx) => `
+        <div class="p-2.5 border border-[var(--theme-border)] bg-[var(--theme-surface)]">
+          <div class="flex justify-between text-[11px]">
+            <span class="text-[var(--theme-text)] font-bold">Package ${idx + 1}: ${pkg.providerName}</span>
+            <span class="${pkg.estimatedShipping === 0 ? 'text-[var(--theme-accent)]' : 'text-[var(--theme-text)]'}">
+              ${pkg.estimatedShipping === 0 ? 'Included' : '$' + pkg.estimatedShipping.toFixed(2)}
+            </span>
+          </div>
+          <p class="text-[10px] text-[var(--theme-text-muted)] mt-0.5">${pkg.packagingDescription}</p>
+        </div>
+      `).join('');
+    } else {
+      shipmentBreakdown.classList.add('hidden');
+    }
 
-        // Dispatch Umami Telemetry
-        const fulfillmentItems: OrderItem[] = cart.map((c) => ({
-          id: c.variantSku,
-          sku: c.variantSku,
-          artworkId: c.artworkId,
-          artworkTitle: c.title,
-          substrate: c.substrate as any,
-          size: c.size,
-          quantity: c.quantity,
-          unitPriceCents: Math.round(c.priceUsd * 100),
-          lab: c.lab,
-          supplierSku: c.supplierSku,
-          printAssetUrl: c.previewImage
-        }));
-        const shipping = calculateSplitCartShipping(fulfillmentItems, 'US');
-        const totalUsd = cart.reduce((s, i) => s + i.priceUsd * i.quantity, 0) + shipping.totalShippingCents / 100;
+    // 3. Check for Consolidation Opportunities
+    const swappable = items.find((i) => i.consolidationAlternative && packages.length > 1);
+    if (swappable && swappable.consolidationAlternative) {
+      currentConsolidationTargetId = swappable.id;
+      consolidationBanner.classList.remove('hidden');
+      consolidationText.textContent = `Your cart has items dispatching from separate labs. Switch ${swappable.artworkTitle} to the ${swappable.consolidationAlternative.variantTitle} to bundle into a single shipment and save $${swappable.consolidationAlternative.estimatedFreightSaved.toFixed(2)} in freight.`;
+    } else {
+      consolidationBanner.classList.add('hidden');
+      currentConsolidationTargetId = null;
+    }
 
-        trackInitiateCheckout({
-          itemCount: cart.reduce((s, i) => s + i.quantity, 0),
-          totalUsd,
-          substrates: Array.from(new Set(cart.map((c) => c.substrate))),
-          vendorCount: shipping.vendorCount,
-          multiVendor: shipping.isMultiVendor
-        });
-
-        const res = await fetch('/api/create-checkout-session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        const data = await res.json();
-        if (data.url) {
-          window.location.href = data.url;
-        } else {
-          alert(data.error || 'Failed to initialize Stripe checkout session.');
-        }
-      } catch (err) {
-        alert('Network error connecting to checkout edge worker.');
-      } finally {
-        checkoutBtn.removeAttribute('disabled');
-        checkoutBtn.innerHTML = `
-          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-          </svg>
-          <span>Proceed to Secure Stripe Checkout</span>
-        `;
-      }
-    });
+    // 4. Update Financial Totals
+    subtotalVal.textContent = `$${subtotal.toFixed(2)}`;
+    shippingVal.textContent = shipping === 0 ? 'Included' : `$${shipping.toFixed(2)}`;
+    totalVal.textContent = `$${(subtotal + shipping).toFixed(2)}`;
   }
 
-  // Listen for updates across windows
-  window.addEventListener('cart-updated', renderCart);
-  window.addEventListener('load', renderCart);
+  // Event Listeners
+  $cartItems.subscribe(renderCart);
+
+  $isCartOpen.subscribe((isOpen) => {
+    if (isOpen) {
+      modal.classList.remove('pointer-events-none', 'opacity-0');
+      modal.classList.add('opacity-100');
+      panel.classList.remove('translate-x-full');
+    } else {
+      modal.classList.remove('opacity-100');
+      modal.classList.add('pointer-events-none', 'opacity-0');
+      panel.classList.add('translate-x-full');
+    }
+  });
+
+  closeBtn.addEventListener('click', () => $isCartOpen.set(false));
+  backdrop.addEventListener('click', () => $isCartOpen.set(false));
+
+  itemList.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    const removeId = target.getAttribute('data-remove');
+    if (removeId) removeItem(removeId);
+  });
+
+  consolidateBtn.addEventListener('click', () => {
+    if (currentConsolidationTargetId) {
+      consolidateItem(currentConsolidationTargetId);
+    }
+  });
 </script>

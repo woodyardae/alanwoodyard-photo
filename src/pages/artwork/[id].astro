@@ -1,0 +1,364 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import { getCollection } from 'astro:content';
+import pricingMatrix from '../../content/pricing-matrix.json';
+import fs from 'node:fs';
+import path from 'node:path';
+
+export async function getStaticPaths() {
+  const artworks = await getCollection('artworks');
+  return artworks.map((item) => ({
+    params: { id: item.id },
+    props: { artworkId: item.id },
+  }));
+}
+
+const { artworkId } = Astro.props;
+
+// Read live JSON directly from disk so studio approvals take effect on refresh
+const manifestPath = path.resolve(`src/content/artworks/${artworkId}.json`);
+let manifest: any = {};
+if (fs.existsSync(manifestPath)) {
+  try {
+    const raw = fs.readFileSync(manifestPath, 'utf8').replace(/^\uFEFF/, '');
+    manifest = JSON.parse(raw);
+  } catch (e) {
+    manifest = {};
+  }
+}
+
+const title = manifest.title || artworkId;
+const caption = manifest.caption || '';
+const description = manifest.description || '';
+const merch_approved: string[] = Array.isArray(manifest.merch_approved) ? manifest.merch_approved : [];
+const capture = manifest.capture || {};
+
+const rawAspect = capture.aspect_ratio || '3:2';
+const isPanoramic = rawAspect.includes('16:9') || rawAspect.includes('2:1') || rawAspect.includes('panoramic');
+
+// Lenient matching: matches "deskmat", "desk mat", "Studio Panoramic Desk Mat (landscape)", etc.
+const hasApprovedDeskMat = merch_approved.some((p: string) => {
+  const norm = String(p).toLowerCase();
+  return norm.includes('desk') || norm.includes('mat');
+});
+
+const hasDisplate = merch_approved.some((p: string) => String(p).toLowerCase().includes('displate'));
+const showDeskMat = hasApprovedDeskMat || isPanoramic;
+
+const matrix = pricingMatrix as Record<string, {
+  sku: string;
+  provider: string;
+  size: string;
+  name: string;
+  retailPrice: number;
+  estimatedFreight: number;
+}>;
+
+// 1. Archival Fine Art Paper (Prodigi)
+const fineArtEditions = [
+  { size: '12x18"', label: 'Exhibition Folio Edition', sku: 'GLOBAL-FAP-12x18', fallback: 125 },
+  { size: '16x24"', label: 'Collector Salon Edition', sku: 'GLOBAL-FAP-16x24', fallback: 195 },
+  { size: '24x36"', label: 'Grand Master Edition', sku: 'GLOBAL-FAP-24x36', fallback: 340 },
+].map((ed) => {
+  const synced = matrix[ed.sku];
+  return {
+    ...ed,
+    price: synced ? synced.retailPrice : ed.fallback,
+    provider: 'prodigi' as const,
+    packaging: 'rigid_tube' as const,
+  };
+});
+
+// 2. Framed Fine Art (Prodigi)
+const framedEditions = [
+  { size: '16x24"', label: 'Archival Framed Exhibition Print', sku: 'GLOBAL-CFP-16x24', fallback: 385 },
+  { size: '24x36"', label: 'Archival Framed Grand Master', sku: 'GLOBAL-CFP-24x36', fallback: 650 },
+].map((ed) => {
+  const synced = matrix[ed.sku];
+  return {
+    ...ed,
+    price: synced ? synced.retailPrice : ed.fallback,
+    provider: 'prodigi' as const,
+    packaging: 'custom_crate' as const,
+  };
+});
+
+// 3. Stretched Canvas Gallery Wrap (20x30 / 2:3)
+const canvasSynced = matrix['GLOBAL-CAN-20x30'];
+const canvasEdition = {
+  sku: 'GLOBAL-CAN-20x30',
+  title: 'Gallery Stretched Canvas Wrap (20x30")',
+  spec: '1.5" Solid Pine Bars &bull; Mirror-Wrap Edges &bull; Archival Poly-Cotton',
+  price: canvasSynced ? canvasSynced.retailPrice : 210,
+  provider: 'prodigi' as const,
+  packaging: 'corrugated_box' as const,
+};
+
+const deskMatPrice = 48;
+---
+
+<Layout title={`${title} | Alan Woodyard`} theme="walnut">
+  <Header />
+
+  <main class="w-full max-w-7xl mx-auto px-6 lg:px-12 py-14 flex-1">
+    <div class="mb-10">
+      <a href="/" class="inline-flex items-center gap-2 text-xs font-mono text-[var(--theme-text-muted)] hover:text-[var(--theme-accent)] transition-colors">
+        <span>&larr;</span>
+        <span class="tracking-widest uppercase text-[11px]">Return to Exhibition Gallery</span>
+      </a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
+      <div class="lg:col-span-7 flex flex-col items-center justify-center pt-2 pb-8">
+        <div class="relative group max-w-full">
+          <img
+            id="artworkImage"
+            src={`/images/artworks/${artworkId}.webp`}
+            alt={title}
+            class="w-full h-auto max-h-[80vh] object-contain rounded-[1px] select-none shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95)] transition-shadow duration-500"
+            loading="eager"
+          />
+          <div class="mt-4 flex justify-between items-center text-[10px] font-mono text-[var(--theme-text-muted)]/70 px-1">
+            <span>Aspect Ratio: {rawAspect}</span>
+            <span>Archival Giclée Reproduction</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-5 space-y-9 font-sans">
+        <div>
+          <span class="text-[11px] font-mono text-[var(--theme-accent)] tracking-[0.25em] uppercase block mb-2 font-medium">
+            Fine Art Edition
+          </span>
+          <h1 class="font-serif text-3xl lg:text-4xl tracking-wide text-[var(--theme-text)] font-light">
+            {title}
+          </h1>
+          {caption && (
+            <p class="text-xs font-mono text-[var(--theme-text-muted)] mt-2 tracking-wider">
+              {caption}
+            </p>
+          )}
+        </div>
+
+        {description && (
+          <div class="border-t border-[var(--theme-border)] pt-6">
+            <p class="text-sm font-sans leading-relaxed text-[var(--theme-text)]/85 font-light">
+              {description}
+            </p>
+          </div>
+        )}
+
+        <!-- 1. Fine Art Paper -->
+        <div class="border-t border-[var(--theme-border)] pt-7 space-y-4">
+          <div class="flex items-baseline justify-between">
+            <h2 class="text-xs font-mono tracking-[0.2em] uppercase text-[var(--theme-accent)] font-medium">
+              Archival Cotton Rag Prints
+            </h2>
+            <span class="text-[10px] font-mono text-[var(--theme-text-muted)]">Hahnemühle 308gsm</span>
+          </div>
+
+          <div class="space-y-3">
+            {fineArtEditions.map((ed) => (
+              <div class="p-4 border border-[var(--theme-border)] bg-[var(--theme-surface)] backdrop-blur-md flex items-center justify-between hover:border-[var(--theme-accent)]/40 transition-colors">
+                <div>
+                  <div class="flex items-center gap-3">
+                    <span class="text-xs font-mono font-medium text-[var(--theme-text)]">{ed.size}</span>
+                    <span class="text-sm font-serif text-[var(--theme-accent)]">${ed.price}</span>
+                  </div>
+                  <p class="text-[10px] font-mono text-[var(--theme-text-muted)] mt-1">
+                    {ed.label} &bull; <span class="text-[var(--theme-accent)]/90">Free Insured Art Freight</span>
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  class="btn-add-cart px-4 py-2 text-xs font-mono border border-[var(--theme-accent)] text-[var(--theme-accent)] hover:bg-[var(--theme-accent)] hover:text-[var(--theme-bg)] transition-all font-semibold tracking-wider uppercase"
+                  data-sku={ed.sku}
+                  data-variant={`${ed.size} Hahnemühle Cotton Rag`}
+                  data-price={ed.price}
+                  data-provider={ed.provider}
+                  data-packaging={ed.packaging}
+                >
+                  Collect &rarr;
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <!-- 2. Framed Prints -->
+        <div class="border-t border-[var(--theme-border)] pt-7 space-y-4">
+          <div class="flex items-baseline justify-between">
+            <h2 class="text-xs font-mono tracking-[0.2em] uppercase text-[var(--theme-accent)] font-medium">
+              Museum Framed Editions
+            </h2>
+            <span class="text-[10px] font-mono text-[var(--theme-text-muted)]">Satin Black Hardwood &bull; 8-Ply Rag Mat</span>
+          </div>
+
+          <div class="space-y-3">
+            {framedEditions.map((ed) => (
+              <div class="p-4 border border-[var(--theme-border)] bg-[var(--theme-surface)] backdrop-blur-md flex items-center justify-between hover:border-[var(--theme-accent)]/40 transition-colors">
+                <div>
+                  <div class="flex items-center gap-3">
+                    <span class="text-xs font-mono font-medium text-[var(--theme-text)]">{ed.size}</span>
+                    <span class="text-sm font-serif text-[var(--theme-accent)]">${ed.price}</span>
+                  </div>
+                  <p class="text-[10px] font-mono text-[var(--theme-text-muted)] mt-1">
+                    {ed.label} &bull; Ready to Hang
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  class="btn-add-cart px-4 py-2 text-xs font-mono border border-[var(--theme-accent)] text-[var(--theme-accent)] hover:bg-[var(--theme-accent)] hover:text-[var(--theme-bg)] transition-all font-semibold tracking-wider uppercase"
+                  data-sku={ed.sku}
+                  data-variant={`${ed.size} Framed Exhibition Print`}
+                  data-price={ed.price}
+                  data-provider={ed.provider}
+                  data-packaging={ed.packaging}
+                >
+                  Collect &rarr;
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <!-- 3. Canvas -->
+        <div class="border-t border-[var(--theme-border)] pt-7 space-y-4">
+          <h2 class="text-xs font-mono tracking-[0.2em] uppercase text-[var(--theme-accent)] font-medium">
+            Canvas Gallery Wrap
+          </h2>
+
+          <div class="p-4 border border-[var(--theme-border)] bg-[var(--theme-surface)] backdrop-blur-md flex items-center justify-between hover:border-white/20 transition-colors">
+            <div>
+              <div class="flex items-center gap-3">
+                <span class="text-xs font-mono font-medium text-[var(--theme-text)]">{canvasEdition.title}</span>
+                <span class="text-sm font-serif text-[var(--theme-accent)]">${canvasEdition.price}</span>
+              </div>
+              <p class="text-[10px] font-mono text-[var(--theme-text-muted)] mt-1" set:html={canvasEdition.spec}></p>
+            </div>
+            <button
+              type="button"
+              class="btn-add-cart px-4 py-2 text-xs font-mono border border-white/20 text-[var(--theme-text-muted)] hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] transition-colors tracking-wider uppercase"
+              data-sku={canvasEdition.sku}
+              data-variant={canvasEdition.title}
+              data-price={canvasEdition.price}
+              data-provider={canvasEdition.provider}
+              data-packaging={canvasEdition.packaging}
+            >
+              Add to Cart
+            </button>
+          </div>
+        </div>
+
+        <!-- 4. Studio Formats (Desk Mat & Displate) -->
+        {(showDeskMat || hasDisplate) && (
+          <div class="border-t border-[var(--theme-border)] pt-7 space-y-4">
+            <h2 class="text-xs font-mono tracking-[0.2em] uppercase text-[var(--theme-accent)] font-medium">
+              Studio Formats & Merchandise
+            </h2>
+
+            <div class="space-y-3">
+              {showDeskMat && (
+                <div class="p-4 border border-[var(--theme-border)] bg-[var(--theme-surface)] backdrop-blur-md flex items-center justify-between hover:border-white/20 transition-colors">
+                  <div>
+                    <div class="flex items-center gap-3">
+                      <span class="text-xs font-mono font-medium text-[var(--theme-text)]">Studio Panoramic Desk Mat</span>
+                      <span class="text-sm font-serif text-[var(--theme-accent)]">${deskMatPrice}</span>
+                    </div>
+                    <p class="text-[10px] font-mono text-[var(--theme-text-muted)] mt-1">
+                      Non-slip natural rubber &bull; Stitched perimeter &bull; 31.5x15.5"
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    class="btn-add-cart px-4 py-2 text-xs font-mono border border-white/20 text-[var(--theme-text-muted)] hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] transition-colors tracking-wider uppercase"
+                    data-sku={`AWP-PFY-DESKMAT-${artworkId}`}
+                    data-variant="Studio Panoramic Desk Mat"
+                    data-price={deskMatPrice}
+                    data-provider="printify"
+                    data-packaging="poly_mailer"
+                    data-alt-sku="GLOBAL-FAP-12x18"
+                    data-alt-variant="12x18\" Exhibition Folio (Prodigi)"
+                    data-alt-price={fineArtEditions[0].price}
+                    data-alt-provider="prodigi"
+                    data-alt-savings={11.00}
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              )}
+
+              {hasDisplate && (
+                <div class="p-4 border border-[var(--theme-border)] bg-[var(--theme-surface)] backdrop-blur-md flex items-center justify-between">
+                  <div>
+                    <p class="text-xs font-mono font-medium text-[var(--theme-text)]">Displate Metal Poster</p>
+                    <p class="text-[10px] font-mono text-[var(--theme-text-muted)] mt-1">External Marketplace &bull; Steel Magnet Mount</p>
+                  </div>
+                  <a
+                    href="https://displate.com/alanwoodyard"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="px-4 py-2 text-xs font-mono border border-white/20 text-[var(--theme-text)] hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] transition-colors inline-flex items-center gap-1.5"
+                  >
+                    <span>Displate</span>
+                    <span class="text-xs">&nearr;</span>
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  import { addItem, type CartItem, type ProviderId } from '../../stores/cart';
+
+  const title = document.querySelector('h1')?.textContent?.trim() || 'Archival Artwork';
+  const artworkImg = document.getElementById('artworkImage') as HTMLImageElement;
+  const imageSrc = artworkImg ? artworkImg.src : '';
+  const currentPath = window.location.pathname;
+  const artworkId = currentPath.split('/').filter(Boolean).pop() || 'artwork';
+
+  document.querySelectorAll('.btn-add-cart').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      const el = e.currentTarget as HTMLButtonElement;
+      const sku = el.dataset.sku!;
+      const variantTitle = el.dataset.variant!;
+      const price = parseFloat(el.dataset.price || '0');
+      const provider = el.dataset.provider as ProviderId;
+      const packagingType = (el.dataset.packaging || 'rigid_tube') as any;
+
+      let consolidationAlternative: any = undefined;
+      if (el.dataset.altSku) {
+        consolidationAlternative = {
+          provider: el.dataset.altProvider as ProviderId,
+          sku: el.dataset.altSku,
+          variantTitle: el.dataset.altVariant,
+          price: parseFloat(el.dataset.altPrice || '0'),
+          packagingType: 'rigid_tube',
+          estimatedFreightSaved: parseFloat(el.dataset.altSavings || '0'),
+        };
+      }
+
+      const item: CartItem = {
+        id: `${artworkId}-${sku}`,
+        artworkId,
+        artworkTitle: title,
+        variantTitle,
+        sku,
+        provider,
+        packagingType,
+        price,
+        quantity: 1,
+        imageSrc,
+        consolidationAlternative,
+      };
+
+      addItem(item);
+    });
+  });
+</script>
