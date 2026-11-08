@@ -1,0 +1,61 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+---
+
+<Layout title="Terms & Customer Policies | Alan Woodyard Photography" theme="walnut">
+  <Header />
+
+  <main class="w-full max-w-4xl mx-auto px-6 py-16 flex-1 font-sans">
+    <div class="mb-8">
+      <a href="/" class="inline-flex items-center gap-2 text-xs font-mono text-[var(--theme-text-muted)] hover:text-[var(--theme-accent)] transition-colors">
+        <span>&larr;</span>
+        <span class="tracking-widest uppercase text-[11px]">Back to Gallery</span>
+      </a>
+    </div>
+
+    <div class="space-y-12">
+      <div>
+        <span class="text-xs font-mono tracking-[0.25em] uppercase text-[var(--theme-accent)] block mb-2 font-bold">
+          Customer Commitments
+        </span>
+        <h1 class="font-serif text-3xl md:text-4xl text-[var(--theme-text)] font-light">
+          Order Policies & Guarantees
+        </h1>
+      </div>
+
+      <!-- Exact Policy Statement -->
+      <section class="p-6 border border-[var(--theme-border)] bg-[var(--theme-surface)] space-y-4">
+        <h2 class="text-sm font-mono uppercase tracking-wider text-[var(--theme-accent)] font-bold">
+          Print-On-Demand & Return Policy
+        </h2>
+        <p class="text-sm leading-relaxed text-[var(--theme-text)]">
+          Every artwork and merchandise piece is custom-printed to order. Because items are bespoke, sales are final. If an item arrives defective, misprinted, or damaged during transit, submit photographic proof within 14 days for an immediate complimentary reprint.
+        </p>
+      </section>
+
+      <!-- Fulfillment Timelines -->
+      <section class="space-y-4 font-mono text-xs text-[var(--theme-text-muted)] leading-relaxed">
+        <h2 class="text-sm font-mono uppercase tracking-wider text-[var(--theme-text)] font-bold">
+          Production & Transit Timelines
+        </h2>
+        <p>
+          &bull; <strong>Fine-Art Prints:</strong> Hand-inspected and printed on archival Hahnemühle cotton rag. Production takes 2–4 business days, followed by insured carrier transit in rigid heavy-duty tubes.
+        </p>
+        <p>
+          &bull; <strong>Merchandise & Goods:</strong> Studio desk mats, hardwood coaster sets, and ceramic mugs enter production within 24–48 hours and dispatch via tracked domestic parcels.
+        </p>
+        <p>
+          &bull; <strong>Tracking:</strong> Carrier tracking details are automatically dispatched to your billing email upon shipping.
+        </p>
+      </section>
+
+      <!-- Support Contact -->
+      <section class="border-t border-[var(--theme-border)] pt-8 font-mono text-xs text-[var(--theme-text-muted)]">
+        <p>
+          Need assistance with an existing order? Reach the studio directly at <a href="mailto:studio@alanwoodyard.photo" class="text-[var(--theme-accent)] hover:underline">studio@alanwoodyard.photo</a> with your Order Reference ID.
+        </p>
+      </section>
+    </div>
+  </main>
+</Layout>

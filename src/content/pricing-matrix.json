@@ -10,7 +10,7 @@
     "retailPrice": 125,
     "currency": "USD",
     "marginPct": 85.2,
-    "lastSyncedAt": "2026-11-05T21:27:20.320Z"
+    "lastSyncedAt": "2026-11-08T17:31:35.428Z"
   },
   "GLOBAL-FAP-16x24": {
     "sku": "GLOBAL-FAP-16x24",
@@ -23,7 +23,7 @@
     "retailPrice": 195,
     "currency": "USD",
     "marginPct": 89.5,
-    "lastSyncedAt": "2026-11-05T21:27:20.324Z"
+    "lastSyncedAt": "2026-11-08T17:31:35.429Z"
   },
   "GLOBAL-FAP-24x36": {
     "sku": "GLOBAL-FAP-24x36",
@@ -36,7 +36,7 @@
     "retailPrice": 340,
     "currency": "USD",
     "marginPct": 91.2,
-    "lastSyncedAt": "2026-11-05T21:27:20.325Z"
+    "lastSyncedAt": "2026-11-08T17:31:35.429Z"
   },
   "GLOBAL-CAN-20x30": {
     "sku": "GLOBAL-CAN-20x30",
@@ -49,7 +49,7 @@
     "retailPrice": 210,
     "currency": "USD",
     "marginPct": 70.5,
-    "lastSyncedAt": "2026-11-05T21:27:20.325Z"
+    "lastSyncedAt": "2026-11-08T17:31:35.429Z"
   },
   "GLOBAL-CFP-16x24": {
     "sku": "GLOBAL-CFP-16x24",
@@ -62,7 +62,7 @@
     "retailPrice": 385,
     "currency": "USD",
     "marginPct": 82.3,
-    "lastSyncedAt": "2026-11-05T21:27:20.325Z"
+    "lastSyncedAt": "2026-11-08T17:31:35.429Z"
   },
   "GLOBAL-CFP-24x36": {
     "sku": "GLOBAL-CFP-24x36",
@@ -75,6 +75,6 @@
     "retailPrice": 650,
     "currency": "USD",
     "marginPct": 83.4,
-    "lastSyncedAt": "2026-11-05T21:27:20.325Z"
+    "lastSyncedAt": "2026-11-08T17:31:35.429Z"
   }
 }

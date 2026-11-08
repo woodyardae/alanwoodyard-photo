@@ -3,26 +3,25 @@ import CartDrawer from '../components/CartDrawer.astro';
 
 interface Props {
   title?: string;
-  theme?: 'petrol' | 'walnut' | 'moss' | 'slate';
+  theme?: 'walnut' | 'petrol' | 'moss' | 'linen' | 'obsidian';
 }
 
 const { 
   title = "Alan Woodyard | Photography", 
-  theme = "petrol" 
+  theme = "walnut" 
 } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en" class="h-full">
+<html lang="en">
   <head>
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-                                                            <meta charset="UTF-8" />
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
-    
-    
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
+    <!-- Google Fonts: Mid-Century Modern Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=Italiana&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -40,59 +39,62 @@ const {
 <style is:global>
   :root {
     --font-serif: 'Italiana', serif;
-    --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-sans: 'DM Sans', sans-serif;
     --font-mono: 'Space Mono', monospace;
   }
 
-  /* 1. Main Exhibition (Deep Petrol & Brass) */
-  body[data-theme="petrol"] {
-    --theme-bg: #091013;
-    background-image: radial-gradient(ellipse 80% 50% at 50% 0%, #111e24 0%, #070d0f 100%);
-    --theme-surface: #10191d;
-    --theme-surface-raised: #152227;
-    --theme-border: rgba(212, 163, 89, 0.15);
-    --theme-accent: #d4a359;
-    --theme-accent-hover: #e5b66d;
-    --theme-text: #f5efe6;
-    --theme-text-muted: #85989e;
-  }
-
-  /* 2. Collector Salon / Detail View (Velvety Espresso, Ambient Track Light & Brushed Bronze) */
+  /* 1. WALNUT & TEAK (Warm, rich woodgrain dusk - Artwork viewing & Checkout) */
   body[data-theme="walnut"] {
-    --theme-bg: #0d0b0a;
-    background-image: radial-gradient(ellipse 75% 55% at 50% -5%, #241c18 0%, #0c0a09 100%);
-    background-attachment: fixed;
-    --theme-surface: rgba(22, 18, 16, 0.75);
-    --theme-surface-raised: #211b18;
-    --theme-border: rgba(255, 255, 255, 0.08);
-    --theme-accent: #d9a76a;
-    --theme-accent-hover: #e8bd84;
-    --theme-text: #f7f3ee;
-    --theme-text-muted: #9e948c;
+    --theme-bg: #1c1714;
+    --theme-surface: #27211d;
+    --theme-border: rgba(198, 101, 58, 0.22);
+    --theme-accent: #c6653a;        /* Burnt terracotta / rust */
+    --theme-accent-hover: #db7649;
+    --theme-text: #f5efe6;          /* Warm linen */
+    --theme-text-muted: #aa988f;    /* Warm sand */
   }
 
-  /* 3. The Garden / Field Notes (Olive Moss & Sage) */
+  /* 2. PETROL & BRASS (Mid-century coastal maritime slate - Gallery storefront) */
+  body[data-theme="petrol"] {
+    --theme-bg: #131c20;
+    --theme-surface: #1b272d;
+    --theme-border: rgba(212, 163, 89, 0.22);
+    --theme-accent: #d4a359;        /* Mid-century brushed brass */
+    --theme-accent-hover: #e5b770;
+    --theme-text: #f4ede2;
+    --theme-text-muted: #8c9fa4;
+  }
+
+  /* 3. MOSS & OLIVE (Natural earth & sage - Digital garden / Field notes) */
   body[data-theme="moss"] {
-    --theme-bg: #0b0f0c;
-    background-image: radial-gradient(ellipse 80% 50% at 50% 0%, #151e18 0%, #080c09 100%);
-    --theme-surface: #121914;
-    --theme-surface-raised: #18221b;
-    --theme-border: rgba(143, 158, 122, 0.18);
-    --theme-accent: #8f9e7a;
-    --theme-accent-hover: #a1b08c;
-    --theme-text: #f3efe7;
-    --theme-text-muted: #85948a;
+    --theme-bg: #161b15;
+    --theme-surface: #20271f;
+    --theme-border: rgba(146, 164, 122, 0.25);
+    --theme-accent: #92a47a;        /* Olive sage */
+    --theme-accent-hover: #a8bc8f;
+    --theme-text: #f2eee5;
+    --theme-text-muted: #88968d;
   }
 
-  /* 4. Drafting Studio / Admin (Cast Iron & Technical Amber) */
-  body[data-theme="slate"] {
-    --theme-bg: #0f1012;
-    --theme-surface: #16181b;
-    --theme-surface-raised: #1e2024;
-    --theme-border: rgba(223, 155, 50, 0.18);
-    --theme-accent: #df9b32;
-    --theme-accent-hover: #f0ac43;
-    --theme-text: #ece8e1;
-    --theme-text-muted: #8a8e96;
+  /* 4. BONE LINEN (Mid-century daylight / architectural study mode) */
+  body[data-theme="linen"] {
+    --theme-bg: #f4efe6;
+    --theme-surface: #e9e2d5;
+    --theme-border: rgba(140, 74, 39, 0.2);
+    --theme-accent: #8c4a27;        /* Deep teak wood */
+    --theme-accent-hover: #6d381c;
+    --theme-text: #231e1a;          /* Charcoal umber */
+    --theme-text-muted: #6e655c;
+  }
+
+  /* 5. OBSIDIAN (Pure gallery darkroom fallback) */
+  body[data-theme="obsidian"] {
+    --theme-bg: #09090a;
+    --theme-surface: #131316;
+    --theme-border: rgba(255, 255, 255, 0.12);
+    --theme-accent: #d4a359;
+    --theme-accent-hover: #e5b770;
+    --theme-text: #f7f4ee;
+    --theme-text-muted: #8e8577;
   }
 </style>

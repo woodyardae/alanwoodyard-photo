@@ -1,20 +1,19 @@
 import { persistentAtom } from '@nanostores/persistent';
-import { computed } from 'nanostores';
+import { atom, computed } from 'nanostores';
 
-export type ProviderId = 'prodigi' | 'printful' | 'printify';
+export type ProviderId = 'prodigi' | 'printful' | 'printify' | 'gooten';
 
 export interface CartItem {
-  id: string;              // unique cart line id (e.g. a-dock-mono-16x24-rag)
-  artworkId: string;       // slug (e.g. a-dock-mono)
-  artworkTitle: string;    // title (e.g. A Dock Mono)
-  variantTitle: string;    // e.g. 16x24" Hahnemühle Photo Rag
+  id: string;
+  artworkId: string;
+  artworkTitle: string;
+  variantTitle: string;
   sku: string;
   provider: ProviderId;
   packagingType: 'rigid_tube' | 'flat_crate' | 'corrugated_box' | 'poly_mailer';
-  price: number;           // in USD (e.g. 185)
+  price: number;
   quantity: number;
   imageSrc: string;
-  // Alternate option from another lab for one-click consolidation
   consolidationAlternative?: {
     provider: ProviderId;
     sku: string;
@@ -34,19 +33,13 @@ export interface PackageGroup {
   items: CartItem[];
 }
 
-// 1. Persistent Cart Item Array
 export const $cartItems = persistentAtom<CartItem[]>('awp_cart_items', [], {
   encode: JSON.stringify,
   decode: JSON.parse,
 });
 
-// 2. Cart Open/Close Drawer State
-export const $isCartOpen = persistentAtom<boolean>('awp_cart_open', false, {
-  encode: JSON.stringify,
-  decode: JSON.parse,
-});
+export const $isCartOpen = atom<boolean>(false);
 
-// 3. Computed Helpers
 export const $cartCount = computed($cartItems, (items) =>
   items.reduce((total, item) => total + item.quantity, 0)
 );
@@ -59,29 +52,35 @@ const PROVIDER_METADATA: Record<ProviderId, { name: string; packaging: string; d
   prodigi: {
     name: 'Prodigi Fine-Art Lab',
     packaging: 'Rigid Heavy-Duty Tube / Wooden Art Crate',
-    defaultFreight: 0, // Complimentary domestic art freight on fine-art paper/frames
+    defaultFreight: 0,
     freeThreshold: 0,
+  },
+  printify: {
+    name: 'Printify Decor & Goods Hub',
+    packaging: 'Padded Carton / Protective Mailer',
+    defaultFreight: 6.50,
+    freeThreshold: 75,
   },
   printful: {
     name: 'Printful Production Facility',
-    packaging: 'Reinforced Corrugated Box / Corner Guards',
-    defaultFreight: 14.50,
-    freeThreshold: 200,
-  },
-  printify: {
-    name: 'Printify Decor Hub',
-    packaging: 'Flat-Pack Mailer / Heavy Carton',
-    defaultFreight: 11.00,
+    packaging: 'Reinforced Box / Corner Protectors',
+    defaultFreight: 12.00,
     freeThreshold: 150,
+  },
+  gooten: {
+    name: 'Gooten Optical Specialty Lab',
+    packaging: 'Foam-Lined Presentation Box',
+    defaultFreight: 8.50,
+    freeThreshold: 100,
   },
 };
 
-// 4. Computed Packages (Fulfillment Breakdown)
 export const $fulfillmentPackages = computed($cartItems, (items): PackageGroup[] => {
   const groups: Record<ProviderId, CartItem[]> = {
     prodigi: [],
     printful: [],
     printify: [],
+    gooten: [],
   };
 
   for (const item of items) {
@@ -111,12 +110,10 @@ export const $fulfillmentPackages = computed($cartItems, (items): PackageGroup[]
   return result;
 });
 
-// 5. Total Shipping Calculation
 export const $totalShipping = computed($fulfillmentPackages, (packages) =>
   packages.reduce((sum, pkg) => sum + pkg.estimatedShipping, 0)
 );
 
-// 6. Action: Add or Increment Item
 export function addItem(newItem: CartItem) {
   const current = $cartItems.get();
   const existingIdx = current.findIndex((i) => i.id === newItem.id);
@@ -131,12 +128,10 @@ export function addItem(newItem: CartItem) {
   $isCartOpen.set(true);
 }
 
-// 7. Action: Remove Item
 export function removeItem(id: string) {
   $cartItems.set($cartItems.get().filter((i) => i.id !== id));
 }
 
-// 8. Action: Swap Item for Consolidation
 export function consolidateItem(targetItemId: string) {
   const current = $cartItems.get();
   const item = current.find((i) => i.id === targetItemId);

@@ -28,7 +28,8 @@
     "aspect_ratio": "0.67:1"
   },
   "merch_approved": [
-    "Displate Steel Poster (portrait)"
+    "Displate Steel Poster (portrait)",
+    "Displate Steel Poster"
   ],
   "print_variants": [
     {
@@ -51,6 +52,17 @@
       },
       "watermark": "br",
       "approved_at": "2026-11-04T06:21:08.066Z"
+    },
+    "Displate Steel Poster": {
+      "crop": {
+        "productKey": "displate",
+        "panX": 0,
+        "panY": 0,
+        "zoom": 1,
+        "ratio": 0.689
+      },
+      "watermark": "none",
+      "approved_at": "2026-11-06T22:09:33.020Z"
     }
   }
 }

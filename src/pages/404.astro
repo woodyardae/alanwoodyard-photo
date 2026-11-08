@@ -1,0 +1,29 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+---
+
+<Layout title="Page Not Found | Alan Woodyard Photography" theme="walnut">
+  <Header />
+
+  <main class="w-full max-w-2xl mx-auto px-6 py-24 flex-1 flex flex-col items-center justify-center text-center">
+    <span class="text-xs font-mono tracking-[0.25em] uppercase text-[var(--theme-accent)] mb-3 block">
+      404 Error &bull; Route Missing
+    </span>
+
+    <h1 class="font-serif text-3xl md:text-4xl text-[var(--theme-text)] font-light mb-4">
+      Framing Outside the Canvas
+    </h1>
+
+    <p class="text-xs font-sans text-[var(--theme-text-muted)] max-w-md leading-relaxed mb-8">
+      The piece or page you requested does not exist or has been relocated within the catalog.
+    </p>
+
+    <a 
+      href="/artworks" 
+      class="px-8 py-3.5 border border-[var(--theme-accent)] text-[var(--theme-accent)] hover:bg-[var(--theme-accent)] hover:text-[var(--theme-bg)] transition-colors font-mono text-xs uppercase tracking-widest font-bold"
+    >
+      Return to Gallery &rarr;
+    </a>
+  </main>
+</Layout>

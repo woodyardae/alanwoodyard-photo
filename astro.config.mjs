@@ -1,9 +1,14 @@
-﻿import { defineConfig } from 'astro/config';
+import { defineConfig } from 'astro/config';
 import tailwind from '@astrojs/tailwind';
+import cloudflare from '@astrojs/cloudflare';
 import fs from 'node:fs';
 import path from 'node:path';
 
 export default defineConfig({
+  output: 'static',
+  adapter: cloudflare({
+    imageService: 'passthrough',
+  }),
   integrations: [tailwind()],
   devToolbar: {
     enabled: false,

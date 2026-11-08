@@ -2,304 +2,252 @@
 import Layout from '../../layouts/Layout.astro';
 import Header from '../../components/Header.astro';
 import { getCollection } from 'astro:content';
-import pricingMatrix from '../../content/pricing-matrix.json';
-import fs from 'node:fs';
-import path from 'node:path';
+import pricingMatrixRaw from '../../content/pricing-matrix.json';
 
 export async function getStaticPaths() {
   const artworks = await getCollection('artworks');
   return artworks.map((item) => ({
     params: { id: item.id },
-    props: { artworkId: item.id },
+    props: { artwork: item },
   }));
 }
 
-const { artworkId } = Astro.props;
+const { artwork } = Astro.props;
+const { 
+  title, 
+  year, 
+  medium, 
+  caption,
+  description, 
+  merch_approved = [], 
+  print_variants = [],
+  capture = {} 
+} = artwork.data;
 
-// Read live JSON directly from disk so studio approvals take effect on refresh
-const manifestPath = path.resolve(`src/content/artworks/${artworkId}.json`);
-let manifest: any = {};
-if (fs.existsSync(manifestPath)) {
-  try {
-    const raw = fs.readFileSync(manifestPath, 'utf8').replace(/^\uFEFF/, '');
-    manifest = JSON.parse(raw);
-  } catch (e) {
-    manifest = {};
-  }
-}
+const hasDisplate = merch_approved.some((p: string) => p.toLowerCase().includes('displate'));
+const matrix = pricingMatrixRaw as Record<string, { retailPrice: number; name: string; provider: string; packagingType: string; spec: string }>;
 
-const title = manifest.title || artworkId;
-const caption = manifest.caption || '';
-const description = manifest.description || '';
-const merch_approved: string[] = Array.isArray(manifest.merch_approved) ? manifest.merch_approved : [];
-const capture = manifest.capture || {};
+const allMerchCatalog = [
+  {
+    matchKey: 'mug',
+    skuKey: 'AWP-PFY-MUG',
+    title: matrix['AWP-PFY-MUG']?.name || 'Ceramic Waterfront Mug (11oz)',
+    price: matrix['AWP-PFY-MUG']?.retailPrice || 22,
+    spec: matrix['AWP-PFY-MUG']?.spec || 'Dishwasher safe • Full wrap finish',
+    provider: 'printify',
+    packaging: 'corrugated_box',
+  },
+  {
+    matchKey: 'coaster',
+    skuKey: 'AWP-PFY-COASTERS',
+    title: matrix['AWP-PFY-COASTERS']?.name || 'Hardwood Coaster Set (4-Pk)',
+    price: matrix['AWP-PFY-COASTERS']?.retailPrice || 28,
+    spec: matrix['AWP-PFY-COASTERS']?.spec || 'High-gloss heat-resistant top • Cork base',
+    provider: 'printify',
+    packaging: 'corrugated_box',
+  },
+  {
+    matchKey: 'desk',
+    skuKey: 'AWP-PFY-DESKMAT',
+    title: matrix['AWP-PFY-DESKMAT']?.name || 'Studio Panoramic Desk Mat',
+    price: matrix['AWP-PFY-DESKMAT']?.retailPrice || 48,
+    spec: matrix['AWP-PFY-DESKMAT']?.spec || 'Natural rubber base • Stitched border',
+    provider: 'printify',
+    packaging: 'poly_mailer',
+  },
+  {
+    matchKey: 'acrylic',
+    skuKey: 'AWP-GTN-ACRYLIC',
+    title: matrix['AWP-GTN-ACRYLIC']?.name || 'Optical Acrylic Desk Block (6x6")',
+    price: matrix['AWP-GTN-ACRYLIC']?.retailPrice || 55,
+    spec: matrix['AWP-GTN-ACRYLIC']?.spec || '1" thick optical acrylic • Freestanding',
+    provider: 'gooten',
+    packaging: 'corrugated_box',
+  },
+];
 
-const rawAspect = capture.aspect_ratio || '3:2';
-const isPanoramic = rawAspect.includes('16:9') || rawAspect.includes('2:1') || rawAspect.includes('panoramic');
+const approvedGoods = allMerchCatalog.filter((item) =>
+  merch_approved.some((approved: string) => approved.toLowerCase().includes(item.matchKey))
+);
 
-// Lenient matching: matches "deskmat", "desk mat", "Studio Panoramic Desk Mat (landscape)", etc.
-const hasApprovedDeskMat = merch_approved.some((p: string) => {
-  const norm = String(p).toLowerCase();
-  return norm.includes('desk') || norm.includes('mat');
-});
+const nativeRatio = capture?.aspect_ratio || 'Native';
+const rawVariants = print_variants.length > 0 
+  ? print_variants 
+  : [
+      { size: '12x18"', substrate: 'Hahnemühle Photo Rag', price_cents: 12500, sku: 'GLOBAL-FAP-12x18' },
+      { size: '16x24"', substrate: 'Hahnemühle Photo Rag', price_cents: 19500, sku: 'GLOBAL-FAP-16x24' },
+      { size: '24x36"', substrate: 'Hahnemühle Photo Rag', price_cents: 34000, sku: 'GLOBAL-FAP-24x36' },
+    ];
 
-const hasDisplate = merch_approved.some((p: string) => String(p).toLowerCase().includes('displate'));
-const showDeskMat = hasApprovedDeskMat || isPanoramic;
+const prints = rawVariants.map((v: any) => ({
+  sku: v.sku,
+  size: v.size,
+  substrate: v.substrate || 'Hahnemühle Photo Rag 308gsm',
+  price: v.price_cents ? Math.round(v.price_cents / 100) : (matrix[v.sku]?.retailPrice || 185),
+  provider: 'prodigi',
+  packaging: 'rigid_tube',
+}));
 
-const matrix = pricingMatrix as Record<string, {
-  sku: string;
-  provider: string;
-  size: string;
-  name: string;
-  retailPrice: number;
-  estimatedFreight: number;
-}>;
-
-// 1. Archival Fine Art Paper (Prodigi)
-const fineArtEditions = [
-  { size: '12x18"', label: 'Exhibition Folio Edition', sku: 'GLOBAL-FAP-12x18', fallback: 125 },
-  { size: '16x24"', label: 'Collector Salon Edition', sku: 'GLOBAL-FAP-16x24', fallback: 195 },
-  { size: '24x36"', label: 'Grand Master Edition', sku: 'GLOBAL-FAP-24x36', fallback: 340 },
-].map((ed) => {
-  const synced = matrix[ed.sku];
-  return {
-    ...ed,
-    price: synced ? synced.retailPrice : ed.fallback,
-    provider: 'prodigi' as const,
-    packaging: 'rigid_tube' as const,
-  };
-});
-
-// 2. Framed Fine Art (Prodigi)
-const framedEditions = [
-  { size: '16x24"', label: 'Archival Framed Exhibition Print', sku: 'GLOBAL-CFP-16x24', fallback: 385 },
-  { size: '24x36"', label: 'Archival Framed Grand Master', sku: 'GLOBAL-CFP-24x36', fallback: 650 },
-].map((ed) => {
-  const synced = matrix[ed.sku];
-  return {
-    ...ed,
-    price: synced ? synced.retailPrice : ed.fallback,
-    provider: 'prodigi' as const,
-    packaging: 'custom_crate' as const,
-  };
-});
-
-// 3. Stretched Canvas Gallery Wrap (20x30 / 2:3)
-const canvasSynced = matrix['GLOBAL-CAN-20x30'];
-const canvasEdition = {
-  sku: 'GLOBAL-CAN-20x30',
-  title: 'Gallery Stretched Canvas Wrap (20x30")',
-  spec: '1.5" Solid Pine Bars &bull; Mirror-Wrap Edges &bull; Archival Poly-Cotton',
-  price: canvasSynced ? canvasSynced.retailPrice : 210,
-  provider: 'prodigi' as const,
-  packaging: 'corrugated_box' as const,
-};
-
-const deskMatPrice = 48;
+const lowestPrice = approvedGoods.length > 0 
+  ? Math.min(...approvedGoods.map(g => g.price)) 
+  : (prints.length > 0 ? Math.min(...prints.map((p: any) => p.price)) : 185);
 ---
 
 <Layout title={`${title} | Alan Woodyard`} theme="walnut">
   <Header />
 
-  <main class="w-full max-w-7xl mx-auto px-6 lg:px-12 py-14 flex-1">
-    <div class="mb-10">
-      <a href="/" class="inline-flex items-center gap-2 text-xs font-mono text-[var(--theme-text-muted)] hover:text-[var(--theme-accent)] transition-colors">
+  <main class="w-full max-w-6xl mx-auto px-6 lg:px-12 py-10 flex-1">
+    <div class="mb-8">
+      <a href="/artworks" class="inline-flex items-center gap-2 text-xs font-mono text-[var(--theme-text-muted)] hover:text-[var(--theme-accent)] transition-colors">
         <span>&larr;</span>
-        <span class="tracking-widest uppercase text-[11px]">Return to Exhibition Gallery</span>
+        <span class="tracking-widest uppercase text-[11px]">Back to Artworks</span>
       </a>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
-      <div class="lg:col-span-7 flex flex-col items-center justify-center pt-2 pb-8">
-        <div class="relative group max-w-full">
-          <img
-            id="artworkImage"
-            src={`/images/artworks/${artworkId}.webp`}
-            alt={title}
-            class="w-full h-auto max-h-[80vh] object-contain rounded-[1px] select-none shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95)] transition-shadow duration-500"
-            loading="eager"
-          />
-          <div class="mt-4 flex justify-between items-center text-[10px] font-mono text-[var(--theme-text-muted)]/70 px-1">
-            <span>Aspect Ratio: {rawAspect}</span>
-            <span>Archival Giclée Reproduction</span>
-          </div>
-        </div>
+    <!-- STAGE 1: Museum Presentation -->
+    <section class="flex flex-col items-center">
+      <div class="relative w-full bg-[#0a0807] border border-[var(--theme-border)] p-4 sm:p-8 flex items-center justify-center shadow-2xl">
+        <img
+          id="artworkImage"
+          src={`/images/artworks/${artwork.id}.webp`}
+          alt={title}
+          class="w-full h-auto max-h-[75vh] object-contain select-none"
+          loading="eager"
+        />
       </div>
 
-      <div class="lg:col-span-5 space-y-9 font-sans">
-        <div>
-          <span class="text-[11px] font-mono text-[var(--theme-accent)] tracking-[0.25em] uppercase block mb-2 font-medium">
-            Fine Art Edition
-          </span>
-          <h1 class="font-serif text-3xl lg:text-4xl tracking-wide text-[var(--theme-text)] font-light">
-            {title}
-          </h1>
-          {caption && (
-            <p class="text-xs font-mono text-[var(--theme-text-muted)] mt-2 tracking-wider">
-              {caption}
-            </p>
-          )}
-        </div>
-
+      <!-- Museum Placard & Caption Block -->
+      <div class="w-full mt-8 max-w-3xl text-center space-y-4">
+        <span class="text-[11px] font-mono text-[var(--theme-accent)] tracking-[0.25em] uppercase block">
+          {year || '2026 Collection'} &bull; Ratio {nativeRatio}
+        </span>
+        <h1 class="font-serif text-3xl sm:text-4xl text-[var(--theme-text)] font-light tracking-wide">
+          {title}
+        </h1>
+        {caption && (
+          <p class="font-serif italic text-sm text-[var(--theme-text-muted)] max-w-xl mx-auto leading-relaxed">
+            "{caption}"
+          </p>
+        )}
         {description && (
-          <div class="border-t border-[var(--theme-border)] pt-6">
-            <p class="text-sm font-sans leading-relaxed text-[var(--theme-text)]/85 font-light">
-              {description}
-            </p>
-          </div>
+          <p class="font-sans text-xs text-[var(--theme-text-muted)]/90 max-w-xl mx-auto leading-relaxed font-light">
+            {description}
+          </p>
         )}
 
-        <!-- 1. Fine Art Paper -->
-        <div class="border-t border-[var(--theme-border)] pt-7 space-y-4">
-          <div class="flex items-baseline justify-between">
-            <h2 class="text-xs font-mono tracking-[0.2em] uppercase text-[var(--theme-accent)] font-medium">
-              Archival Cotton Rag Prints
-            </h2>
-            <span class="text-[10px] font-mono text-[var(--theme-text-muted)]">Hahnemühle 308gsm</span>
-          </div>
-
-          <div class="space-y-3">
-            {fineArtEditions.map((ed) => (
-              <div class="p-4 border border-[var(--theme-border)] bg-[var(--theme-surface)] backdrop-blur-md flex items-center justify-between hover:border-[var(--theme-accent)]/40 transition-colors">
-                <div>
-                  <div class="flex items-center gap-3">
-                    <span class="text-xs font-mono font-medium text-[var(--theme-text)]">{ed.size}</span>
-                    <span class="text-sm font-serif text-[var(--theme-accent)]">${ed.price}</span>
-                  </div>
-                  <p class="text-[10px] font-mono text-[var(--theme-text-muted)] mt-1">
-                    {ed.label} &bull; <span class="text-[var(--theme-accent)]/90">Free Insured Art Freight</span>
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  class="btn-add-cart px-4 py-2 text-xs font-mono border border-[var(--theme-accent)] text-[var(--theme-accent)] hover:bg-[var(--theme-accent)] hover:text-[var(--theme-bg)] transition-all font-semibold tracking-wider uppercase"
-                  data-sku={ed.sku}
-                  data-variant={`${ed.size} Hahnemühle Cotton Rag`}
-                  data-price={ed.price}
-                  data-provider={ed.provider}
-                  data-packaging={ed.packaging}
-                >
-                  Collect &rarr;
-                </button>
-              </div>
-            ))}
-          </div>
+        <!-- Progressive Disclosure CTA Button -->
+        <div class="pt-6">
+          <button
+            type="button"
+            id="toggleShopBtn"
+            class="px-8 py-3.5 border border-[var(--theme-accent)] bg-[var(--theme-accent)] text-[var(--theme-bg)] hover:bg-transparent hover:text-[var(--theme-accent)] transition-all font-mono text-xs uppercase tracking-widest font-bold shadow-lg inline-flex items-center gap-2 cursor-pointer"
+          >
+            <span>Explore Prints & Merchandise (From ${lowestPrice})</span>
+            <span id="shopBtnArrow">&darr;</span>
+          </button>
         </div>
+      </div>
+    </section>
 
-        <!-- 2. Framed Prints -->
-        <div class="border-t border-[var(--theme-border)] pt-7 space-y-4">
-          <div class="flex items-baseline justify-between">
-            <h2 class="text-xs font-mono tracking-[0.2em] uppercase text-[var(--theme-accent)] font-medium">
-              Museum Framed Editions
-            </h2>
-            <span class="text-[10px] font-mono text-[var(--theme-text-muted)]">Satin Black Hardwood &bull; 8-Ply Rag Mat</span>
-          </div>
-
-          <div class="space-y-3">
-            {framedEditions.map((ed) => (
-              <div class="p-4 border border-[var(--theme-border)] bg-[var(--theme-surface)] backdrop-blur-md flex items-center justify-between hover:border-[var(--theme-accent)]/40 transition-colors">
-                <div>
-                  <div class="flex items-center gap-3">
-                    <span class="text-xs font-mono font-medium text-[var(--theme-text)]">{ed.size}</span>
-                    <span class="text-sm font-serif text-[var(--theme-accent)]">${ed.price}</span>
-                  </div>
-                  <p class="text-[10px] font-mono text-[var(--theme-text-muted)] mt-1">
-                    {ed.label} &bull; Ready to Hang
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  class="btn-add-cart px-4 py-2 text-xs font-mono border border-[var(--theme-accent)] text-[var(--theme-accent)] hover:bg-[var(--theme-accent)] hover:text-[var(--theme-bg)] transition-all font-semibold tracking-wider uppercase"
-                  data-sku={ed.sku}
-                  data-variant={`${ed.size} Framed Exhibition Print`}
-                  data-price={ed.price}
-                  data-provider={ed.provider}
-                  data-packaging={ed.packaging}
-                >
-                  Collect &rarr;
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <!-- 3. Canvas -->
-        <div class="border-t border-[var(--theme-border)] pt-7 space-y-4">
-          <h2 class="text-xs font-mono tracking-[0.2em] uppercase text-[var(--theme-accent)] font-medium">
-            Canvas Gallery Wrap
+    <!-- STAGE 2: Purchasing Controls (Unlocks on click) -->
+    <section id="shoppingSection" class="hidden mt-16 pt-12 border-t border-[var(--theme-border)] transition-all duration-500">
+      <div class="max-w-4xl mx-auto space-y-12">
+        <div class="text-center">
+          <span class="text-[11px] font-mono text-[var(--theme-accent)] tracking-[0.2em] uppercase block mb-1">
+            Order Direct
+          </span>
+          <h2 class="font-serif text-2xl text-[var(--theme-text)] font-light">
+            Available Physical Formats
           </h2>
-
-          <div class="p-4 border border-[var(--theme-border)] bg-[var(--theme-surface)] backdrop-blur-md flex items-center justify-between hover:border-white/20 transition-colors">
-            <div>
-              <div class="flex items-center gap-3">
-                <span class="text-xs font-mono font-medium text-[var(--theme-text)]">{canvasEdition.title}</span>
-                <span class="text-sm font-serif text-[var(--theme-accent)]">${canvasEdition.price}</span>
-              </div>
-              <p class="text-[10px] font-mono text-[var(--theme-text-muted)] mt-1" set:html={canvasEdition.spec}></p>
-            </div>
-            <button
-              type="button"
-              class="btn-add-cart px-4 py-2 text-xs font-mono border border-white/20 text-[var(--theme-text-muted)] hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] transition-colors tracking-wider uppercase"
-              data-sku={canvasEdition.sku}
-              data-variant={canvasEdition.title}
-              data-price={canvasEdition.price}
-              data-provider={canvasEdition.provider}
-              data-packaging={canvasEdition.packaging}
-            >
-              Add to Cart
-            </button>
-          </div>
         </div>
 
-        <!-- 4. Studio Formats (Desk Mat & Displate) -->
-        {(showDeskMat || hasDisplate) && (
-          <div class="border-t border-[var(--theme-border)] pt-7 space-y-4">
-            <h2 class="text-xs font-mono tracking-[0.2em] uppercase text-[var(--theme-accent)] font-medium">
-              Studio Formats & Merchandise
-            </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+          
+          <!-- Column 1: Approved Goods & Merch -->
+          <div class="space-y-4">
+            <div class="flex items-baseline justify-between border-b border-[var(--theme-border)] pb-2">
+              <h3 class="text-xs font-mono tracking-wider uppercase text-[var(--theme-accent)] font-bold">
+                Studio Goods & Gifts
+              </h3>
+              <span class="text-[10px] font-mono text-emerald-400">✓ Manually Approved Crops</span>
+            </div>
+
+            {approvedGoods.length > 0 ? (
+              <div class="space-y-3">
+                {approvedGoods.map((item) => (
+                  <div class="p-3.5 border border-[var(--theme-border)] bg-[var(--theme-surface)] flex items-center justify-between hover:border-[var(--theme-accent)]/50 transition-colors">
+                    <div class="pr-3 min-w-0">
+                      <div class="flex items-center gap-2">
+                        <span class="text-xs font-mono font-medium text-[var(--theme-text)] truncate">{item.title}</span>
+                        <span class="text-sm font-sans font-bold text-[var(--theme-accent)]">${item.price}</span>
+                      </div>
+                      <p class="text-[10px] font-mono text-[var(--theme-text-muted)] mt-0.5">{item.spec}</p>
+                    </div>
+                    <button
+                      type="button"
+                      class="btn-add-cart shrink-0 px-3.5 py-2 text-xs font-mono bg-[var(--theme-accent)] text-[var(--theme-bg)] hover:bg-[var(--theme-accent-hover)] font-bold tracking-wider uppercase transition-colors"
+                      data-sku={`${item.skuKey}-${artwork.id}`}
+                      data-variant={item.title}
+                      data-price={item.price}
+                      data-provider={item.provider}
+                      data-packaging={item.packaging}
+                    >
+                      Add to Cart &rarr;
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div class="p-6 border border-dashed border-[var(--theme-border)] text-center text-xs font-mono text-[var(--theme-text-muted)]">
+                No everyday merchandise has been manually approved for this piece yet.
+              </div>
+            )}
+          </div>
+
+          <!-- Column 2: Archival Prints -->
+          <div class="space-y-4">
+            <div class="flex items-baseline justify-between border-b border-[var(--theme-border)] pb-2">
+              <h3 class="text-xs font-mono tracking-wider uppercase text-[var(--theme-accent)] font-bold">
+                Archival Fine-Art Prints
+              </h3>
+              <span class="text-[10px] font-mono text-[var(--theme-text-muted)]">Free Art Freight</span>
+            </div>
 
             <div class="space-y-3">
-              {showDeskMat && (
-                <div class="p-4 border border-[var(--theme-border)] bg-[var(--theme-surface)] backdrop-blur-md flex items-center justify-between hover:border-white/20 transition-colors">
-                  <div>
-                    <div class="flex items-center gap-3">
-                      <span class="text-xs font-mono font-medium text-[var(--theme-text)]">Studio Panoramic Desk Mat</span>
-                      <span class="text-sm font-serif text-[var(--theme-accent)]">${deskMatPrice}</span>
+              {prints.map((print: any) => (
+                <div class="p-3.5 border border-[var(--theme-border)] bg-[var(--theme-surface)] flex items-center justify-between hover:border-[var(--theme-accent)]/50 transition-colors">
+                  <div class="pr-3">
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs font-mono font-bold text-[var(--theme-text)]">{print.size}</span>
+                      <span class="text-sm font-sans font-bold text-[var(--theme-accent)]">${print.price}</span>
                     </div>
-                    <p class="text-[10px] font-mono text-[var(--theme-text-muted)] mt-1">
-                      Non-slip natural rubber &bull; Stitched perimeter &bull; 31.5x15.5"
-                    </p>
+                    <p class="text-[10px] font-mono text-[var(--theme-text-muted)] mt-0.5">{print.substrate}</p>
                   </div>
                   <button
                     type="button"
-                    class="btn-add-cart px-4 py-2 text-xs font-mono border border-white/20 text-[var(--theme-text-muted)] hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] transition-colors tracking-wider uppercase"
-                    data-sku={`AWP-PFY-DESKMAT-${artworkId}`}
-                    data-variant="Studio Panoramic Desk Mat"
-                    data-price={deskMatPrice}
-                    data-provider="printify"
-                    data-packaging="poly_mailer"
-                    data-alt-sku="GLOBAL-FAP-12x18"
-                    data-alt-variant="12x18\" Exhibition Folio (Prodigi)"
-                    data-alt-price={fineArtEditions[0].price}
-                    data-alt-provider="prodigi"
-                    data-alt-savings={11.00}
+                    class="btn-add-cart shrink-0 px-3.5 py-2 text-xs font-mono border border-[var(--theme-accent)] text-[var(--theme-accent)] hover:bg-[var(--theme-accent)] hover:text-[var(--theme-bg)] font-bold tracking-wider uppercase transition-colors"
+                    data-sku={print.sku}
+                    data-variant={`${print.size} Fine-Art Print`}
+                    data-price={print.price}
+                    data-provider={print.provider}
+                    data-packaging={print.packaging}
                   >
-                    Add to Cart
+                    Add to Cart &rarr;
                   </button>
                 </div>
-              )}
+              ))}
 
               {hasDisplate && (
-                <div class="p-4 border border-[var(--theme-border)] bg-[var(--theme-surface)] backdrop-blur-md flex items-center justify-between">
+                <div class="p-3.5 border border-[var(--theme-border)] bg-[var(--theme-surface)] flex items-center justify-between">
                   <div>
                     <p class="text-xs font-mono font-medium text-[var(--theme-text)]">Displate Metal Poster</p>
-                    <p class="text-[10px] font-mono text-[var(--theme-text-muted)] mt-1">External Marketplace &bull; Steel Magnet Mount</p>
+                    <p class="text-[10px] font-mono text-[var(--theme-text-muted)] mt-0.5">Magnetic Mount &bull; External Platform</p>
                   </div>
                   <a
                     href="https://displate.com/alanwoodyard"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="px-4 py-2 text-xs font-mono border border-white/20 text-[var(--theme-text)] hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] transition-colors inline-flex items-center gap-1.5"
+                    class="px-3.5 py-2 text-xs font-mono border border-white/20 text-[var(--theme-text)] hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] transition-colors inline-flex items-center gap-1.5 uppercase tracking-wider"
                   >
                     <span>Displate</span>
                     <span class="text-xs">&nearr;</span>
@@ -308,21 +256,42 @@ const deskMatPrice = 48;
               )}
             </div>
           </div>
-        )}
+
+        </div>
       </div>
-    </div>
+    </section>
   </main>
 </Layout>
 
 <script>
   import { addItem, type CartItem, type ProviderId } from '../../stores/cart';
 
-  const title = document.querySelector('h1')?.textContent?.trim() || 'Archival Artwork';
+  const title = document.querySelector('h1')?.textContent?.trim() || 'Alan Woodyard Photograph';
   const artworkImg = document.getElementById('artworkImage') as HTMLImageElement;
   const imageSrc = artworkImg ? artworkImg.src : '';
   const currentPath = window.location.pathname;
   const artworkId = currentPath.split('/').filter(Boolean).pop() || 'artwork';
 
+  // Toggle Shopping Drawer
+  const toggleBtn = document.getElementById('toggleShopBtn');
+  const shopSection = document.getElementById('shoppingSection');
+  const arrow = document.getElementById('shopBtnArrow');
+
+  if (toggleBtn && shopSection) {
+    toggleBtn.addEventListener('click', () => {
+      const isHidden = shopSection.classList.contains('hidden');
+      if (isHidden) {
+        shopSection.classList.remove('hidden');
+        if (arrow) arrow.innerHTML = '&uarr;';
+        shopSection.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        shopSection.classList.add('hidden');
+        if (arrow) arrow.innerHTML = '&darr;';
+      }
+    });
+  }
+
+  // Add to Cart
   document.querySelectorAll('.btn-add-cart').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       const el = e.currentTarget as HTMLButtonElement;
@@ -331,18 +300,6 @@ const deskMatPrice = 48;
       const price = parseFloat(el.dataset.price || '0');
       const provider = el.dataset.provider as ProviderId;
       const packagingType = (el.dataset.packaging || 'rigid_tube') as any;
-
-      let consolidationAlternative: any = undefined;
-      if (el.dataset.altSku) {
-        consolidationAlternative = {
-          provider: el.dataset.altProvider as ProviderId,
-          sku: el.dataset.altSku,
-          variantTitle: el.dataset.altVariant,
-          price: parseFloat(el.dataset.altPrice || '0'),
-          packagingType: 'rigid_tube',
-          estimatedFreightSaved: parseFloat(el.dataset.altSavings || '0'),
-        };
-      }
 
       const item: CartItem = {
         id: `${artworkId}-${sku}`,
@@ -355,7 +312,6 @@ const deskMatPrice = 48;
         price,
         quantity: 1,
         imageSrc,
-        consolidationAlternative,
       };
 
       addItem(item);

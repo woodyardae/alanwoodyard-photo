@@ -23,7 +23,10 @@
     },
     "aspect_ratio": "1.78:1"
   },
-  "merch_approved": [],
+  "merch_approved": [
+    "Ceramic Waterfront Mug",
+    "Hardwood Coaster Set"
+  ],
   "print_variants": [
     {
       "sku": "prodigi:rag-43x24",
@@ -32,5 +35,29 @@
       "price_cents": 18500
     }
   ],
-  "solo_display": true
+  "solo_display": true,
+  "merch_crops": {
+    "Ceramic Waterfront Mug": {
+      "crop": {
+        "productKey": "ceramic-mug",
+        "panX": 0,
+        "panY": 31,
+        "zoom": 1,
+        "ratio": 2.428
+      },
+      "watermark": "none",
+      "approved_at": "2026-11-06T22:09:06.272Z"
+    },
+    "Hardwood Coaster Set": {
+      "crop": {
+        "productKey": "coasters",
+        "panX": 45,
+        "panY": 0,
+        "zoom": 1,
+        "ratio": 1
+      },
+      "watermark": "none",
+      "approved_at": "2026-11-08T02:58:00.793Z"
+    }
+  }
 }

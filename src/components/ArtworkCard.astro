@@ -1,48 +1,64 @@
-﻿---
-// src/components/ArtworkCard.astro
+---
 interface Props {
   artwork: any;
+  priority?: boolean;
+  spanFull?: boolean;
 }
 
-const { artwork } = Astro.props;
+const { artwork, spanFull = false } = Astro.props;
 const data = artwork.data;
-const slug = data.slug || artwork.slug || artwork.id.replace(/\.[^/.]+$/, '');
-const locationName = typeof data.capture?.location === 'object' ? data.capture.location.name : (data.capture?.location || '');
-const variants = data.print_variants || data.variants || [];
-const minPrice = variants.length > 0 
-  ? Math.min(...variants.map((v: any) => v.price_usd_cents || v.priceCents || 18500)) / 100 
-  : 185;
-const moods = data.taxonomies?.mood?.join(',') || (data.taxonomies?.moods || []).join(',') || '';
+const slug = artwork.id;
+const locationName = typeof data.capture?.location === 'object' 
+  ? data.capture.location.name 
+  : (data.capture?.location || 'Studio Archive');
+
+// Determine lowest price among actually available products for THIS piece
+const merchApproved = data.merch_approved || [];
+let minPrice = 185;
+
+// Check if lower-ticket approved goods exist for this specific artwork
+if (merchApproved.some((p: string) => p.toLowerCase().includes('mug'))) {
+  minPrice = 22;
+} else if (merchApproved.some((p: string) => p.toLowerCase().includes('coaster'))) {
+  minPrice = 28;
+} else if (merchApproved.some((p: string) => p.toLowerCase().includes('desk'))) {
+  minPrice = 48;
+} else if (merchApproved.some((p: string) => p.toLowerCase().includes('acrylic'))) {
+  minPrice = 55;
+} else if (data.print_variants && data.print_variants.length > 0) {
+  minPrice = Math.min(...data.print_variants.map((v: any) => Math.round((v.price_cents || 18500) / 100)));
+}
 ---
-<article 
-  class="gallery-item group relative mb-24 md:mb-32"
-  data-moods={moods}
->
-  <a href={`/artwork/${slug}`} class="block overflow-hidden">
-    <div class="w-full flex items-center justify-center bg-[#0a0908]">
-      <img 
-        src={`/images/artworks/${slug}.webp`} 
-        alt={data.title}
-        loading="lazy"
-        class="w-full h-auto object-contain max-h-[78vh] transition-transform duration-700 ease-out group-hover:scale-[1.012]"
-      />
-    </div>
+
+<article class={`group flex flex-col justify-between bg-[#141210]/60 border border-white/[0.06] p-4 transition-all duration-300 hover:border-[#c5a059]/40 ${spanFull ? 'md:col-span-2' : ''}`}>
+  <a href={`/artwork/${slug}`} class="block overflow-hidden bg-[#0a0908] aspect-[3/2] flex items-center justify-center">
+    <img
+      src={`/images/artworks/${slug}.webp`}
+      alt={data.title}
+      loading="lazy"
+      class="w-full h-full object-contain transition-transform duration-500 group-hover:scale-[1.02]"
+    />
   </a>
 
-  <div class="mt-6 flex justify-between items-baseline gap-4">
+  <div class="mt-4 flex items-baseline justify-between">
     <div>
-      <h2 class="font-serif text-2xl md:text-3xl text-[#f7f4ee] font-light">
-        <a href={`/artwork/${slug}`} class="hover:text-[#dfb872] transition-colors">
+      <h2 class="font-serif text-lg text-[#f7f4ee] group-hover:text-[#dfb872] transition-colors">
+        <a href={`/artwork/${slug}`}>
           {data.title}
         </a>
       </h2>
-      <p class="text-sm text-[#a89f91] mt-1.5 font-sans tracking-wide">
-        {locationName}{locationName && ' — '}{new Date(data.capture.date).getFullYear()}
+      <p class="text-xs font-mono text-[#8e8577] mt-1">
+        {data.capture?.aspect_ratio ? `Ratio ${data.capture.aspect_ratio}` : ''}
       </p>
     </div>
 
-    <div class="text-right">
-      <span class="text-sm font-mono text-[#c5a059] font-medium">From ${minPrice}</span>
+    <div class="text-left sm:text-right">
+      <p class="text-xs font-mono tracking-widest text-[#c5a059] font-bold">
+        From ${minPrice}
+      </p>
+      <p class="text-[9px] font-mono uppercase tracking-[0.2em] text-[#8e8577] mt-0.5">
+        {merchApproved.length > 0 ? 'Prints & Approved Goods' : 'Archival Prints'}
+      </p>
     </div>
   </div>
 </article>
