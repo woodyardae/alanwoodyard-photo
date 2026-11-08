@@ -57,11 +57,12 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
     <!-- Workspace Grid -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start pb-28 lg:pb-12">
       
-      <!-- Left: Interactive Canvas -->
+      <!-- Left: Interactive Canvas Viewport -->
       <section class="lg:col-span-7 xl:col-span-8 flex flex-col items-center">
         <div 
           class="relative w-full aspect-[4/3] bg-[#050404] border border-white/15 overflow-hidden flex items-center justify-center select-none shadow-2xl" 
           id="viewportContainer"
+          style="touch-action: none;"
         >
           <canvas 
             id="cropCanvas" 
@@ -69,7 +70,7 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
             style="touch-action: none;"
           ></canvas>
 
-          <!-- On-Canvas HUD Quick Steppers -->
+          <!-- On-Canvas HUD Controls -->
           <div class="absolute bottom-3 inset-x-3 flex items-center justify-between pointer-events-none gap-2">
             <div class="flex items-center gap-1.5 pointer-events-auto bg-[#0a0808]/90 backdrop-blur-md border border-white/15 p-1 rounded">
               <button 
@@ -97,15 +98,15 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
         </div>
 
         <div class="w-full mt-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] font-mono text-[#8e8577]">
-          <p>Pinch / Drag on canvas to frame &bull; Double-tap to reset</p>
-          <p><span class="text-[#d4a359]">Gold frame:</span> 5% lab cut safe area</p>
+          <p>Two-finger pinch to zoom &bull; Drag to pan &bull; Double-tap to reset</p>
+          <p><span class="text-[#f5da9b]">Bleed margin:</span> 5% safe lab cut line</p>
         </div>
       </section>
 
       <!-- Right: Full Control Panel -->
       <section class="lg:col-span-5 xl:col-span-4 space-y-5 bg-[#14100e] border border-white/10 p-5 rounded-[2px]">
         
-        <!-- 1. Artwork Selector with Steppers -->
+        <!-- Artwork Selection -->
         <div class="space-y-1.5">
           <label class="block text-[11px] font-mono uppercase tracking-wider text-[#a89f91]">Photograph</label>
           <div class="flex items-center gap-2">
@@ -122,7 +123,7 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
           </div>
         </div>
 
-        <!-- 2. Auto-Fit Suite -->
+        <!-- Auto-Fit Suite -->
         <div class="space-y-1.5 border-t border-white/10 pt-4">
           <label class="block text-[11px] font-mono uppercase tracking-wider text-[#a89f91]">Auto-Fit Framing</label>
           <div class="grid grid-cols-3 gap-2">
@@ -138,7 +139,7 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
           </div>
         </div>
 
-        <!-- 3. Re-Centering Suite -->
+        <!-- Centering Suite -->
         <div class="space-y-1.5 border-t border-white/10 pt-4">
           <label class="block text-[11px] font-mono uppercase tracking-wider text-[#a89f91]">Alignment & Re-Centering</label>
           <div class="grid grid-cols-3 gap-2">
@@ -154,7 +155,7 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
           </div>
         </div>
 
-        <!-- 4. Numerical Scale & Slider with External Nudge Stack -->
+        <!-- Numerical Scale & External Nudge Buttons -->
         <div class="space-y-2 border-t border-white/10 pt-4">
           <div class="flex items-center justify-between">
             <label class="text-[11px] font-mono uppercase tracking-wider text-[#a89f91]">Scale Factor</label>
@@ -188,7 +189,7 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
           />
         </div>
 
-        <!-- 5. Composition & Lab Guides -->
+        <!-- Overlays -->
         <div class="space-y-1.5 border-t border-white/10 pt-4">
           <label class="block text-[11px] font-mono uppercase tracking-wider text-[#a89f91]">Composition & Lab Overlays</label>
           <div class="grid grid-cols-2 gap-2">
@@ -201,7 +202,7 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
           </div>
         </div>
 
-        <!-- 6. Export JSON -->
+        <!-- Export JSON -->
         <div class="border-t border-white/10 pt-4">
           <button 
             type="button" 
@@ -239,13 +240,14 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
   <script>
     const canvas = document.getElementById('cropCanvas') as HTMLCanvasElement;
     const ctx = canvas.getContext('2d')!;
+    const viewport = document.getElementById('viewportContainer')!;
     const artworkSelect = document.getElementById('artworkSelect') as HTMLSelectElement;
     const prevArtworkBtn = document.getElementById('prevArtworkBtn')!;
     const nextArtworkBtn = document.getElementById('nextArtworkBtn')!;
     const productChips = document.querySelectorAll('.prod-chip');
     const activeSubstrateLabel = document.getElementById('activeSubstrateLabel')!;
     
-    // Zoom Elements
+    // Zoom Controls
     const zoomSlider = document.getElementById('zoomSlider') as HTMLInputElement;
     const zoomInput = document.getElementById('zoomInput') as HTMLInputElement;
     const nudgeUpBtn = document.getElementById('nudgeUpBtn')!;
@@ -254,7 +256,7 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
     const hudZoomInBtn = document.getElementById('hudZoomInBtn')!;
     const hudZoomOutBtn = document.getElementById('hudZoomOutBtn')!;
 
-    // Fit & Alignment Buttons
+    // Auto-Fit & Alignment
     const fitWidthBtn = document.getElementById('fitWidthBtn')!;
     const fitHeightBtn = document.getElementById('fitHeightBtn')!;
     const fillBleedBtn = document.getElementById('fillBleedBtn')!;
@@ -262,13 +264,13 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
     const centerVBtn = document.getElementById('centerVBtn')!;
     const centerAllBtn = document.getElementById('centerAllBtn')!;
 
-    // Overlay Buttons
+    // Overlays
     const hudGridBtn = document.getElementById('hudGridBtn')!;
     const hudBleedBtn = document.getElementById('hudBleedBtn')!;
     const sidebarGridBtn = document.getElementById('sidebarGridBtn')!;
     const sidebarBleedBtn = document.getElementById('sidebarBleedBtn')!;
 
-    // Action Buttons
+    // Actions
     const approveBtn = document.getElementById('approveBtn') as HTMLButtonElement;
     const exportJsonBtn = document.getElementById('exportJsonBtn') as HTMLButtonElement;
     const statusMsg = document.getElementById('statusMsg')!;
@@ -285,8 +287,7 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
     function draw() {
       if (!img.complete || !img.naturalWidth) return;
 
-      const container = document.getElementById('viewportContainer')!;
-      const bounds = container.getBoundingClientRect();
+      const bounds = viewport.getBoundingClientRect();
       const maxW = Math.min(bounds.width - 24, 800);
       const maxH = Math.min(bounds.height - 24, 600);
 
@@ -326,11 +327,11 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
 
       ctx.drawImage(img, drawX, drawY, drawW, drawH);
 
-      // Thirds Grid
+      // 1. Darker, crisp Thirds Grid (visible against bright/white and dark scenes)
       if (showGrid) {
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([6, 6]);
+        ctx.lineWidth = 1.2;
+        ctx.setLineDash([5, 5]);
+        ctx.strokeStyle = 'rgba(25, 22, 20, 0.7)';
         ctx.beginPath();
         ctx.moveTo(targetW / 3, 0); ctx.lineTo(targetW / 3, targetH);
         ctx.moveTo((targetW * 2) / 3, 0); ctx.lineTo((targetW * 2) / 3, targetH);
@@ -340,17 +341,16 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
         ctx.setLineDash([]);
       }
 
-      // Bleed Margin
+      // 2. Lighter Champagne-Gold Bleed Line (lighter weight, lighter tone)
       if (showBleed) {
-        ctx.strokeStyle = '#d4a359';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(245, 220, 160, 0.75)';
+        ctx.lineWidth = 1.2;
         const inset = Math.min(targetW, targetH) * 0.05;
         ctx.strokeRect(inset, inset, targetW - inset * 2, targetH - inset * 2);
       }
 
       ctx.restore();
 
-      // Synchronize All Zoom Displays
       const zoomStr = zoom.toFixed(2);
       hudZoomDisplay.textContent = `${zoomStr}x`;
       zoomInput.value = zoomStr;
@@ -377,7 +377,6 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
       draw();
     }
 
-    // Auto-Fit Algorithms
     function fitWidth() {
       if (!img.complete || !img.naturalWidth) return;
       const srcRatio = img.naturalWidth / img.naturalHeight;
@@ -409,56 +408,98 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
       draw();
     }
 
-    // Touch & Pointer Gesture Engine
+    // Touch Engine: Multi-touch pinch & pan
+    let isPinching = false;
+    let isPanning = false;
     let touchStartX = 0;
     let touchStartY = 0;
     let initialPinchDist = 0;
     let initialPinchZoom = 1.0;
-    let lastTap = 0;
+    let initialPinchCenter = { x: 0, y: 0 };
+    let initialPan = { x: 0, y: 0 };
+    let singleTapCount = 0;
+    let tapResetTimer: any = null;
 
-    canvas.addEventListener('touchstart', (e) => {
+    // Prevent Safari gesture zoom
+    viewport.addEventListener('gesturestart', (e) => e.preventDefault(), { passive: false });
+    viewport.addEventListener('gesturechange', (e) => e.preventDefault(), { passive: false });
+    viewport.addEventListener('gestureend', (e) => e.preventDefault(), { passive: false });
+
+    viewport.addEventListener('touchstart', (e) => {
+      // Disregard touches on controls
+      if ((e.target as HTMLElement).closest('button, select, input')) return;
       e.preventDefault();
 
-      const now = Date.now();
-      if (now - lastTap < 300) {
-        fillBleed();
-        lastTap = 0;
-        return;
-      }
-      lastTap = now;
-
       if (e.touches.length === 1) {
+        isPinching = false;
+        isPanning = true;
         touchStartX = e.touches[0].clientX - panX;
         touchStartY = e.touches[0].clientY - panY;
       } else if (e.touches.length === 2) {
-        initialPinchDist = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY
-        );
+        isPanning = false;
+        isPinching = true;
+        singleTapCount = 0;
+        if (tapResetTimer) clearTimeout(tapResetTimer);
+
+        const t0 = e.touches[0];
+        const t1 = e.touches[1];
+        initialPinchDist = Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
         initialPinchZoom = zoom;
+        initialPinchCenter = {
+          x: (t0.clientX + t1.clientX) / 2,
+          y: (t0.clientY + t1.clientY) / 2,
+        };
+        initialPan = { x: panX, y: panY };
       }
     }, { passive: false });
 
-    canvas.addEventListener('touchmove', (e) => {
+    window.addEventListener('touchmove', (e) => {
+      if (!isPanning && !isPinching) return;
       e.preventDefault();
-      if (e.touches.length === 1) {
+
+      if (e.touches.length === 1 && isPanning) {
         panX = e.touches[0].clientX - touchStartX;
         panY = e.touches[0].clientY - touchStartY;
         draw();
-      } else if (e.touches.length === 2 && initialPinchDist > 0) {
-        const dist = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY
-        );
-        const factor = dist / initialPinchDist;
-        setZoom(initialPinchZoom * factor);
+      } else if (e.touches.length === 2 && isPinching && initialPinchDist > 0) {
+        const t0 = e.touches[0];
+        const t1 = e.touches[1];
+        const currentDist = Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
+        const currentCenter = {
+          x: (t0.clientX + t1.clientX) / 2,
+          y: (t0.clientY + t1.clientY) / 2,
+        };
+        const scale = currentDist / initialPinchDist;
+
+        zoom = Math.min(3.5, Math.max(0.3, parseFloat((initialPinchZoom * scale).toFixed(2))));
+        panX = initialPan.x + (currentCenter.x - initialPinchCenter.x);
+        panY = initialPan.y + (currentCenter.y - initialPinchCenter.y);
+        draw();
       }
     }, { passive: false });
 
-    canvas.addEventListener('touchend', (e) => {
+    window.addEventListener('touchend', (e) => {
       if (e.touches.length === 1) {
+        // Transition back to single-finger pan seamlessly
+        isPinching = false;
+        isPanning = true;
         touchStartX = e.touches[0].clientX - panX;
         touchStartY = e.touches[0].clientY - panY;
+      } else if (e.touches.length === 0) {
+        if (isPanning && !isPinching) {
+          // Double tap detection strictly on single-touch release
+          singleTapCount++;
+          if (singleTapCount === 1) {
+            tapResetTimer = setTimeout(() => { singleTapCount = 0; }, 300);
+          } else if (singleTapCount === 2) {
+            clearTimeout(tapResetTimer);
+            singleTapCount = 0;
+            fillBleed();
+          }
+        }
+        isPinching = false;
+        isPanning = false;
+        initialPinchDist = 0;
       }
     });
 
@@ -497,7 +538,7 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
     });
     artworkSelect.addEventListener('change', switchPhoto);
 
-    // Auto-Fit Suite Handlers
+    // Auto-Fit Handlers
     fitWidthBtn.addEventListener('click', fitWidth);
     fitHeightBtn.addEventListener('click', fitHeight);
     fillBleedBtn.addEventListener('click', fillBleed);
@@ -515,7 +556,7 @@ const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title)
     zoomInput.addEventListener('change', () => setZoom(parseFloat(zoomInput.value) || 1.0));
     zoomSlider.addEventListener('input', () => setZoom(parseFloat(zoomSlider.value)));
 
-    // Grid & Bleed Toggles (Synchronized across HUD and Sidebar)
+    // Grid & Bleed Toggles
     function toggleGrid() {
       showGrid = !showGrid;
       const label = showGrid ? 'Grid: ON' : 'Grid: OFF';
