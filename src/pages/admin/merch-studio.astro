@@ -1,0 +1,490 @@
+---
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const artworks = await getCollection('artworks');
+const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title));
+---
+
+<Layout title="Merchandise Studio | Alan Woodyard Admin" theme="walnut">
+  <div class="min-h-screen flex flex-col bg-[#0c0a09] text-[#f7f4ee]">
+    
+    <!-- Top Bar: Navigation & Artwork Selection -->
+    <header class="sticky top-0 z-40 bg-[#161210]/95 backdrop-blur-md border-b border-white/10 px-4 py-3 sm:px-6">
+      <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="px-2 py-0.5 bg-[#c5a059]/20 text-[#dfb872] border border-[#c5a059]/40 text-[10px] font-mono uppercase font-bold rounded">
+              Private Studio
+            </span>
+            <h1 class="text-base sm:text-lg font-serif tracking-wide text-[#f7f4ee]">Merchandise Framing</h1>
+          </div>
+          <a href="/admin/syndication" class="sm:hidden text-xs font-mono text-[#a89f91]">Syndication &rarr;</a>
+        </div>
+
+        <div class="flex-1 sm:max-w-md">
+          <select 
+            id="artworkSelect" 
+            class="w-full text-sm font-mono bg-[#080706] border border-white/15 py-2.5 px-3 text-[#f7f4ee] focus:border-[#c5a059] focus:outline-none"
+          >
+            {catalog.map((item) => (
+              <option value={item.id}>{item.data.title}</option>
+            ))}
+          </select>
+        </div>
+
+        <div class="hidden sm:flex items-center gap-4 text-xs font-mono">
+          <a href="/admin/syndication" class="text-[#a89f91] hover:text-[#f7f4ee]">Syndication Desk &rarr;</a>
+          <a href="/" class="text-[#c5a059] hover:underline" target="_blank">View Live Store ↗</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Substrate Selector: Horizontal Touch Rail -->
+    <nav class="bg-[#100d0c] border-b border-white/[0.08] px-4 py-2.5 overflow-x-auto no-scrollbar">
+      <div class="max-w-7xl mx-auto flex items-center gap-2 min-w-max" id="productChips">
+        <button type="button" class="prod-chip active px-3.5 py-2 border border-[#c5a059] bg-[#c5a059]/20 text-[#dfb872] text-xs font-mono uppercase transition-colors" data-w="16" data-h="7">
+          Desk Pad (16:7)
+        </button>
+        <button type="button" class="prod-chip px-3.5 py-2 border border-white/10 bg-[#161210] text-[#a89f91] text-xs font-mono uppercase transition-colors" data-w="20" data-h="29">
+          Steel Plate (Portrait)
+        </button>
+        <button type="button" class="prod-chip px-3.5 py-2 border border-white/10 bg-[#161210] text-[#a89f91] text-xs font-mono uppercase transition-colors" data-w="29" data-h="20">
+          Steel Plate (Landscape)
+        </button>
+        <button type="button" class="prod-chip px-3.5 py-2 border border-white/10 bg-[#161210] text-[#a89f91] text-xs font-mono uppercase transition-colors" data-w="4" data-h="5">
+          Archival Frame (4:5)
+        </button>
+        <button type="button" class="prod-chip px-3.5 py-2 border border-white/10 bg-[#161210] text-[#a89f91] text-xs font-mono uppercase transition-colors" data-w="1" data-h="1">
+          Square Tile (1:1)
+        </button>
+        <button type="button" class="prod-chip px-3.5 py-2 border border-white/10 bg-[#161210] text-[#a89f91] text-xs font-mono uppercase transition-colors" data-w="2" data-h="1">
+          Canvas Wrap (2:1)
+        </button>
+      </div>
+    </nav>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start pb-28 lg:pb-12">
+      
+      <!-- Interactive Framing Viewport -->
+      <section class="lg:col-span-8 flex flex-col items-center">
+        <div 
+          class="relative w-full aspect-[4/3] bg-[#050404] border border-white/15 overflow-hidden flex items-center justify-center select-none shadow-2xl" 
+          id="viewportContainer"
+        >
+          <canvas 
+            id="cropCanvas" 
+            class="max-w-full max-h-full cursor-grab active:cursor-grabbing"
+            style="touch-action: none;"
+          ></canvas>
+
+          <!-- Floating On-Canvas Touch Controls -->
+          <div class="absolute bottom-3 inset-x-3 flex items-center justify-between pointer-events-none gap-2">
+            
+            <!-- Grid & Bleed Toggles with Clear State -->
+            <div class="flex items-center gap-1.5 pointer-events-auto bg-[#0a0808]/90 backdrop-blur-md border border-white/15 p-1 rounded">
+              <button 
+                type="button" 
+                id="gridToggleBtn" 
+                title="Toggles rule-of-thirds composition guidelines"
+                class="px-2.5 py-1.5 text-[11px] font-mono rounded transition-colors bg-[#c5a059]/30 text-[#dfb872] border border-[#c5a059]"
+              >
+                Grid: ON
+              </button>
+              <button 
+                type="button" 
+                id="bleedToggleBtn" 
+                title="Shows 5% outer trim margin that print cutters slice away"
+                class="px-2.5 py-1.5 text-[11px] font-mono rounded transition-colors bg-[#c5a059]/30 text-[#dfb872] border border-[#c5a059]"
+              >
+                Bleed: ON
+              </button>
+            </div>
+
+            <!-- Zoom Steppers & Reset -->
+            <div class="flex items-center gap-1 pointer-events-auto bg-[#0a0808]/90 backdrop-blur-md border border-white/15 p-1 rounded text-xs font-mono">
+              <button type="button" id="zoomOutBtn" class="w-8 h-7 flex items-center justify-center text-base hover:bg-white/10 text-[#f7f4ee] active:scale-95 transition-transform">−</button>
+              <span id="zoomDisplay" class="px-1 text-[11px] text-[#dfb872] min-w-[3rem] text-center font-bold">1.00x</span>
+              <button type="button" id="zoomInBtn" class="w-8 h-7 flex items-center justify-center text-base hover:bg-white/10 text-[#f7f4ee] active:scale-95 transition-transform">+</button>
+              <button type="button" id="resetFitBtn" class="px-2.5 py-1 text-[10px] uppercase text-[#a89f91] hover:text-[#f7f4ee] border-l border-white/15 ml-0.5">Fit</button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Touch Hint & Guide Explanation -->
+        <div class="w-full mt-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] font-mono text-[#8e8577]">
+          <p>Pinch with 2 fingers to zoom &bull; Drag with 1 finger to position &bull; Double-tap to reset</p>
+          <p><span class="text-[#d4a359]">Gold box:</span> Bleed boundary (keep crucial art inside)</p>
+        </div>
+      </section>
+
+      <!-- Sidebar Controls -->
+      <section class="lg:col-span-4 space-y-5 bg-[#14100e] border border-white/10 p-5">
+        <div>
+          <label class="block text-xs font-mono uppercase tracking-widest text-[#a89f91] mb-2.5">
+            Watermark Positioning
+          </label>
+          <div class="grid grid-cols-3 gap-2 text-xs font-mono">
+            <button type="button" class="wm-choice active p-3 border border-[#c5a059] bg-[#c5a059]/20 text-[#dfb872] transition-colors" data-wm="br">
+              Bottom-R
+            </button>
+            <button type="button" class="wm-choice p-3 border border-white/10 bg-[#080706] text-[#a89f91] transition-colors" data-wm="bl">
+              Bottom-L
+            </button>
+            <button type="button" class="wm-choice p-3 border border-white/10 bg-[#080706] text-[#a89f91] transition-colors" data-wm="none">
+              Clean (None)
+            </button>
+          </div>
+        </div>
+
+        <div class="border-t border-white/10 pt-4">
+          <div class="flex justify-between text-xs font-mono text-[#a89f91] mb-1.5">
+            <span>Manual Scale Slider</span>
+            <span id="sliderValLabel">1.00x</span>
+          </div>
+          <input 
+            type="range" 
+            id="zoomSlider" 
+            min="1" 
+            max="3" 
+            step="0.02" 
+            value="1" 
+            class="w-full h-2 bg-[#080706] accent-[#c5a059] cursor-pointer" 
+          />
+        </div>
+
+        <div class="border-t border-white/10 pt-4">
+          <button 
+            type="button" 
+            id="exportJsonBtn" 
+            class="w-full py-2.5 border border-white/15 bg-[#0a0808] hover:bg-white/5 text-xs font-mono text-[#a89f91] hover:text-[#f7f4ee] transition-colors"
+          >
+            📋 Download Approved Crops JSON
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Sticky Bottom Approval Bar -->
+    <div class="fixed bottom-0 inset-x-0 z-30 bg-[#120f0d]/95 backdrop-blur-md border-t border-white/15 p-3.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-2xl">
+      <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+        <div class="flex-1 min-w-0">
+          <p id="activeSubstrateLabel" class="text-xs font-mono text-[#c5a059] font-bold truncate">Desk Pad (16:7)</p>
+          <p id="statusMsg" class="text-[11px] font-mono text-[#a89f91] truncate">Ready to save to Cloud KV</p>
+        </div>
+
+        <button 
+          type="button" 
+          id="approveBtn" 
+          class="px-6 sm:px-8 py-3.5 bg-[#c5a059] hover:bg-[#d9b36c] text-[#0d0b0a] font-mono text-xs uppercase tracking-widest font-bold transition-all active:scale-[0.98] shadow-lg flex-shrink-0"
+        >
+          Save Crop Approval &rarr;
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const canvas = document.getElementById('cropCanvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const artworkSelect = document.getElementById('artworkSelect') as HTMLSelectElement;
+    const productChips = document.querySelectorAll('.prod-chip');
+    const activeSubstrateLabel = document.getElementById('activeSubstrateLabel')!;
+    const zoomSlider = document.getElementById('zoomSlider') as HTMLInputElement;
+    const zoomDisplay = document.getElementById('zoomDisplay')!;
+    const sliderValLabel = document.getElementById('sliderValLabel')!;
+    const zoomInBtn = document.getElementById('zoomInBtn')!;
+    const zoomOutBtn = document.getElementById('zoomOutBtn')!;
+    const resetFitBtn = document.getElementById('resetFitBtn')!;
+    const gridToggleBtn = document.getElementById('gridToggleBtn')!;
+    const bleedToggleBtn = document.getElementById('bleedToggleBtn')!;
+    const approveBtn = document.getElementById('approveBtn') as HTMLButtonElement;
+    const exportJsonBtn = document.getElementById('exportJsonBtn') as HTMLButtonElement;
+    const statusMsg = document.getElementById('statusMsg')!;
+
+    let img = new Image();
+    let panX = 0;
+    let panY = 0;
+    let zoom = 1.0;
+    let currentRatio = 16 / 7;
+    let currentProductName = 'Desk Pad (16:7)';
+    let showGrid = true;
+    let showBleed = true;
+    let wmPosition = 'br';
+
+    function draw() {
+      if (!img.complete || !img.naturalWidth) return;
+
+      const container = document.getElementById('viewportContainer')!;
+      const bounds = container.getBoundingClientRect();
+      const maxW = Math.min(bounds.width - 24, 800);
+      const maxH = Math.min(bounds.height - 24, 600);
+
+      let targetW = maxW;
+      let targetH = targetW / currentRatio;
+      if (targetH > maxH) {
+        targetH = maxH;
+        targetW = targetH * currentRatio;
+      }
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 3);
+      canvas.width = Math.round(targetW * dpr);
+      canvas.height = Math.round(targetH * dpr);
+      canvas.style.width = `${Math.round(targetW)}px`;
+      canvas.style.height = `${Math.round(targetH)}px`;
+
+      ctx.save();
+      ctx.scale(dpr, dpr);
+
+      ctx.fillStyle = '#050404';
+      ctx.fillRect(0, 0, targetW, targetH);
+
+      const srcRatio = img.naturalWidth / img.naturalHeight;
+      let drawW: number;
+      let drawH: number;
+
+      if (srcRatio > currentRatio) {
+        drawH = targetH * zoom;
+        drawW = drawH * srcRatio;
+      } else {
+        drawW = targetW * zoom;
+        drawH = drawW / srcRatio;
+      }
+
+      const drawX = (targetW - drawW) / 2 + panX;
+      const drawY = (targetH - drawH) / 2 + panY;
+
+      ctx.drawImage(img, drawX, drawY, drawW, drawH);
+
+      // Thirds Grid (High contrast dashed lines)
+      if (showGrid) {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([6, 6]);
+        ctx.beginPath();
+        ctx.moveTo(targetW / 3, 0); ctx.lineTo(targetW / 3, targetH);
+        ctx.moveTo((targetW * 2) / 3, 0); ctx.lineTo((targetW * 2) / 3, targetH);
+        ctx.moveTo(0, targetH / 3); ctx.lineTo(targetW, targetH / 3);
+        ctx.moveTo(0, (targetH * 2) / 3); ctx.lineTo(targetW, (targetH * 2) / 3);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Bleed Safe Area (High contrast gold frame)
+      if (showBleed) {
+        ctx.strokeStyle = '#d4a359';
+        ctx.lineWidth = 2;
+        const inset = Math.min(targetW, targetH) * 0.05;
+        ctx.strokeRect(inset, inset, targetW - inset * 2, targetH - inset * 2);
+      }
+
+      // Watermark Stamp
+      if (wmPosition !== 'none') {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.font = '700 11px monospace';
+        const label = 'ALAN WOODYARD';
+        if (wmPosition === 'br') ctx.fillText(label, targetW - 110, targetH - 14);
+        if (wmPosition === 'bl') ctx.fillText(label, 14, targetH - 14);
+      }
+
+      ctx.restore();
+
+      const zoomText = `${zoom.toFixed(2)}x`;
+      zoomDisplay.textContent = zoomText;
+      sliderValLabel.textContent = zoomText;
+      zoomSlider.value = zoom.toString();
+    }
+
+    function switchPhoto() {
+      img.src = `/images/artworks/${artworkSelect.value}.webp`;
+      img.onload = () => {
+        resetTransform();
+        draw();
+      };
+    }
+
+    function resetTransform() {
+      panX = 0;
+      panY = 0;
+      zoom = 1.0;
+      draw();
+    }
+
+    function setZoom(newZoom: number) {
+      zoom = Math.min(3.0, Math.max(1.0, parseFloat(newZoom.toFixed(2))));
+      draw();
+    }
+
+    // Native iOS Multi-Touch Gesture Engine
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let initialPinchDist = 0;
+    let initialPinchZoom = 1.0;
+    let lastTap = 0;
+
+    canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+
+      // Double Tap Reset Detection
+      const now = Date.now();
+      if (now - lastTap < 300) {
+        resetTransform();
+        lastTap = 0;
+        return;
+      }
+      lastTap = now;
+
+      if (e.touches.length === 1) {
+        touchStartX = e.touches[0].clientX - panX;
+        touchStartY = e.touches[0].clientY - panY;
+      } else if (e.touches.length === 2) {
+        initialPinchDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        initialPinchZoom = zoom;
+      }
+    }, { passive: false });
+
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      if (e.touches.length === 1) {
+        panX = e.touches[0].clientX - touchStartX;
+        panY = e.touches[0].clientY - touchStartY;
+        draw();
+      } else if (e.touches.length === 2 && initialPinchDist > 0) {
+        const dist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        const factor = dist / initialPinchDist;
+        setZoom(initialPinchZoom * factor);
+      }
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', (e) => {
+      if (e.touches.length === 1) {
+        touchStartX = e.touches[0].clientX - panX;
+        touchStartY = e.touches[0].clientY - panY;
+      }
+    });
+
+    // Substrate Selection
+    productChips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        productChips.forEach((c) => {
+          c.className = 'prod-chip px-3.5 py-2 border border-white/10 bg-[#161210] text-[#a89f91] text-xs font-mono uppercase transition-colors';
+        });
+        chip.className = 'prod-chip active px-3.5 py-2 border border-[#c5a059] bg-[#c5a059]/20 text-[#dfb872] text-xs font-mono uppercase transition-colors';
+        
+        const btn = chip as HTMLButtonElement;
+        const w = parseFloat(btn.dataset.w || '1');
+        const h = parseFloat(btn.dataset.h || '1');
+        currentRatio = w / h;
+        currentProductName = btn.innerText.trim();
+        activeSubstrateLabel.textContent = currentProductName;
+        panX = 0;
+        panY = 0;
+        draw();
+      });
+    });
+
+    // Zoom Controls
+    zoomInBtn.addEventListener('click', () => setZoom(zoom + 0.15));
+    zoomOutBtn.addEventListener('click', () => setZoom(zoom - 0.15));
+    resetFitBtn.addEventListener('click', resetTransform);
+    zoomSlider.addEventListener('input', () => setZoom(parseFloat(zoomSlider.value)));
+
+    // Grid & Bleed Toggles
+    gridToggleBtn.addEventListener('click', () => {
+      showGrid = !showGrid;
+      gridToggleBtn.textContent = showGrid ? 'Grid: ON' : 'Grid: OFF';
+      gridToggleBtn.className = showGrid
+        ? 'px-2.5 py-1.5 text-[11px] font-mono rounded transition-colors bg-[#c5a059]/30 text-[#dfb872] border border-[#c5a059]'
+        : 'px-2.5 py-1.5 text-[11px] font-mono rounded transition-colors bg-white/5 text-[#a89f91] border border-white/10';
+      draw();
+    });
+
+    bleedToggleBtn.addEventListener('click', () => {
+      showBleed = !showBleed;
+      bleedToggleBtn.textContent = showBleed ? 'Bleed: ON' : 'Bleed: OFF';
+      bleedToggleBtn.className = showBleed
+        ? 'px-2.5 py-1.5 text-[11px] font-mono rounded transition-colors bg-[#c5a059]/30 text-[#dfb872] border border-[#c5a059]'
+        : 'px-2.5 py-1.5 text-[11px] font-mono rounded transition-colors bg-white/5 text-[#a89f91] border border-white/10';
+      draw();
+    });
+
+    // Watermark Selection
+    document.querySelectorAll('.wm-choice').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.wm-choice').forEach((b) => {
+          b.className = 'wm-choice p-3 border border-white/10 bg-[#080706] text-[#a89f91]';
+        });
+        btn.className = 'wm-choice active p-3 border border-[#c5a059] bg-[#c5a059]/20 text-[#dfb872]';
+        wmPosition = btn.getAttribute('data-wm') || 'none';
+        draw();
+      });
+    });
+
+    // Save Crop to Cloud KV
+    approveBtn.addEventListener('click', async () => {
+      const id = artworkSelect.value;
+      approveBtn.disabled = true;
+      statusMsg.textContent = 'Saving crop to Cloud KV...';
+      statusMsg.className = 'text-[11px] font-mono text-[#c5a059]';
+
+      try {
+        const res = await fetch('/api/approve-merch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id,
+            product: currentProductName,
+            crop: { panX, panY, zoom, ratio: currentRatio },
+            watermark: wmPosition,
+          }),
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          statusMsg.textContent = `Saved to Cloud ✓ (${currentProductName})`;
+          statusMsg.className = 'text-[11px] font-mono text-[#c5a059] font-bold';
+        } else {
+          statusMsg.textContent = data.error || 'Save failed.';
+          statusMsg.className = 'text-[11px] font-mono text-red-400';
+        }
+      } catch (err) {
+        statusMsg.textContent = 'Network communication error.';
+        statusMsg.className = 'text-[11px] font-mono text-red-400';
+      } finally {
+        approveBtn.disabled = false;
+      }
+    });
+
+    // Export KV Crops to Downloadable JSON
+    exportJsonBtn.addEventListener('click', async () => {
+      try {
+        const res = await fetch('/api/approve-merch');
+        const data = await res.json();
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'merch-crops.json';
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch {
+        alert('Failed to retrieve crops from cloud.');
+      }
+    });
+
+    artworkSelect.addEventListener('change', switchPhoto);
+    window.addEventListener('resize', draw);
+    switchPhoto();
+  </script>
+</Layout>

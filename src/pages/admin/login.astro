@@ -1,0 +1,107 @@
+---
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+
+const redirectParam = Astro.url.searchParams.get('redirect') || '/admin/merch-studio';
+const errorParam = Astro.url.searchParams.get('error') || '';
+---
+
+<Layout title="Admin Sign In | Alan Woodyard Photography" theme="walnut">
+  <main class="min-h-screen flex items-center justify-center p-6 bg-[#0c0a09]">
+    <div class="w-full max-w-md bg-[#161210] border border-white/10 p-8 shadow-2xl space-y-6">
+      
+      <div class="text-center space-y-2">
+        <span class="text-[11px] font-mono tracking-[0.25em] uppercase text-[#c5a059] block">
+          Secure Workstation Gate
+        </span>
+        <h1 class="text-2xl font-serif text-[#f7f4ee] font-light">
+          Alan Woodyard Studio
+        </h1>
+        <p class="text-xs font-mono text-[#a89f91]">
+          Authorized access required for catalog operations & fulfillment.
+        </p>
+      </div>
+
+      {errorParam === 'unconfigured' && (
+        <div class="p-3 border border-red-500/30 bg-red-950/20 text-red-400 font-mono text-xs">
+          ADMIN_PASSWORD secret has not been provisioned in Cloudflare yet.
+        </div>
+      )}
+
+      <form id="loginForm" class="space-y-4">
+        <input type="hidden" id="redirectInput" value={redirectParam} />
+        
+        <div class="space-y-1.5">
+          <label class="block text-xs font-mono uppercase tracking-wider text-[#a89f91]" for="adminPassword">
+            Master Passphrase
+          </label>
+          <input 
+            type="password" 
+            id="adminPassword" 
+            required 
+            autofocus
+            placeholder="••••••••••••••••"
+            class="w-full px-4 py-3 bg-[#080706] border border-white/15 text-[#f7f4ee] font-mono text-sm focus:border-[#c5a059] focus:outline-none"
+          />
+        </div>
+
+        <button 
+          type="submit" 
+          id="loginBtn"
+          class="w-full py-3.5 bg-[#c5a059] hover:bg-[#d9b36c] text-[#0d0b0a] font-mono text-xs uppercase tracking-widest font-bold transition-colors active:scale-[0.99]"
+        >
+          Unlock Studio &rarr;
+        </button>
+
+        <p id="errorMsg" class="text-xs font-mono text-red-400 text-center min-h-[1.25rem]"></p>
+      </form>
+
+      <div class="border-t border-white/10 pt-4 text-center">
+        <a href="/" class="text-xs font-mono text-[#8e8577] hover:text-[#f7f4ee]">
+          &larr; Return to Public Gallery
+        </a>
+      </div>
+
+    </div>
+  </main>
+</Layout>
+
+<script>
+  const form = document.getElementById('loginForm') as HTMLFormElement;
+  const passwordInput = document.getElementById('adminPassword') as HTMLInputElement;
+  const redirectInput = document.getElementById('redirectInput') as HTMLInputElement;
+  const loginBtn = document.getElementById('loginBtn') as HTMLButtonElement;
+  const errorMsg = document.getElementById('errorMsg')!;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    loginBtn.disabled = true;
+    const origText = loginBtn.textContent;
+    loginBtn.textContent = 'Authenticating...';
+    errorMsg.textContent = '';
+
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password: passwordInput.value,
+          redirect: redirectInput.value,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        window.location.href = data.redirect;
+      } else {
+        errorMsg.textContent = data.error || 'Authentication rejected.';
+        loginBtn.disabled = false;
+        loginBtn.textContent = origText;
+      }
+    } catch {
+      errorMsg.textContent = 'Network communication failure.';
+      loginBtn.disabled = false;
+      loginBtn.textContent = origText;
+    }
+  });
+</script>
