@@ -1,7 +1,8 @@
 import type { APIRoute } from 'astro';
 import Stripe from 'stripe';
-import fs from 'node:fs';
-import path from 'node:path';
+// @ts-ignore
+import { env } from 'cloudflare:workers';
+import pricingMatrix from '../../content/pricing-matrix.json';
 
 export const prerender = false;
 
@@ -30,15 +31,14 @@ export const POST: APIRoute = async (context) => {
       });
     }
 
-    // Read secret from Cloudflare Worker runtime binding first, then fallback to env
-    const runtimeEnv = (context.locals as any)?.runtime?.env || {};
+    // Access secrets via Cloudflare Workers module import, falling back to process.env
     const stripeKey =
-      runtimeEnv.STRIPE_SECRET_KEY ||
-      import.meta.env.STRIPE_SECRET_KEY ||
+      (env as any)?.STRIPE_SECRET_KEY ||
+      (import.meta.env as any)?.STRIPE_SECRET_KEY ||
       process.env.STRIPE_SECRET_KEY;
 
     if (!stripeKey || stripeKey.includes('placeholder')) {
-      console.warn('[CHECKOUT] Live Stripe key not bound. Falling back to sandbox simulation.');
+      console.warn('[CHECKOUT] Live Stripe key not bound. Returning simulated session.');
       return new Response(
         JSON.stringify({
           url: '/order-confirmation?session_id=cs_test_simulated_' + Date.now(),
@@ -55,11 +55,7 @@ export const POST: APIRoute = async (context) => {
       apiVersion: '2024-12-18.acacia' as any,
     });
 
-    const matrixPath = path.resolve('src/content/pricing-matrix.json');
-    let matrix: Record<string, { retailPrice: number }> = {};
-    if (fs.existsSync(matrixPath)) {
-      matrix = JSON.parse(fs.readFileSync(matrixPath, 'utf8'));
-    }
+    const matrix = pricingMatrix as Record<string, { retailPrice: number }>;
 
     const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map((item) => {
       const canonical = matrix[item.sku];
