@@ -1,0 +1,18 @@
+{
+  "id": "twilight-at-kemah-boardwalk",
+  "title": "Twilight at Kemah Boardwalk",
+  "mood": "magenta-twilight",
+  "collections": [
+    "gulf-coast",
+    "maritime",
+    "twilight"
+  ],
+  "master_file": "assets/source-masters/Twilight-at-Kemah-Boardwalk.tif",
+  "description": "Twilight at Kemah Boardwalk Photograph by Alan Woodyard",
+  "capture": {
+    "dimensions": "5748 x 7664",
+    "aspect_ratio": "0.75:1",
+    "orientation": "portrait"
+  },
+  "merch_approved": []
+}

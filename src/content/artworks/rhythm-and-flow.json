@@ -1,0 +1,18 @@
+{
+  "id": "rhythm-and-flow",
+  "title": "Rhythm and Flow",
+  "mood": "coastal-geometry",
+  "collections": [
+    "nashville",
+    "architectural",
+    "geometry"
+  ],
+  "master_file": "assets/source-masters/Rhythm-and-Flow.tif",
+  "description": "Rhythm and Flow Photograph by Alan Woodyard",
+  "capture": {
+    "dimensions": "9504 x 6336",
+    "aspect_ratio": "1.50:1",
+    "orientation": "landscape"
+  },
+  "merch_approved": []
+}
