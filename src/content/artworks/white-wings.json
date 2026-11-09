@@ -1,59 +1,57 @@
 {
-    "id":  "13-01k1imgrev-whitewings",
-    "title":  "White Wings",
-    "caption":  "",
-    "description":  "",
-    "mood":  "all",
-    "collections":  [
-
-                    ],
-    "master_file":  "assets/source-masters/13-01K1ImgRev-WhiteWings.tiff",
-    "sha256":  "361c521a89cc71e579f9f531e1f59797da6b47e58c7175acf436a6814fbf53f2",
-    "version":  1,
-    "display":  {
-                    "watermark":  "default"
-                },
-    "capture":  {
-                    "date":  "2026-11-03",
-                    "location":  "",
-                    "camera":  "Studio",
-                    "lens":  "",
-                    "settings":  {
-                                     "aperture":  "",
-                                     "shutter_speed":  "",
-                                     "iso":  ""
-                                 },
-                    "native_dimensions":  {
-                                              "width":  8448,
-                                              "height":  6336
-                                          },
-                    "aspect_ratio":  "4:3"
-                },
-    "merch_approved":  [
-                           "Studio Panoramic Desk Mat (landscape)",
-                           "deskmat",
-                           "Studio Panoramic Desk Mat"
-                       ],
-    "print_variants":  [
-                           {
-                               "sku":  "prodigi:rag-28x21",
-                               "substrate":  "hahnemuhle-photo-rag",
-                               "size":  "28x21",
-                               "price_cents":  18500
-                           }
-                       ],
-    "solo_display":  true,
-    "merch_crops":  {
-                        "Studio Panoramic Desk Mat (landscape)":  {
-                                                                      "crop":  {
-                                                                                   "panX":  0,
-                                                                                   "panY":  -73,
-                                                                                   "zoom":  1,
-                                                                                   "ratio":  2.032258064516129,
-                                                                                   "orientation":  "landscape"
-                                                                               },
-                                                                      "watermark":  "none",
-                                                                      "approved_at":  "2026-11-05T22:04:54.623Z"
-                                                                  }
-                    }
+  "id": "white-wings",
+  "title": "White Wings",
+  "caption": "",
+  "description": "",
+  "mood": "all",
+  "collections": [],
+  "master_file": "assets/source-masters/White-Wings.tiff",
+  "sha256": "361c521a89cc71e579f9f531e1f59797da6b47e58c7175acf436a6814fbf53f2",
+  "version": 1,
+  "display": {
+    "watermark": "default"
+  },
+  "capture": {
+    "date": "2026-11-03",
+    "location": "",
+    "camera": "Studio",
+    "lens": "",
+    "settings": {
+      "aperture": "",
+      "shutter_speed": "",
+      "iso": ""
+    },
+    "native_dimensions": {
+      "width": 8448,
+      "height": 6336
+    },
+    "aspect_ratio": "4:3"
+  },
+  "merch_approved": [
+    "Studio Panoramic Desk Mat (landscape)",
+    "deskmat",
+    "Studio Panoramic Desk Mat"
+  ],
+  "print_variants": [
+    {
+      "sku": "prodigi:rag-28x21",
+      "substrate": "hahnemuhle-photo-rag",
+      "size": "28x21",
+      "price_cents": 18500
+    }
+  ],
+  "solo_display": true,
+  "merch_crops": {
+    "Studio Panoramic Desk Mat (landscape)": {
+      "crop": {
+        "panX": 0,
+        "panY": -73,
+        "zoom": 1,
+        "ratio": 2.032258064516129,
+        "orientation": "landscape"
+      },
+      "watermark": "none",
+      "approved_at": "2026-11-05T22:04:54.623Z"
+    }
+  }
 }

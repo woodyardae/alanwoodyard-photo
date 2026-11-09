@@ -1,44 +1,40 @@
 {
-    "id":  "07-01k1imgrev-vertigo",
-    "title":  "Vertigo",
-    "caption":  "",
-    "description":  "",
-    "mood":  "all",
-    "collections":  [
-
-                    ],
-    "master_file":  "assets/source-masters/07-01K1ImgRev-Vertigo.tiff",
-    "sha256":  "73f189617193b421ea4d749c094c22f6919061eb9c6deef103415ce436c68167",
-    "version":  1,
-    "display":  {
-                    "watermark":  "default"
-                },
-    "capture":  {
-                    "date":  "2026-11-03",
-                    "location":  "",
-                    "camera":  "Studio",
-                    "lens":  "",
-                    "settings":  {
-                                     "aperture":  "",
-                                     "shutter_speed":  "",
-                                     "iso":  ""
-                                 },
-                    "native_dimensions":  {
-                                              "width":  2801,
-                                              "height":  2801
-                                          },
-                    "aspect_ratio":  "1:1"
-                },
-    "merch_approved":  [
-
-                       ],
-    "print_variants":  [
-                           {
-                               "sku":  "prodigi:rag-9x9",
-                               "substrate":  "hahnemuhle-photo-rag",
-                               "size":  "9x9",
-                               "price_cents":  18500
-                           }
-                       ],
-    "solo_display":  true
+  "id": "vertigo",
+  "title": "Vertigo",
+  "caption": "",
+  "description": "",
+  "mood": "all",
+  "collections": [],
+  "master_file": "assets/source-masters/Vertigo.tiff",
+  "sha256": "73f189617193b421ea4d749c094c22f6919061eb9c6deef103415ce436c68167",
+  "version": 1,
+  "display": {
+    "watermark": "default"
+  },
+  "capture": {
+    "date": "2026-11-03",
+    "location": "",
+    "camera": "Studio",
+    "lens": "",
+    "settings": {
+      "aperture": "",
+      "shutter_speed": "",
+      "iso": ""
+    },
+    "native_dimensions": {
+      "width": 2801,
+      "height": 2801
+    },
+    "aspect_ratio": "1:1"
+  },
+  "merch_approved": [],
+  "print_variants": [
+    {
+      "sku": "prodigi:rag-9x9",
+      "substrate": "hahnemuhle-photo-rag",
+      "size": "9x9",
+      "price_cents": 18500
+    }
+  ],
+  "solo_display": true
 }
