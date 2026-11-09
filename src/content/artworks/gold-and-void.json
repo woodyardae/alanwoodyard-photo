@@ -1,11 +1,11 @@
 {
-  "id": "path",
-  "title": "Path",
+  "id": "gold-and-void",
+  "title": "Gold and Void",
   "caption": "",
-  "description": "",
+  "description": "Gold and Void Photograph by Alan Woodyard",
   "mood": "all",
   "collections": [],
-  "master_file": "assets/source-masters/Path.tiff",
+  "master_file": "assets/source-masters/Gold-and-Void.tiff",
   "sha256": "facc283f34d79f078e15f556c9e1a87947346a00ad1fe4de6102065c11f05e42",
   "version": 1,
   "display": {
