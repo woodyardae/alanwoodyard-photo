@@ -58,12 +58,12 @@ export const POST: APIRoute = async (context) => {
       apiVersion: '2024-12-18.acacia' as any,
     });
 
-    const matrix = pricingMatrix as Record<string, { retailPrice: number }>;
+    const matrix = pricingMatrix as Record<string, { retail: number; category: string; size: string; vendor: string }>;
 
     const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map((item) => {
       const canonical = matrix[item.sku];
-      const unitAmountCents = canonical
-        ? Math.round(canonical.retailPrice * 100)
+      const unitAmountCents = canonical && typeof canonical.retail === 'number'
+        ? Math.round(canonical.retail * 100)
         : Math.round(item.price * 100);
 
       return {
@@ -87,7 +87,6 @@ export const POST: APIRoute = async (context) => {
 
     const session = await stripe.checkout.sessions.create({
       ui_mode: 'embedded',
-      payment_method_types: ['card'],
       mode: 'payment',
       line_items,
       customer_email: customerEmail || undefined,

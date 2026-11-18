@@ -13,6 +13,33 @@ interface CropData {
   ratio: number;
 }
 
+const RATIO_MAP: Record<string, number> = {
+  '1:1': 1.0,
+  '2:3': 2 / 3,
+  '4:5': 4 / 5,
+  '3:4': 3 / 4,
+  '16:9': 16 / 9,
+  '16:7': 16 / 7,
+  '17:7': 17 / 7,
+  '1:2': 0.5,
+  '5:7': 5 / 7,
+  '20:29': 20 / 29,
+};
+
+function resolveRatio(key: string, cropInfo: Partial<CropData>): number {
+  if (typeof cropInfo.ratio === 'number' && cropInfo.ratio > 0) {
+    return cropInfo.ratio;
+  }
+  if (RATIO_MAP[key]) {
+    return RATIO_MAP[key];
+  }
+  const parts = key.split(':').map(Number);
+  if (parts.length === 2 && parts[0] > 0 && parts[1] > 0) {
+    return parts[0] / parts[1];
+  }
+  return 1.5;
+}
+
 async function renderCrop() {
   if (!fs.existsSync(OUT_DIR)) {
     fs.mkdirSync(OUT_DIR, { recursive: true });
@@ -56,17 +83,27 @@ async function renderCrop() {
     const origH = imageMetadata.height || 3000;
 
     for (const [productName, config] of Object.entries(data.merch_crops)) {
-      const cropInfo = (config as any).crop as CropData;
+      const rawConfig = config as any;
+      const isClusterEntry = !rawConfig?.crop && (typeof rawConfig?.zoom === 'number' || typeof rawConfig?.panX === 'number');
+      const cropInfo: Partial<CropData> | undefined = rawConfig?.crop || (isClusterEntry ? rawConfig : undefined);
       if (!cropInfo) continue;
 
-      const { ratio, zoom, panX, panY } = cropInfo;
-      const safeRatio = ratio || 1.5;
+      const { zoom, panX, panY } = cropInfo;
+      const safeRatio = resolveRatio(productName, cropInfo);
       const safeZoom = zoom || 1.0;
 
       // Studio canvas coordinates conversion to master source pixels
-      // In Merch Studio: base scaling fits image inside canvas bounds
-      const canvasRefW = 600;
-      const canvasRefH = 600 / safeRatio;
+      // Match merch-studio.astro getCanvasDims (700x500 max bounds) for cluster entries, 600px ref for legacy
+      let canvasRefW = 600;
+      let canvasRefH = 600 / safeRatio;
+      if (isClusterEntry) {
+        canvasRefW = 700;
+        canvasRefH = canvasRefW / safeRatio;
+        if (canvasRefH > 500) {
+          canvasRefH = 500;
+          canvasRefW = canvasRefH * safeRatio;
+        }
+      }
 
       const imgAspect = origW / origH;
       const canvasAspect = safeRatio;

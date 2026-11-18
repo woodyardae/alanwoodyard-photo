@@ -23,7 +23,7 @@ const FAA_EXISTING_SLUGS = [
   'beneath-the-span-without-title'
 ];
 
-function escapeCsv(val) {
+function escapeCsv(val: string | undefined | null) {
   if (!val) return '""';
   if (val.includes(',') || val.includes('"') || val.includes('\n')) {
     return `"${val.replace(/"/g, '""')}"`;
@@ -32,7 +32,7 @@ function escapeCsv(val) {
 }
 
 const files = fs.readdirSync(MANIFEST_DIR).filter(f => f.endsWith('.json'));
-const rows = [];
+const rows: string[] = [];
 
 rows.push(['File Name', 'Title', 'Keywords', 'Description', 'Subject', 'Medium'].join(','));
 

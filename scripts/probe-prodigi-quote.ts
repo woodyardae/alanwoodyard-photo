@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const env = {};
+const env: Record<string, string> = {};
 const envPath = path.resolve('.env');
 if (fs.existsSync(envPath)) {
   fs.readFileSync(envPath, 'utf8').split(/\r?\n/).forEach((line) => {
@@ -66,7 +66,7 @@ async function fetchLiveQuotes() {
   console.log('SIZE      SKU               WHOLESALE   RETAIL    EST. PROFIT   MARGIN %');
   console.log('------------------------------------------------------------------------');
 
-  primaryQuote.items.forEach((item, idx) => {
+  primaryQuote.items.forEach((item: any, idx: number) => {
     const meta = SIZES[idx];
     const wholesale = parseFloat(item.cost);
     const profit = meta.retailTarget - wholesale;

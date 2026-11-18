@@ -1,652 +1,707 @@
-﻿---
-export const prerender = false;
+---
 import Layout from '../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
 
 const artworks = await getCollection('artworks');
-const catalog = artworks.sort((a, b) => a.data.title.localeCompare(b.data.title));
+
+const catalogData = artworks.map((art) => ({
+  id: art.id,
+  title: art.data.title,
+  img: `/images/artworks/${art.id}.webp`,
+  width: art.data.capture?.native_dimensions?.width || 6000,
+  height: art.data.capture?.native_dimensions?.height || 4000,
+  crops: art.data.merch_crops || {},
+  approved: art.data.merch_approved || []
+}));
+
+const RATIO_PRODUCTS = {
+  '1:1': [
+    { id: 'prodigi-acrylic-block-4x4', name: 'Optical Acrylic Block (4x4")', vendor: 'Prodigi', retail: '$38.00', minDpi: 300, minPx: '1200x1200' },
+    { id: 'prodigi-acrylic-block-6x6', name: 'Optical Acrylic Block (6x6")', vendor: 'Prodigi', retail: '$52.00', minDpi: 300, minPx: '1800x1800' },
+    { id: 'prodigi-acrylic-block-8x8', name: 'Optical Acrylic Block (8x8")', vendor: 'Prodigi', retail: '$68.00', minDpi: 300, minPx: '2400x2400' },
+    { id: 'prodigi-rag-12x12', name: 'Square Photo Rag Print (12x12")', vendor: 'Prodigi', retail: '$85.00', minDpi: 300, minPx: '3600x3600' },
+    { id: 'prodigi-rag-20x20', name: 'Square Photo Rag Print (20x20")', vendor: 'Prodigi', retail: '$175.00', minDpi: 300, minPx: '6000x6000' },
+    { id: 'prodigi-canvas-12x12', name: 'Stretched Museum Canvas (12x12")', vendor: 'Prodigi', retail: '$135.00', minDpi: 240, minPx: '2880x2880' },
+    { id: 'prodigi-canvas-20x20', name: 'Stretched Museum Canvas (20x20")', vendor: 'Prodigi', retail: '$210.00', minDpi: 240, minPx: '4800x4800' },
+    { id: 'printify-coasters-4pk', name: 'Hardwood Coaster Set (4-Pk)', vendor: 'Printify', retail: '$32.00', minDpi: 300, minPx: '1200x1200' },
+    { id: 'gooten-tile-8x8', name: 'Ceramic Accent Tile / Trivet (8x8")', vendor: 'Gooten', retail: '$28.00', minDpi: 300, minPx: '2400x2400' },
+    { id: 'printify-pillow-18', name: 'Spun Poly Throw Pillow (18x18")', vendor: 'Printify', retail: '$42.00', minDpi: 180, minPx: '3240x3240' },
+    { id: 'printify-pillow-22', name: 'Spun Poly Throw Pillow (22x22")', vendor: 'Printify', retail: '$52.00', minDpi: 180, minPx: '3960x3960' },
+    { id: 'printful-tote-bag', name: 'Heavyweight Canvas Tote Bag', vendor: 'Printful', retail: '$38.00', minDpi: 200, minPx: '3000x3000' }
+  ],
+  '2:3': [
+    { id: 'prodigi-rag-12x18', name: 'Hahnemühle Photo Rag (12x18")', vendor: 'Prodigi', retail: '$125.00', minDpi: 300, minPx: '3600x5400' },
+    { id: 'prodigi-rag-16x24', name: 'Hahnemühle Photo Rag (16x24")', vendor: 'Prodigi', retail: '$195.00', minDpi: 300, minPx: '4800x7200' },
+    { id: 'prodigi-rag-20x30', name: 'Hahnemühle Photo Rag (20x30")', vendor: 'Prodigi', retail: '$265.00', minDpi: 300, minPx: '6000x9000' },
+    { id: 'prodigi-rag-24x36', name: 'Hahnemühle Photo Rag (24x36")', vendor: 'Prodigi', retail: '$340.00', minDpi: 300, minPx: '7200x10800' },
+    { id: 'prodigi-rag-30x40', name: 'Hahnemühle Photo Rag (30x40")', vendor: 'Prodigi', retail: '$480.00', minDpi: 300, minPx: '9000x12000' },
+    { id: 'prodigi-frame-16x24', name: 'Matted Shadowbox Frame (16x24")', vendor: 'Prodigi', retail: '$385.00', minDpi: 300, minPx: '4800x7200' },
+    { id: 'prodigi-frame-20x30', name: 'Matted Shadowbox Frame (20x30")', vendor: 'Prodigi', retail: '$495.00', minDpi: 300, minPx: '6000x9000' },
+    { id: 'prodigi-frame-24x36', name: 'Matted Shadowbox Frame (24x36")', vendor: 'Prodigi', retail: '$650.00', minDpi: 300, minPx: '7200x10800' },
+    { id: 'prodigi-acr-12x18', name: 'Optical Acrylic Float Panel (12x18")', vendor: 'Prodigi', retail: '$285.00', minDpi: 240, minPx: '2880x4320' },
+    { id: 'prodigi-acr-16x24', name: 'Optical Acrylic Float Panel (16x24")', vendor: 'Prodigi', retail: '$420.00', minDpi: 240, minPx: '3840x5760' },
+    { id: 'prodigi-acr-20x30', name: 'Optical Acrylic Float Panel (20x30")', vendor: 'Prodigi', retail: '$580.00', minDpi: 240, minPx: '4800x7200' },
+    { id: 'prodigi-acr-24x36', name: 'Optical Acrylic Float Panel (24x36")', vendor: 'Prodigi', retail: '$750.00', minDpi: 240, minPx: '5760x8640' },
+    { id: 'prodigi-met-12x18', name: 'Brushed Aluminum Metal Plate (12x18")', vendor: 'Prodigi', retail: '$220.00', minDpi: 200, minPx: '2400x3600' },
+    { id: 'prodigi-met-16x24', name: 'Brushed Aluminum Metal Plate (16x24")', vendor: 'Prodigi', retail: '$340.00', minDpi: 200, minPx: '3200x4800' },
+    { id: 'prodigi-met-20x30', name: 'Brushed Aluminum Metal Plate (20x30")', vendor: 'Prodigi', retail: '$460.00', minDpi: 200, minPx: '4000x6000' },
+    { id: 'prodigi-met-24x36', name: 'Brushed Aluminum Metal Plate (24x36")', vendor: 'Prodigi', retail: '$580.00', minDpi: 200, minPx: '4800x7200' },
+    { id: 'prodigi-can-16x24', name: 'Museum Stretched Canvas (16x24")', vendor: 'Prodigi', retail: '$195.00', minDpi: 200, minPx: '3200x4800' },
+    { id: 'prodigi-can-20x30', name: 'Museum Stretched Canvas (20x30")', vendor: 'Prodigi', retail: '$260.00', minDpi: 200, minPx: '4000x6000' },
+    { id: 'prodigi-can-24x36', name: 'Museum Stretched Canvas (24x36")', vendor: 'Prodigi', retail: '$340.00', minDpi: 200, minPx: '4800x7200' },
+    { id: 'printful-can-24x36', name: 'Floater Framed Canvas (24x36")', vendor: 'Printful', retail: '$365.00', minDpi: 200, minPx: '4800x7200' }
+  ],
+  '4:5': [
+    { id: 'prodigi-frame-8x10', name: 'Matted Gallery Frame (8x10")', vendor: 'Prodigi', retail: '$145.00', minDpi: 300, minPx: '2400x3000' },
+    { id: 'prodigi-frame-16x20', name: 'Matted Gallery Frame (16x20")', vendor: 'Prodigi', retail: '$220.00', minDpi: 300, minPx: '4800x6000' },
+    { id: 'prodigi-rag-8x10', name: 'Hahnemühle Photo Rag (8x10")', vendor: 'Prodigi', retail: '$75.00', minDpi: 300, minPx: '2400x3000' },
+    { id: 'prodigi-rag-16x20', name: 'Hahnemühle Photo Rag (16x20")', vendor: 'Prodigi', retail: '$165.00', minDpi: 300, minPx: '4800x6000' },
+    { id: 'prodigi-can-16x20', name: 'Museum Stretched Canvas (16x20")', vendor: 'Prodigi', retail: '$165.00', minDpi: 200, minPx: '3200x4000' },
+    { id: 'printful-can-24x30', name: 'Museum Stretched Canvas (24x30")', vendor: 'Printful', retail: '$235.00', minDpi: 200, minPx: '4800x6000' },
+    { id: 'printful-tee-chest', name: 'Heavyweight Studio Tee (Chest Print)', vendor: 'Printful', retail: '$48.00', minDpi: 240, minPx: '2400x3000' }
+  ],
+  '3:4': [
+    { id: 'prodigi-frame-18x24', name: 'Matted Gallery Frame (18x24")', vendor: 'Prodigi', retail: '$295.00', minDpi: 300, minPx: '5400x7200' },
+    { id: 'prodigi-rag-18x24', name: 'Hahnemühle Photo Rag (18x24")', vendor: 'Prodigi', retail: '$185.00', minDpi: 300, minPx: '5400x7200' },
+    { id: 'printify-puzzle-120', name: 'Die-Cut Jigsaw Puzzle (120-pc)', vendor: 'Printify', retail: '$28.00', minDpi: 300, minPx: '2400x3200' },
+    { id: 'printify-puzzle-252', name: 'Die-Cut Jigsaw Puzzle (252-pc)', vendor: 'Printify', retail: '$34.00', minDpi: 300, minPx: '3150x4200' },
+    { id: 'printify-puzzle-500', name: 'Die-Cut Jigsaw Puzzle (500-pc)', vendor: 'Printify', retail: '$42.00', minDpi: 300, minPx: '4800x6400' },
+    { id: 'printify-puzzle-1000', name: 'Die-Cut Jigsaw Puzzle (1000-pc)', vendor: 'Printify', retail: '$54.00', minDpi: 300, minPx: '6000x8000' },
+    { id: 'gelato-wall-calendar', name: 'Wire-O Wall Calendar (11x8.5")', vendor: 'Gelato', retail: '$38.00', minDpi: 300, minPx: '3300x2550' }
+  ],
+  '16:9': [
+    { id: 'prodigi-met-18x32', name: 'Aluminum Horizon Panel (18x32")', vendor: 'Prodigi', retail: '$440.00', minDpi: 200, minPx: '3600x6400' },
+    { id: 'prodigi-can-18x32', name: 'Panoramic Stretched Canvas (18x32")', vendor: 'Prodigi', retail: '$240.00', minDpi: 200, minPx: '3600x6400' },
+    { id: 'prodigi-acr-18x32', name: 'Optical Acrylic Horizon Panel (18x32")', vendor: 'Prodigi', retail: '$520.00', minDpi: 240, minPx: '4320x7680' },
+    { id: 'gooten-panoramic-block', name: 'Panoramic Acrylic Desk Block (8x4.5")', vendor: 'Gooten', retail: '$56.00', minDpi: 300, minPx: '2400x1350' }
+  ],
+  '16:7': [
+    { id: 'prodigi-blk-8x4', name: 'Panoramic Acrylic Desk Block (8x4")', vendor: 'Prodigi', retail: '$56.00', minDpi: 300, minPx: '2400x1200' },
+    { id: 'printify-deskmat-std', name: 'Studio Panoramic Desk Mat (31.5x15.5")', vendor: 'Printify', retail: '$48.00', minDpi: 300, minPx: '9450x4650' },
+    { id: 'printify-deskmat-xl', name: 'Extra-Large Studio Desk Pad (35.4x15.7")', vendor: 'Printify', retail: '$54.00', minDpi: 300, minPx: '10620x4710' },
+    { id: 'printify-deskmat-xxl', name: 'Command Deck Desk Mat (39.4x17.7")', vendor: 'Printify', retail: '$64.00', minDpi: 300, minPx: '11820x5310' },
+    { id: 'gooten-panoramic-deskmat', name: 'Heavyweight Desk Runner (36x18")', vendor: 'Gooten', retail: '$58.00', minDpi: 300, minPx: '10800x5400' }
+  ],
+  '17:7': [
+    { id: 'prodigi-mug-11oz', name: 'Ceramic Waterfront Mug (11oz)', vendor: 'Prodigi', retail: '$22.00', minDpi: 300, minPx: '2600x1070' },
+    { id: 'prodigi-mug-15oz', name: 'Ceramic Waterfront Mug (15oz)', vendor: 'Prodigi', retail: '$26.00', minDpi: 300, minPx: '2900x1200' },
+    { id: 'printify-enamel-mug', name: 'Stainless Enamel Camp Mug (12oz)', vendor: 'Printify', retail: '$28.00', minDpi: 300, minPx: '2550x1050' },
+    { id: 'printify-tumbler-20oz', name: 'Stainless Travel Tumbler (20oz)', vendor: 'Printify', retail: '$34.00', minDpi: 300, minPx: '2700x1100' },
+    { id: 'printify-waterbottle-32oz', name: 'Insulated Sports Bottle (32oz)', vendor: 'Printify', retail: '$38.00', minDpi: 300, minPx: '3100x1250' }
+  ],
+  '1:2': [
+    { id: 'printify-phone-iphone-pro', name: 'Tough Case (iPhone 14/15/16 Pro)', vendor: 'Printify', retail: '$36.00', minDpi: 300, minPx: '1500x3000' },
+    { id: 'printify-phone-iphone-max', name: 'Tough Case (iPhone 14/15/16 Pro Max)', vendor: 'Printify', retail: '$36.00', minDpi: 300, minPx: '1600x3200' },
+    { id: 'printify-phone-galaxy-ultra', name: 'Tough Case (Galaxy S23/S24/S25 Ultra)', vendor: 'Printify', retail: '$36.00', minDpi: 300, minPx: '1600x3200' },
+    { id: 'gooten-slim-case', name: 'Slim Impact Phone Case (Universal)', vendor: 'Gooten', retail: '$32.00', minDpi: 300, minPx: '1400x2800' }
+  ],
+  '5:7': [
+    { id: 'prodigi-post-10pk', name: 'Archival Postcards (5x7" 10-Pk)', vendor: 'Prodigi', retail: '$34.00', minDpi: 300, minPx: '1500x2100' },
+    { id: 'prodigi-cards-10pk', name: 'Fine-Art Folded Greeting Cards (5x7" 10-Pk)', vendor: 'Prodigi', retail: '$42.00', minDpi: 300, minPx: '1500x2100' },
+    { id: 'prodigi-folio-5x7', name: 'Collector Mini-Print Folio (5x7")', vendor: 'Prodigi', retail: '$65.00', minDpi: 300, minPx: '1500x2100' },
+    { id: 'prodigi-frame-11x14', name: 'Matted Gallery Frame (11x14")', vendor: 'Prodigi', retail: '$185.00', minDpi: 300, minPx: '3300x4200' }
+  ],
+  '20:29': [
+    { id: 'displate-steel-m', name: 'Displate Steel Poster - Medium (17.7x12.6")', vendor: 'Displate', retail: '$49.00', minDpi: 300, minPx: '3780x5310' },
+    { id: 'displate-steel-l', name: 'Displate Steel Poster - Large (26.6x18.9")', vendor: 'Displate', retail: '$98.00', minDpi: 300, minPx: '5670x7980' }
+  ]
+};
 ---
 
-<Layout title="Merchandise Studio | Alan Woodyard Admin" theme="walnut">
-  <div class="min-h-screen flex flex-col bg-[#0c0a09] text-[#f7f4ee]">
-    
-    <!-- Top Header -->
-    <header class="sticky top-0 z-40 bg-[#161210]/95 backdrop-blur-md border-b border-white/10 px-4 py-3 sm:px-6">
-      <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <span class="px-2 py-0.5 bg-[#c5a059]/20 text-[#dfb872] border border-[#c5a059]/40 text-[10px] font-mono uppercase font-bold rounded">
-              Private Studio
-            </span>
-            <h1 class="text-base sm:text-lg font-serif tracking-wide text-[#f7f4ee]">Merchandise Framing</h1>
-          </div>
-          <a href="/admin/syndication" class="sm:hidden text-xs font-mono text-[#a89f91]">Syndication &rarr;</a>
-        </div>
+<Layout title="Merch Framing & Product Inclusion Studio">
+  <!-- Live Browser Diagnostic Console -->
+  <div id="runtimeCrashBanner" style="display: none;" class="fixed top-0 left-0 right-0 z-50 bg-red-900 border-b border-red-500 text-white p-4 font-mono text-xs"></div>
 
-        <div class="hidden sm:flex items-center gap-4 text-xs font-mono">
-          <a href="/admin/syndication" class="text-[#a89f91] hover:text-[#f7f4ee]">Syndication Desk &rarr;</a>
-          <a href="/" class="text-[#c5a059] hover:underline" target="_blank">View Live Store ↗</a>
-        </div>
-      </div>
-    </header>
-
-    <!-- Substrate Rail -->
-    <nav class="bg-[#100d0c] border-b border-white/[0.08] px-4 py-2.5 overflow-x-auto no-scrollbar">
-      <div class="max-w-7xl mx-auto flex items-center gap-2 min-w-max" id="productChips">
-        <button type="button" class="prod-chip active px-3.5 py-2 border border-[#c5a059] bg-[#c5a059]/20 text-[#dfb872] text-xs font-mono uppercase transition-colors" data-w="16" data-h="7">
-          Desk Pad (16:7)
-        </button>
-        <button type="button" class="prod-chip px-3.5 py-2 border border-white/10 bg-[#161210] text-[#a89f91] text-xs font-mono uppercase transition-colors" data-w="20" data-h="29">
-          Steel Plate (Portrait)
-        </button>
-        <button type="button" class="prod-chip px-3.5 py-2 border border-white/10 bg-[#161210] text-[#a89f91] text-xs font-mono uppercase transition-colors" data-w="29" data-h="20">
-          Steel Plate (Landscape)
-        </button>
-        <button type="button" class="prod-chip px-3.5 py-2 border border-white/10 bg-[#161210] text-[#a89f91] text-xs font-mono uppercase transition-colors" data-w="4" data-h="5">
-          Archival Frame (4:5)
-        </button>
-        <button type="button" class="prod-chip px-3.5 py-2 border border-white/10 bg-[#161210] text-[#a89f91] text-xs font-mono uppercase transition-colors" data-w="1" data-h="1">
-          Square Tile (1:1)
-        </button>
-        <button type="button" class="prod-chip px-3.5 py-2 border border-white/10 bg-[#161210] text-[#a89f91] text-xs font-mono uppercase transition-colors" data-w="2" data-h="1">
-          Canvas Wrap (2:1)
-        </button>
-      </div>
-    </nav>
-
-    <!-- Workspace Grid -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start pb-28 lg:pb-12">
+  <!-- Isolated Auth Gate -->
+  <div id="authGate" class="w-full pt-16 pb-24 px-6 flex justify-center text-[#f7f4ee]">
+    <div class="w-full max-w-sm bg-[#120f0d] border border-white/[0.1] p-8 rounded shadow-2xl">
+      <h1 class="font-serif text-xl mb-1 text-[#c5a059]">Merch Studio Access</h1>
+      <p class="text-xs font-mono text-[#a89f91] mb-6">Enter master password to unlock.</p>
       
-      <!-- Left: Interactive Canvas Viewport -->
-      <section class="lg:col-span-7 xl:col-span-8 flex flex-col items-center">
-        <div 
-          class="relative w-full aspect-[4/3] bg-[#050404] border border-white/15 overflow-hidden flex items-center justify-center select-none shadow-2xl" 
-          id="viewportContainer"
-          style="touch-action: none;"
-        >
-          <canvas 
-            id="cropCanvas" 
-            class="max-w-full max-h-full cursor-grab active:cursor-grabbing"
-            style="touch-action: none;"
-          ></canvas>
+      <div id="gateErr" style="display: none;" class="mb-4 p-3 bg-red-950/60 border border-red-500/40 text-red-200 text-xs font-mono rounded">
+        Incorrect master password.
+      </div>
 
-          <!-- On-Canvas HUD Controls -->
-          <div class="absolute bottom-3 inset-x-3 flex items-center justify-between pointer-events-none gap-2">
-            <div class="flex items-center gap-1.5 pointer-events-auto bg-[#0a0808]/90 backdrop-blur-md border border-white/15 p-1 rounded">
-              <button 
-                type="button" 
-                id="hudGridBtn" 
-                class="px-2.5 py-1.5 text-[11px] font-mono rounded transition-colors bg-[#c5a059]/30 text-[#dfb872] border border-[#c5a059]"
-              >
-                Grid: ON
-              </button>
-              <button 
-                type="button" 
-                id="hudBleedBtn" 
-                class="px-2.5 py-1.5 text-[11px] font-mono rounded transition-colors bg-[#c5a059]/30 text-[#dfb872] border border-[#c5a059]"
-              >
-                Bleed: ON
-              </button>
-            </div>
-
-            <div class="flex items-center gap-1 pointer-events-auto bg-[#0a0808]/90 backdrop-blur-md border border-white/15 p-1 rounded text-xs font-mono">
-              <button type="button" id="hudZoomOutBtn" class="w-8 h-7 flex items-center justify-center text-base hover:bg-white/10 text-[#f7f4ee] active:scale-95 transition-transform">−</button>
-              <span id="hudZoomDisplay" class="px-1 text-[11px] text-[#dfb872] min-w-[3rem] text-center font-bold">1.00x</span>
-              <button type="button" id="hudZoomInBtn" class="w-8 h-7 flex items-center justify-center text-base hover:bg-white/10 text-[#f7f4ee] active:scale-95 transition-transform">+</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="w-full mt-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] font-mono text-[#8e8577]">
-          <p>Two-finger pinch to zoom &bull; Drag to pan &bull; Double-tap to reset</p>
-          <p><span class="text-[#f5da9b]">Bleed margin:</span> 5% safe lab cut line</p>
-        </div>
-      </section>
-
-      <!-- Right: Full Control Panel -->
-      <section class="lg:col-span-5 xl:col-span-4 space-y-5 bg-[#14100e] border border-white/10 p-5 rounded-[2px]">
-        
-        <!-- Artwork Selection -->
-        <div class="space-y-1.5">
-          <label class="block text-[11px] font-mono uppercase tracking-wider text-[#a89f91]">Photograph</label>
-          <div class="flex items-center gap-2">
-            <button type="button" id="prevArtworkBtn" class="px-3 py-2.5 bg-[#080706] hover:bg-[#201a17] border border-white/15 text-xs font-mono text-[#dfb872] active:scale-95 transition-all">◀</button>
-            <select 
-              id="artworkSelect" 
-              class="flex-1 text-xs font-mono bg-[#080706] border border-white/15 py-2.5 px-3 text-[#f7f4ee] focus:border-[#c5a059] focus:outline-none"
-            >
-              {catalog.map((item) => (
-                <option value={item.id}>{item.data.title}</option>
-              ))}
-            </select>
-            <button type="button" id="nextArtworkBtn" class="px-3 py-2.5 bg-[#080706] hover:bg-[#201a17] border border-white/15 text-xs font-mono text-[#dfb872] active:scale-95 transition-all">▶</button>
-          </div>
-        </div>
-
-        <!-- Auto-Fit Suite -->
-        <div class="space-y-1.5 border-t border-white/10 pt-4">
-          <label class="block text-[11px] font-mono uppercase tracking-wider text-[#a89f91]">Auto-Fit Framing</label>
-          <div class="grid grid-cols-3 gap-2">
-            <button type="button" id="fitWidthBtn" class="py-2.5 px-2 border border-white/15 hover:border-[#c5a059] bg-[#0a0808] hover:bg-[#1a1512] text-xs font-mono text-[#f7f4ee] active:scale-95 transition-all">
-              Fit Width
-            </button>
-            <button type="button" id="fitHeightBtn" class="py-2.5 px-2 border border-white/15 hover:border-[#c5a059] bg-[#0a0808] hover:bg-[#1a1512] text-xs font-mono text-[#f7f4ee] active:scale-95 transition-all">
-              Fit Height
-            </button>
-            <button type="button" id="fillBleedBtn" class="py-2.5 px-2 border border-white/15 hover:border-[#c5a059] bg-[#0a0808] hover:bg-[#1a1512] text-xs font-mono text-[#f7f4ee] active:scale-95 transition-all">
-              Fill Bleed
-            </button>
-          </div>
-        </div>
-
-        <!-- Centering Suite -->
-        <div class="space-y-1.5 border-t border-white/10 pt-4">
-          <label class="block text-[11px] font-mono uppercase tracking-wider text-[#a89f91]">Alignment & Re-Centering</label>
-          <div class="grid grid-cols-3 gap-2">
-            <button type="button" id="centerHBtn" class="py-2.5 px-2 border border-white/15 hover:border-[#c5a059] bg-[#0a0808] hover:bg-[#1a1512] text-xs font-mono text-[#f7f4ee] active:scale-95 transition-all">
-              Center H
-            </button>
-            <button type="button" id="centerVBtn" class="py-2.5 px-2 border border-white/15 hover:border-[#c5a059] bg-[#0a0808] hover:bg-[#1a1512] text-xs font-mono text-[#f7f4ee] active:scale-95 transition-all">
-              Center V
-            </button>
-            <button type="button" id="centerAllBtn" class="py-2.5 px-2 border border-white/15 hover:border-[#c5a059] bg-[#0a0808] hover:bg-[#1a1512] text-xs font-mono text-[#f7f4ee] active:scale-95 transition-all">
-              Reset Center
-            </button>
-          </div>
-        </div>
-
-        <!-- Numerical Scale & External Nudge Buttons -->
-        <div class="space-y-2 border-t border-white/10 pt-4">
-          <div class="flex items-center justify-between">
-            <label class="text-[11px] font-mono uppercase tracking-wider text-[#a89f91]">Scale Factor</label>
-            <div class="flex items-center gap-1.5">
-              <div class="flex items-center bg-[#080706] border border-white/20 px-2 py-1">
-                <input 
-                  type="number" 
-                  id="zoomInput" 
-                  min="0.3" 
-                  max="3.5" 
-                  step="0.05" 
-                  value="1.00" 
-                  class="w-16 bg-transparent text-[#f7f4ee] font-mono text-xs text-right focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                />
-                <span class="ml-1 text-xs font-mono text-[#a89f91]">x</span>
-              </div>
-              <div class="flex flex-col">
-                <button type="button" id="nudgeUpBtn" class="px-2 py-0.5 bg-[#181412] hover:bg-[#25201c] border border-white/15 text-[10px] text-[#f7f4ee] active:bg-[#c5a059] active:text-[#0a0808]">▲</button>
-                <button type="button" id="nudgeDownBtn" class="px-2 py-0.5 bg-[#181412] hover:bg-[#25201c] border-x border-b border-white/15 text-[10px] text-[#f7f4ee] active:bg-[#c5a059] active:text-[#0a0808]">▼</button>
-              </div>
-            </div>
-          </div>
-          <input 
-            type="range" 
-            id="zoomSlider" 
-            min="0.3" 
-            max="3.5" 
-            step="0.01" 
-            value="1.00" 
-            class="w-full h-2 bg-[#080706] accent-[#c5a059] cursor-pointer" 
+      <div class="space-y-4">
+        <div>
+          <input
+            type="password"
+            id="gatePass"
+            autocomplete="current-password"
+            placeholder="Master Password"
+            class="w-full bg-[#050404] border border-white/[0.15] focus:border-[#c5a059] p-3 text-sm font-mono text-[#f7f4ee] rounded outline-none"
           />
         </div>
-
-        <!-- Overlays -->
-        <div class="space-y-1.5 border-t border-white/10 pt-4">
-          <label class="block text-[11px] font-mono uppercase tracking-wider text-[#a89f91]">Composition & Lab Overlays</label>
-          <div class="grid grid-cols-2 gap-2">
-            <button type="button" id="sidebarGridBtn" class="py-2.5 px-2 border border-[#c5a059] bg-[#c5a059]/20 text-xs font-mono text-[#dfb872] active:scale-95 transition-all">
-              Grid: ON
-            </button>
-            <button type="button" id="sidebarBleedBtn" class="py-2.5 px-2 border border-[#c5a059] bg-[#c5a059]/20 text-xs font-mono text-[#dfb872] active:scale-95 transition-all">
-              Bleed: ON
-            </button>
-          </div>
-        </div>
-
-        <!-- Export JSON -->
-        <div class="border-t border-white/10 pt-4">
-          <button 
-            type="button" 
-            id="exportJsonBtn" 
-            class="w-full py-2.5 border border-white/15 bg-[#0a0808] hover:bg-white/5 text-xs font-mono text-[#a89f91] hover:text-[#f7f4ee] transition-colors"
-          >
-            📋 Download Approved Crops JSON
-          </button>
-        </div>
-
-      </section>
-
-    </main>
-
-    <!-- Sticky Bottom Bar -->
-    <div class="fixed bottom-0 inset-x-0 z-30 bg-[#120f0d]/95 backdrop-blur-md border-t border-white/15 p-3.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-2xl">
-      <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
-        <div class="flex-1 min-w-0">
-          <p id="activeSubstrateLabel" class="text-xs font-mono text-[#c5a059] font-bold truncate">Desk Pad (16:7)</p>
-          <p id="statusMsg" class="text-[11px] font-mono text-[#a89f91] truncate">Ready to save</p>
-        </div>
-
-        <button 
-          type="button" 
-          id="approveBtn" 
-          class="px-6 sm:px-8 py-3.5 bg-[#c5a059] hover:bg-[#d9b36c] text-[#0d0b0a] font-mono text-xs uppercase tracking-widest font-bold transition-all active:scale-[0.98] shadow-lg flex-shrink-0"
+        <button
+          type="button"
+          id="unlockBtn"
+          class="w-full py-3.5 bg-[#c5a059] hover:bg-[#d9b36c] active:bg-[#967434] text-[#0a0808] font-mono text-xs font-bold uppercase tracking-wider rounded transition cursor-pointer select-none"
         >
-          Save Crop Approval &rarr;
+          Unlock Studio &rarr;
         </button>
       </div>
     </div>
-
   </div>
 
-  <script>
-    const canvas = document.getElementById('cropCanvas') as HTMLCanvasElement;
-    const ctx = canvas.getContext('2d')!;
-    const viewport = document.getElementById('viewportContainer')!;
-    const artworkSelect = document.getElementById('artworkSelect') as HTMLSelectElement;
-    const prevArtworkBtn = document.getElementById('prevArtworkBtn')!;
-    const nextArtworkBtn = document.getElementById('nextArtworkBtn')!;
-    const productChips = document.querySelectorAll('.prod-chip');
-    const activeSubstrateLabel = document.getElementById('activeSubstrateLabel')!;
-    
-    // Zoom Controls
-    const zoomSlider = document.getElementById('zoomSlider') as HTMLInputElement;
-    const zoomInput = document.getElementById('zoomInput') as HTMLInputElement;
-    const nudgeUpBtn = document.getElementById('nudgeUpBtn')!;
-    const nudgeDownBtn = document.getElementById('nudgeDownBtn')!;
-    const hudZoomDisplay = document.getElementById('hudZoomDisplay')!;
-    const hudZoomInBtn = document.getElementById('hudZoomInBtn')!;
-    const hudZoomOutBtn = document.getElementById('hudZoomOutBtn')!;
+  <!-- Studio Main Application -->
+  <main id="studioApp" style="display: none;" class="max-w-7xl mx-auto px-6 py-10 text-[#f7f4ee]">
+    <div class="flex items-center justify-between border-b border-white/[0.08] pb-6 mb-8">
+      <div>
+        <h1 class="text-2xl font-serif text-[var(--theme-text)]">Merch Framing & Inclusion Studio</h1>
+        <p class="text-xs font-mono text-[var(--theme-text-muted)] mt-1">Multi-lab aspect calibration, DPI preflight & product curation.</p>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="/admin/syndication/" class="text-xs font-mono text-[var(--theme-text-muted)] hover:text-white">Syndication Desk →</a>
+        <button type="button" id="lockBtn" class="text-xs font-mono text-[var(--theme-text-muted)] hover:text-white cursor-pointer">Lock Studio</button>
+        <a href="/" class="text-xs font-mono text-[var(--theme-accent)] hover:underline">← Storefront</a>
+      </div>
+    </div>
 
-    // Auto-Fit & Alignment
-    const fitWidthBtn = document.getElementById('fitWidthBtn')!;
-    const fitHeightBtn = document.getElementById('fitHeightBtn')!;
-    const fillBleedBtn = document.getElementById('fillBleedBtn')!;
-    const centerHBtn = document.getElementById('centerHBtn')!;
-    const centerVBtn = document.getElementById('centerVBtn')!;
-    const centerAllBtn = document.getElementById('centerAllBtn')!;
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+      <!-- Left Controls Panel -->
+      <div class="space-y-6">
+        <div>
+          <label class="block text-xs font-mono uppercase tracking-wider text-[var(--theme-text-muted)] mb-2">1. Select Artwork</label>
+          <select id="artwork-select" class="w-full bg-[#141210] border border-white/[0.1] rounded p-2.5 text-sm font-mono text-[#f7f4ee]">
+            {catalogData.map((art) => (
+              <option value={art.id}>{art.title}</option>
+            ))}
+          </select>
+          <div id="nativeResIndicator" class="text-[11px] font-mono text-[#a89f91] mt-1.5 flex justify-between">
+            <span>Native Resolution:</span>
+            <span id="nativeResVal" class="text-[#f7f4ee]">--</span>
+          </div>
+        </div>
 
-    // Overlays
-    const hudGridBtn = document.getElementById('hudGridBtn')!;
-    const hudBleedBtn = document.getElementById('hudBleedBtn')!;
-    const sidebarGridBtn = document.getElementById('sidebarGridBtn')!;
-    const sidebarBleedBtn = document.getElementById('sidebarBleedBtn')!;
+        <div>
+          <label class="block text-xs font-mono uppercase tracking-wider text-[var(--theme-text-muted)] mb-2">2. Aspect Ratio Cluster</label>
+          <select id="ratio-select" class="w-full bg-[#141210] border border-white/[0.1] rounded p-2.5 text-sm font-mono text-[#f7f4ee]">
+            <option value="1:1" data-ratio="1.0">1:1 Square Goods, Blocks & Pillows</option>
+            <option value="2:3" data-ratio="0.6667">2:3 Classic Fine Art, Acrylic & Metal</option>
+            <option value="4:5" data-ratio="0.8">4:5 Standard Matted Frame & Tees</option>
+            <option value="3:4" data-ratio="0.75">3:4 Medium Format & Jigsaw Puzzles</option>
+            <option value="16:9" data-ratio="1.7778">16:9 Cinematic Metal & Canvases</option>
+            <option value="16:7" data-ratio="2.2857">16:7 Panoramic Desk Pads & Blocks</option>
+            <option value="17:7" data-ratio="2.4285">17:7 Waterfront Mugs & Tumblers</option>
+            <option value="1:2" data-ratio="0.5">1:2 Tough Phone Cases & Drinkware</option>
+            <option value="5:7" data-ratio="0.7143">5:7 Archival Stationery & Postcards</option>
+            <option value="20:29" data-ratio="0.6896">20:29 Displate Steel Poster</option>
+          </select>
+        </div>
 
-    // Actions
-    const approveBtn = document.getElementById('approveBtn') as HTMLButtonElement;
-    const exportJsonBtn = document.getElementById('exportJsonBtn') as HTMLButtonElement;
-    const statusMsg = document.getElementById('statusMsg')!;
+        <div class="space-y-3 bg-[#141210] border border-white/[0.06] p-4 rounded">
+          <label class="block text-xs font-mono uppercase tracking-wider text-[var(--theme-text-muted)]">Framing Controls</label>
+          <div>
+            <div class="flex justify-between text-[11px] font-mono text-[var(--theme-text-muted)] mb-1">
+              <span>Zoom</span>
+              <span id="zoom-val">1.00x</span>
+            </div>
+            <input type="range" id="zoom-slider" min="1" max="3" step="0.01" value="1" class="w-full accent-[var(--theme-accent)]" />
+          </div>
+          <p class="text-[10px] font-mono text-[var(--theme-text-muted)]">1 finger: drag to pan. 2 fingers: pinch or spread to zoom.</p>
+        </div>
 
-    let img = new Image();
+        <!-- Product Rubric & Vendor Batch Selectors -->
+        <div class="space-y-3 bg-[#141210] border border-white/[0.06] p-4 rounded">
+          <div class="flex items-center justify-between pb-1 border-b border-white/[0.04]">
+            <label class="block text-xs font-mono uppercase tracking-wider text-[var(--theme-text-muted)]">3. Product Rubric</label>
+            <button type="button" id="toggle-all-btn" class="text-[10px] font-mono text-[var(--theme-accent)] hover:underline cursor-pointer">Toggle All</button>
+          </div>
+
+          <!-- Vendor Filter / Batch Approval Pills -->
+          <div class="flex flex-wrap gap-1.5 pt-1">
+            <button type="button" class="vendor-filter px-2 py-1 rounded bg-white/[0.15] text-[10px] font-mono text-white cursor-pointer" data-vendor="all">All Vendors</button>
+            <button type="button" class="vendor-filter px-2 py-1 rounded bg-white/[0.04] hover:bg-white/[0.1] text-[10px] font-mono text-[#c5a059] cursor-pointer" data-vendor="Prodigi">Prodigi</button>
+            <button type="button" class="vendor-filter px-2 py-1 rounded bg-white/[0.04] hover:bg-white/[0.1] text-[10px] font-mono text-[#5cc8ff] cursor-pointer" data-vendor="Printify">Printify</button>
+            <button type="button" class="vendor-filter px-2 py-1 rounded bg-white/[0.04] hover:bg-white/[0.1] text-[10px] font-mono text-[#ff80bf] cursor-pointer" data-vendor="Printful">Printful</button>
+            <button type="button" class="vendor-filter px-2 py-1 rounded bg-white/[0.04] hover:bg-white/[0.1] text-[10px] font-mono text-[#8ce99a] cursor-pointer" data-vendor="Gooten">Gooten</button>
+            <button type="button" class="vendor-filter px-2 py-1 rounded bg-white/[0.04] hover:bg-white/[0.1] text-[10px] font-mono text-[#ffd43b] cursor-pointer" data-vendor="Gelato">Gelato</button>
+            <button type="button" class="vendor-filter px-2 py-1 rounded bg-white/[0.04] hover:bg-white/[0.1] text-[10px] font-mono text-[#ff922b] cursor-pointer" data-vendor="Displate">Displate</button>
+          </div>
+
+          <div id="product-rubric-container" class="space-y-2 max-h-72 overflow-y-auto pr-1"></div>
+        </div>
+
+        <button id="save-btn" class="w-full bg-[var(--theme-accent)] text-black font-mono text-xs uppercase tracking-wider py-3.5 rounded font-bold hover:opacity-90 transition active:scale-[0.98] cursor-pointer">
+          Approve Framing & Products
+        </button>
+        <p id="status-msg" class="text-xs font-mono text-center min-h-[1rem]"></p>
+      </div>
+
+      <!-- Right Panel: Viewport & Canvas -->
+      <div class="lg:col-span-2 flex flex-col items-center justify-center bg-[#0a0908] border border-white/[0.06] rounded p-4 lg:p-6 min-h-[540px]">
+        <div
+          id="canvasWrapper"
+          class="relative w-full flex items-center justify-center p-3 rounded bg-[#070606] border border-white/[0.08] select-none"
+          style="touch-action: none !important; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;"
+        >
+          <canvas
+            id="cropCanvas"
+            style="touch-action: none !important;"
+            class="cursor-grab active:cursor-grabbing max-w-full max-h-[580px] shadow-2xl border border-white/[0.1] rounded select-none"
+          ></canvas>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- SCRIPT 1: AUTHENTICATION ENGINE -->
+  <script is:inline>
+    (function() {
+      window.onerror = function(msg, url, line) {
+        var banner = document.getElementById('runtimeCrashBanner');
+        if (banner) {
+          banner.style.display = 'block';
+          banner.innerText = 'Script Error: ' + msg + ' (Line: ' + line + ')';
+        }
+      };
+
+      var MASTER_KEY = '30S!g%zlxg&gJ2is';
+      var STORAGE_KEY = 'aw_studio_auth';
+
+      function unlock() {
+        var input = document.getElementById('gatePass');
+        var err = document.getElementById('gateErr');
+        var val = (input ? input.value : '').trim();
+
+        if (val === MASTER_KEY) {
+          if (err) err.style.display = 'none';
+          try { localStorage.setItem(STORAGE_KEY, MASTER_KEY); } catch(e) {}
+          try { sessionStorage.setItem(STORAGE_KEY, MASTER_KEY); } catch(e) {}
+          document.cookie = 'aw_studio_auth=' + encodeURIComponent(MASTER_KEY) + '; path=/; max-age=31536000; SameSite=Lax';
+
+          var gate = document.getElementById('authGate');
+          var app = document.getElementById('studioApp');
+          if (gate) gate.style.display = 'none';
+          if (app) app.style.display = 'block';
+
+          if (window.bootStudioEngine) {
+            window.bootStudioEngine();
+          }
+        } else {
+          if (err) {
+            err.innerText = val.length === 0 ? 'Please enter master password.' : 'Incorrect master password.';
+            err.style.display = 'block';
+          }
+          if (input) {
+            input.value = '';
+            input.focus();
+          }
+        }
+      }
+
+      window.runUnlock = unlock;
+
+      var saved = '';
+      try { saved = localStorage.getItem(STORAGE_KEY) || sessionStorage.getItem(STORAGE_KEY) || ''; } catch(e) {}
+      if (saved === MASTER_KEY) {
+        var gate = document.getElementById('authGate');
+        var app = document.getElementById('studioApp');
+        if (gate) gate.style.display = 'none';
+        if (app) app.style.display = 'block';
+        window.isAuthedOnLoad = true;
+      }
+
+      var btn = document.getElementById('unlockBtn');
+      if (btn) btn.onclick = unlock;
+
+      var passInput = document.getElementById('gatePass');
+      if (passInput) {
+        passInput.onkeydown = function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            unlock();
+          }
+        };
+      }
+
+      var lockBtn = document.getElementById('lockBtn');
+      if (lockBtn) {
+        lockBtn.onclick = function() {
+          try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+          try { sessionStorage.removeItem(STORAGE_KEY); } catch(e) {}
+          document.cookie = 'aw_studio_auth=; path=/; max-age=0;';
+          var gate = document.getElementById('authGate');
+          var app = document.getElementById('studioApp');
+          if (app) app.style.display = 'none';
+          if (gate) gate.style.display = 'flex';
+          var pass = document.getElementById('gatePass');
+          if (pass) pass.value = '';
+        };
+      }
+    })();
+  </script>
+
+  <!-- SCRIPT 2: EXTENDED STUDIO ENGINE -->
+  <script define:vars={{ catalogData, RATIO_PRODUCTS }}>
+    const MASTER_KEY = '30S!g%zlxg&gJ2is';
+    let isStudioInitialized = false;
+    let currentImg = new Image();
     let panX = 0;
     let panY = 0;
     let zoom = 1.0;
-    let currentRatio = 16 / 7;
-    let currentProductName = 'Desk Pad (16:7)';
-    let showGrid = true;
-    let showBleed = true;
+    let activeVendorFilter = 'all';
 
-    function draw() {
-      if (!img.complete || !img.naturalWidth) return;
+    const artworkSelect = document.getElementById('artwork-select');
+    const ratioSelect = document.getElementById('ratio-select');
+    const zoomSlider = document.getElementById('zoom-slider');
+    const zoomVal = document.getElementById('zoom-val');
+    const nativeResVal = document.getElementById('nativeResVal');
+    const canvasWrapper = document.getElementById('canvasWrapper');
+    const canvas = document.getElementById('cropCanvas');
+    const ctx = canvas.getContext('2d');
+    const rubricContainer = document.getElementById('product-rubric-container');
+    const toggleAllBtn = document.getElementById('toggle-all-btn');
+    const saveBtn = document.getElementById('save-btn');
+    const statusMsg = document.getElementById('status-msg');
 
-      const bounds = viewport.getBoundingClientRect();
-      const maxW = Math.min(bounds.width - 24, 800);
-      const maxH = Math.min(bounds.height - 24, 600);
-
-      let targetW = maxW;
-      let targetH = targetW / currentRatio;
-      if (targetH > maxH) {
-        targetH = maxH;
-        targetW = targetH * currentRatio;
-      }
-
-      const dpr = Math.min(window.devicePixelRatio || 1, 3);
-      canvas.width = Math.round(targetW * dpr);
-      canvas.height = Math.round(targetH * dpr);
-      canvas.style.width = `${Math.round(targetW)}px`;
-      canvas.style.height = `${Math.round(targetH)}px`;
-
-      ctx.save();
-      ctx.scale(dpr, dpr);
-
-      ctx.fillStyle = '#050404';
-      ctx.fillRect(0, 0, targetW, targetH);
-
-      const srcRatio = img.naturalWidth / img.naturalHeight;
-      let drawW: number;
-      let drawH: number;
-
-      if (srcRatio > currentRatio) {
-        drawH = targetH * zoom;
-        drawW = drawH * srcRatio;
-      } else {
-        drawW = targetW * zoom;
-        drawH = drawW / srcRatio;
-      }
-
-      const drawX = (targetW - drawW) / 2 + panX;
-      const drawY = (targetH - drawH) / 2 + panY;
-
-      ctx.drawImage(img, drawX, drawY, drawW, drawH);
-
-      // 1. Darker, crisp Thirds Grid (visible against bright/white and dark scenes)
-      if (showGrid) {
-        ctx.lineWidth = 1.2;
-        ctx.setLineDash([5, 5]);
-        ctx.strokeStyle = 'rgba(25, 22, 20, 0.7)';
-        ctx.beginPath();
-        ctx.moveTo(targetW / 3, 0); ctx.lineTo(targetW / 3, targetH);
-        ctx.moveTo((targetW * 2) / 3, 0); ctx.lineTo((targetW * 2) / 3, targetH);
-        ctx.moveTo(0, targetH / 3); ctx.lineTo(targetW, targetH / 3);
-        ctx.moveTo(0, (targetH * 2) / 3); ctx.lineTo(targetW, (targetH * 2) / 3);
-        ctx.stroke();
-        ctx.setLineDash([]);
-      }
-
-      // 2. Lighter Champagne-Gold Bleed Line (lighter weight, lighter tone)
-      if (showBleed) {
-        ctx.strokeStyle = 'rgba(245, 220, 160, 0.75)';
-        ctx.lineWidth = 1.2;
-        const inset = Math.min(targetW, targetH) * 0.05;
-        ctx.strokeRect(inset, inset, targetW - inset * 2, targetH - inset * 2);
-      }
-
-      ctx.restore();
-
-      const zoomStr = zoom.toFixed(2);
-      hudZoomDisplay.textContent = `${zoomStr}x`;
-      zoomInput.value = zoomStr;
-      zoomSlider.value = zoomStr;
+    function getSelectedArtwork() {
+      return catalogData.find(a => a.id === artworkSelect.value) || catalogData[0];
     }
 
-    function switchPhoto() {
-      const cleanPath = `/images/artworks/clean/${artworkSelect.value}.webp`;
-      img.src = cleanPath;
-      img.onerror = () => {
-        img.onerror = null;
-        img.src = `/images/artworks/${artworkSelect.value}.webp`;
-      };
-      img.onload = () => {
-        panX = 0;
-        panY = 0;
-        zoom = 1.0;
-        draw();
-      };
-    }
+    function renderRubric() {
+      const ratioKey = ratioSelect.value;
+      const allProducts = RATIO_PRODUCTS[ratioKey] || [];
+      const art = getSelectedArtwork();
+      const existingCrop = art?.crops?.[ratioKey] || {};
+      const approvedList = existingCrop.approved_products;
 
-    function setZoom(newZoom: number) {
-      zoom = Math.min(3.5, Math.max(0.3, parseFloat(newZoom.toFixed(2))));
-      draw();
-    }
-
-    function fitWidth() {
-      if (!img.complete || !img.naturalWidth) return;
-      const srcRatio = img.naturalWidth / img.naturalHeight;
-      if (srcRatio > currentRatio) {
-        setZoom(currentRatio / srcRatio);
-      } else {
-        setZoom(1.0);
+      if (nativeResVal) {
+        nativeResVal.innerText = `${art.width} × ${art.height} px`;
       }
-      panX = 0;
-      draw();
-    }
 
-    function fitHeight() {
-      if (!img.complete || !img.naturalWidth) return;
-      const srcRatio = img.naturalWidth / img.naturalHeight;
-      if (srcRatio < currentRatio) {
-        setZoom(srcRatio / currentRatio);
-      } else {
-        setZoom(1.0);
+      rubricContainer.innerHTML = '';
+      if (!allProducts.length) {
+        rubricContainer.innerHTML = '<p class="text-xs font-mono text-[var(--theme-text-muted)]">No products mapped.</p>';
+        return;
       }
-      panY = 0;
-      draw();
-    }
 
-    function fillBleed() {
-      setZoom(1.0);
-      panX = 0;
-      panY = 0;
-      draw();
-    }
+      const products = activeVendorFilter === 'all' 
+        ? allProducts 
+        : allProducts.filter(p => p.vendor === activeVendorFilter);
 
-    // Touch Engine: Multi-touch pinch & pan
-    let isPinching = false;
-    let isPanning = false;
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let initialPinchDist = 0;
-    let initialPinchZoom = 1.0;
-    let initialPinchCenter = { x: 0, y: 0 };
-    let initialPan = { x: 0, y: 0 };
-    let singleTapCount = 0;
-    let tapResetTimer: any = null;
-
-    // Prevent Safari gesture zoom
-    viewport.addEventListener('gesturestart', (e) => e.preventDefault(), { passive: false });
-    viewport.addEventListener('gesturechange', (e) => e.preventDefault(), { passive: false });
-    viewport.addEventListener('gestureend', (e) => e.preventDefault(), { passive: false });
-
-    viewport.addEventListener('touchstart', (e) => {
-      // Disregard touches on controls
-      if ((e.target as HTMLElement).closest('button, select, input')) return;
-      e.preventDefault();
-
-      if (e.touches.length === 1) {
-        isPinching = false;
-        isPanning = true;
-        touchStartX = e.touches[0].clientX - panX;
-        touchStartY = e.touches[0].clientY - panY;
-      } else if (e.touches.length === 2) {
-        isPanning = false;
-        isPinching = true;
-        singleTapCount = 0;
-        if (tapResetTimer) clearTimeout(tapResetTimer);
-
-        const t0 = e.touches[0];
-        const t1 = e.touches[1];
-        initialPinchDist = Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
-        initialPinchZoom = zoom;
-        initialPinchCenter = {
-          x: (t0.clientX + t1.clientX) / 2,
-          y: (t0.clientY + t1.clientY) / 2,
-        };
-        initialPan = { x: panX, y: panY };
+      if (!products.length) {
+        rubricContainer.innerHTML = `<p class="text-xs font-mono text-[var(--theme-text-muted)]">No ${activeVendorFilter} items in this ratio.</p>`;
+        return;
       }
-    }, { passive: false });
 
-    window.addEventListener('touchmove', (e) => {
-      if (!isPanning && !isPinching) return;
-      e.preventDefault();
-
-      if (e.touches.length === 1 && isPanning) {
-        panX = e.touches[0].clientX - touchStartX;
-        panY = e.touches[0].clientY - touchStartY;
-        draw();
-      } else if (e.touches.length === 2 && isPinching && initialPinchDist > 0) {
-        const t0 = e.touches[0];
-        const t1 = e.touches[1];
-        const currentDist = Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
-        const currentCenter = {
-          x: (t0.clientX + t1.clientX) / 2,
-          y: (t0.clientY + t1.clientY) / 2,
-        };
-        const scale = currentDist / initialPinchDist;
-
-        zoom = Math.min(3.5, Math.max(0.3, parseFloat((initialPinchZoom * scale).toFixed(2))));
-        panX = initialPan.x + (currentCenter.x - initialPinchCenter.x);
-        panY = initialPan.y + (currentCenter.y - initialPinchCenter.y);
-        draw();
-      }
-    }, { passive: false });
-
-    window.addEventListener('touchend', (e) => {
-      if (e.touches.length === 1) {
-        // Transition back to single-finger pan seamlessly
-        isPinching = false;
-        isPanning = true;
-        touchStartX = e.touches[0].clientX - panX;
-        touchStartY = e.touches[0].clientY - panY;
-      } else if (e.touches.length === 0) {
-        if (isPanning && !isPinching) {
-          // Double tap detection strictly on single-touch release
-          singleTapCount++;
-          if (singleTapCount === 1) {
-            tapResetTimer = setTimeout(() => { singleTapCount = 0; }, 300);
-          } else if (singleTapCount === 2) {
-            clearTimeout(tapResetTimer);
-            singleTapCount = 0;
-            fillBleed();
-          }
-        }
-        isPinching = false;
-        isPanning = false;
-        initialPinchDist = 0;
-      }
-    });
-
-    // Substrate Rail Handlers
-    productChips.forEach((chip) => {
-      chip.addEventListener('click', () => {
-        productChips.forEach((c) => {
-          c.className = 'prod-chip px-3.5 py-2 border border-white/10 bg-[#161210] text-[#a89f91] text-xs font-mono uppercase transition-colors';
-        });
-        chip.className = 'prod-chip active px-3.5 py-2 border border-[#c5a059] bg-[#c5a059]/20 text-[#dfb872] text-xs font-mono uppercase transition-colors';
+      products.forEach((prod) => {
+        const isChecked = approvedList ? approvedList.includes(prod.id) : true;
+        const div = document.createElement('label');
+        div.className = 'flex items-center justify-between p-2 rounded bg-white/[0.02] border border-white/[0.04] hover:border-white/[0.1] cursor-pointer text-xs font-mono';
         
-        const btn = chip as HTMLButtonElement;
-        const w = parseFloat(btn.dataset.w || '1');
-        const h = parseFloat(btn.dataset.h || '1');
-        currentRatio = w / h;
-        currentProductName = btn.innerText.trim();
-        activeSubstrateLabel.textContent = currentProductName;
-        panX = 0;
-        panY = 0;
-        draw();
+        let vendorBadgeColor = 'text-[#c5a059]';
+        if (prod.vendor === 'Printify') vendorBadgeColor = 'text-[#5cc8ff]';
+        else if (prod.vendor === 'Printful') vendorBadgeColor = 'text-[#ff80bf]';
+        else if (prod.vendor === 'Gooten') vendorBadgeColor = 'text-[#8ce99a]';
+        else if (prod.vendor === 'Gelato') vendorBadgeColor = 'text-[#ffd43b]';
+        else if (prod.vendor === 'Displate') vendorBadgeColor = 'text-[#ff922b]';
+
+        div.innerHTML = `
+          <div class="flex items-center gap-2">
+            <input type="checkbox" value="${prod.id}" class="rubric-cb accent-[var(--theme-accent)]" ${isChecked ? 'checked' : ''} />
+            <div class="flex flex-col">
+              <span class="text-[#f7f4ee]">${prod.name}</span>
+              <span class="text-[9px] text-[var(--theme-text-muted)]">Req: ${prod.minPx} @ ${prod.minDpi} DPI</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] font-bold ${vendorBadgeColor}">${prod.vendor}</span>
+            <span class="text-[10px] text-[var(--theme-text-muted)] block">${prod.retail}</span>
+          </div>
+        `;
+        rubricContainer.appendChild(div);
+      });
+    }
+
+    // Vendor Filter Buttons
+    document.querySelectorAll('.vendor-filter').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.vendor-filter').forEach(b => {
+          b.classList.remove('bg-white/[0.15]');
+          b.classList.add('bg-white/[0.04]');
+        });
+        btn.classList.remove('bg-white/[0.04]');
+        btn.classList.add('bg-white/[0.15]');
+        activeVendorFilter = btn.getAttribute('data-vendor') || 'all';
+        renderRubric();
       });
     });
 
-    // Artwork Steppers
-    prevArtworkBtn.addEventListener('click', () => {
-      if (artworkSelect.selectedIndex > 0) {
-        artworkSelect.selectedIndex--;
-        switchPhoto();
-      }
+    toggleAllBtn.addEventListener('click', () => {
+      const cbs = document.querySelectorAll('.rubric-cb');
+      const allChecked = Array.from(cbs).every(cb => cb.checked);
+      cbs.forEach(cb => cb.checked = !allChecked);
     });
-    nextArtworkBtn.addEventListener('click', () => {
-      if (artworkSelect.selectedIndex < artworkSelect.options.length - 1) {
-        artworkSelect.selectedIndex++;
-        switchPhoto();
+
+    function getCanvasDims() {
+      const opt = ratioSelect.selectedOptions[0];
+      const targetRatio = parseFloat(opt ? opt.getAttribute('data-ratio') || '1' : '1');
+      const containerWidth = (canvasWrapper && canvasWrapper.clientWidth > 0) ? canvasWrapper.clientWidth : 700;
+      const maxW = Math.max(280, Math.min(containerWidth - 32, 700));
+      const maxH = 500;
+      let w = maxW;
+      let h = w / targetRatio;
+      if (h > maxH) {
+        h = maxH;
+        w = h * targetRatio;
       }
+      return { w: Math.round(w), h: Math.round(h) };
+    }
+
+    function draw() {
+      const { w, h } = getCanvasDims();
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w;
+        canvas.height = h;
+      }
+
+      ctx.fillStyle = '#0a0908';
+      ctx.fillRect(0, 0, w, h);
+
+      if (currentImg && currentImg.complete && currentImg.naturalWidth > 0) {
+        const baseScale = Math.max(w / currentImg.naturalWidth, h / currentImg.naturalHeight);
+        const scale = baseScale * zoom;
+        const drawW = currentImg.naturalWidth * scale;
+        const drawH = currentImg.naturalHeight * scale;
+
+        const drawX = (w - drawW) / 2 + panX;
+        const drawY = (h - drawH) / 2 + panY;
+
+        ctx.drawImage(currentImg, drawX, drawY, drawW, drawH);
+      } else {
+        ctx.fillStyle = '#c5a059';
+        ctx.font = '12px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('Loading preview image...', w / 2, h / 2);
+        ctx.textAlign = 'start';
+      }
+
+      // Safe Bleed Area Guide
+      ctx.strokeStyle = 'rgba(197, 160, 89, 0.4)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.strokeRect(w * 0.05, h * 0.05, w * 0.9, h * 0.9);
+      ctx.setLineDash([]);
+    }
+
+    function setZoom(val) {
+      zoom = Math.min(Math.max(val, 1.0), 3.0);
+      zoomSlider.value = zoom.toFixed(2);
+      zoomVal.textContent = zoom.toFixed(2) + 'x';
+      draw();
+    }
+
+    function switchPhoto() {
+      renderRubric();
+      const art = getSelectedArtwork();
+      const ratioKey = ratioSelect.value;
+      const existingCrop = art?.crops?.[ratioKey];
+
+      if (existingCrop) {
+        panX = existingCrop.panX || 0;
+        panY = existingCrop.panY || 0;
+        zoom = existingCrop.zoom || 1.0;
+      } else {
+        panX = 0;
+        panY = 0;
+        zoom = 1.0;
+      }
+
+      zoomSlider.value = zoom.toFixed(2);
+      zoomVal.textContent = zoom.toFixed(2) + 'x';
+      draw();
+
+      const targetUrl = art.img;
+      currentImg = new Image();
+      currentImg.onload = () => { draw(); };
+      currentImg.onerror = () => {
+        const { w, h } = getCanvasDims();
+        ctx.fillStyle = '#ff6b6b';
+        ctx.font = '11px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('Failed to load: ' + targetUrl, w / 2, h / 2);
+        ctx.textAlign = 'start';
+      };
+      currentImg.src = targetUrl;
+
+      if (currentImg.complete && currentImg.naturalWidth > 0) {
+        draw();
+      }
+    }
+
+    // iPad WebKit Gesture Trap
+    canvasWrapper.addEventListener('gesturestart', (e) => { e.preventDefault(); }, { passive: false });
+    canvasWrapper.addEventListener('gesturechange', (e) => { e.preventDefault(); }, { passive: false });
+    canvasWrapper.addEventListener('gestureend', (e) => { e.preventDefault(); }, { passive: false });
+
+    // Touch Engine
+    let touchMode = 'none';
+    let lastTouchX = 0;
+    let lastTouchY = 0;
+    let pinchStartDist = 0;
+    let pinchBaseZoom = 1.0;
+
+    function getTouchDist(t1, t2) {
+      return Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+    }
+
+    canvasWrapper.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        touchMode = 'pan';
+        pinchStartDist = 0;
+        lastTouchX = e.touches[0].clientX;
+        lastTouchY = e.touches[0].clientY;
+      } else if (e.touches.length === 2) {
+        touchMode = 'pinch';
+        pinchStartDist = getTouchDist(e.touches[0], e.touches[1]);
+        pinchBaseZoom = zoom;
+      }
+      e.preventDefault();
+    }, { passive: false });
+
+    canvasWrapper.addEventListener('touchmove', (e) => {
+      if (touchMode === 'pan' && e.touches.length === 1) {
+        const dx = e.touches[0].clientX - lastTouchX;
+        const dy = e.touches[0].clientY - lastTouchY;
+        panX += dx;
+        panY += dy;
+        lastTouchX = e.touches[0].clientX;
+        lastTouchY = e.touches[0].clientY;
+        draw();
+      } else if (touchMode === 'pinch' && e.touches.length === 2 && pinchStartDist > 0) {
+        const currentDist = getTouchDist(e.touches[0], e.touches[1]);
+        const scale = currentDist / pinchStartDist;
+        setZoom(pinchBaseZoom * scale);
+      }
+      e.preventDefault();
+    }, { passive: false });
+
+    function onTouchEnd(e) {
+      if (e.touches.length === 0) {
+        touchMode = 'none';
+        pinchStartDist = 0;
+      } else if (e.touches.length === 1) {
+        touchMode = 'pan';
+        pinchStartDist = 0;
+        lastTouchX = e.touches[0].clientX;
+        lastTouchY = e.touches[0].clientY;
+      }
+    }
+
+    canvasWrapper.addEventListener('touchend', onTouchEnd, { passive: false });
+    canvasWrapper.addEventListener('touchcancel', onTouchEnd, { passive: false });
+
+    // Desktop Mouse Fallback
+    let isMouseDown = false;
+    let mouseLastX = 0;
+    let mouseLastY = 0;
+
+    canvasWrapper.addEventListener('mousedown', (e) => {
+      isMouseDown = true;
+      mouseLastX = e.clientX;
+      mouseLastY = e.clientY;
     });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isMouseDown) return;
+      panX += e.clientX - mouseLastX;
+      panY += e.clientY - mouseLastY;
+      mouseLastX = e.clientX;
+      mouseLastY = e.clientY;
+      draw();
+    });
+
+    window.addEventListener('mouseup', () => { isMouseDown = false; });
+
+    zoomSlider.addEventListener('input', (e) => {
+      setZoom(parseFloat(e.target.value));
+    });
+
     artworkSelect.addEventListener('change', switchPhoto);
+    ratioSelect.addEventListener('change', switchPhoto);
+    window.addEventListener('resize', () => { draw(); });
 
-    // Auto-Fit Handlers
-    fitWidthBtn.addEventListener('click', fitWidth);
-    fitHeightBtn.addEventListener('click', fitHeight);
-    fillBleedBtn.addEventListener('click', fillBleed);
+    // Cloudflare KV Save
+    saveBtn.addEventListener('click', async () => {
+      saveBtn.disabled = true;
+      statusMsg.className = 'text-xs font-mono text-center text-[var(--theme-text-muted)]';
+      statusMsg.innerText = 'Saving crop & products...';
 
-    // Centering Handlers
-    centerHBtn.addEventListener('click', () => { panX = 0; draw(); });
-    centerVBtn.addEventListener('click', () => { panY = 0; draw(); });
-    centerAllBtn.addEventListener('click', () => { panX = 0; panY = 0; draw(); });
+      const approvedProducts = Array.from(document.querySelectorAll('.rubric-cb:checked')).map(cb => cb.value);
+      const excludedProducts = Array.from(document.querySelectorAll('.rubric-cb:not(:checked)')).map(cb => cb.value);
 
-    // Zoom Handlers
-    hudZoomInBtn.addEventListener('click', () => setZoom(zoom + 0.15));
-    hudZoomOutBtn.addEventListener('click', () => setZoom(zoom - 0.15));
-    nudgeUpBtn.addEventListener('click', () => setZoom(zoom + 0.05));
-    nudgeDownBtn.addEventListener('click', () => setZoom(zoom - 0.05));
-    zoomInput.addEventListener('change', () => setZoom(parseFloat(zoomInput.value) || 1.0));
-    zoomSlider.addEventListener('input', () => setZoom(parseFloat(zoomSlider.value)));
-
-    // Grid & Bleed Toggles
-    function toggleGrid() {
-      showGrid = !showGrid;
-      const label = showGrid ? 'Grid: ON' : 'Grid: OFF';
-      const activeClass = 'py-2.5 px-2 border border-[#c5a059] bg-[#c5a059]/20 text-xs font-mono text-[#dfb872] active:scale-95 transition-all';
-      const inactiveClass = 'py-2.5 px-2 border border-white/10 bg-[#0a0808] text-xs font-mono text-[#8e8577] active:scale-95 transition-all';
-      
-      hudGridBtn.textContent = label;
-      hudGridBtn.className = showGrid
-        ? 'px-2.5 py-1.5 text-[11px] font-mono rounded bg-[#c5a059]/30 text-[#dfb872] border border-[#c5a059]'
-        : 'px-2.5 py-1.5 text-[11px] font-mono rounded bg-white/5 text-[#a89f91] border border-white/10';
-
-      sidebarGridBtn.textContent = label;
-      sidebarGridBtn.className = showGrid ? activeClass : inactiveClass;
-      draw();
-    }
-
-    function toggleBleed() {
-      showBleed = !showBleed;
-      const label = showBleed ? 'Bleed: ON' : 'Bleed: OFF';
-      const activeClass = 'py-2.5 px-2 border border-[#c5a059] bg-[#c5a059]/20 text-xs font-mono text-[#dfb872] active:scale-95 transition-all';
-      const inactiveClass = 'py-2.5 px-2 border border-white/10 bg-[#0a0808] text-xs font-mono text-[#8e8577] active:scale-95 transition-all';
-
-      hudBleedBtn.textContent = label;
-      hudBleedBtn.className = showBleed
-        ? 'px-2.5 py-1.5 text-[11px] font-mono rounded bg-[#c5a059]/30 text-[#dfb872] border border-[#c5a059]'
-        : 'px-2.5 py-1.5 text-[11px] font-mono rounded bg-white/5 text-[#a89f91] border border-white/10';
-
-      sidebarBleedBtn.textContent = label;
-      sidebarBleedBtn.className = showBleed ? activeClass : inactiveClass;
-      draw();
-    }
-
-    hudGridBtn.addEventListener('click', toggleGrid);
-    sidebarGridBtn.addEventListener('click', toggleGrid);
-    hudBleedBtn.addEventListener('click', toggleBleed);
-    sidebarBleedBtn.addEventListener('click', toggleBleed);
-
-    // Save Approval
-    approveBtn.addEventListener('click', async () => {
-      const id = artworkSelect.value;
-      approveBtn.disabled = true;
-      statusMsg.textContent = 'Saving crop...';
-      statusMsg.className = 'text-[11px] font-mono text-[#c5a059]';
+      const payload = {
+        artworkId: artworkSelect.value,
+        ratioKey: ratioSelect.value,
+        authToken: MASTER_KEY,
+        crop: {
+          panX,
+          panY,
+          zoom,
+          approved_products: approvedProducts,
+          excluded_products: excludedProducts,
+          approved_at: new Date().toISOString()
+        }
+      };
 
       try {
         const res = await fetch('/api/approve-merch', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id,
-            product: currentProductName,
-            crop: { panX, panY, zoom, ratio: currentRatio },
-            watermark: 'none',
-          }),
+          body: JSON.stringify(payload)
         });
-
         const data = await res.json();
         if (res.ok && data.success) {
-          statusMsg.textContent = `Saved ✓ (${currentProductName})`;
-          statusMsg.className = 'text-[11px] font-mono text-[#c5a059] font-bold';
+          statusMsg.className = 'text-xs font-mono text-center text-green-400';
+          statusMsg.innerText = `✓ Saved framing + ${approvedProducts.length} product(s).`;
+
+          const art = getSelectedArtwork();
+          if (art) {
+            art.crops = art.crops || {};
+            art.crops[ratioSelect.value] = payload.crop;
+          }
         } else {
-          statusMsg.textContent = data.error || 'Save failed.';
-          statusMsg.className = 'text-[11px] font-mono text-red-400';
+          throw new Error(data.error || (await res.text()));
         }
-      } catch {
-        statusMsg.textContent = 'Network communication error.';
-        statusMsg.className = 'text-[11px] font-mono text-red-400';
+      } catch (err) {
+        statusMsg.className = 'text-xs font-mono text-center text-red-400';
+        statusMsg.innerText = `Error: ${err.message}`;
       } finally {
-        approveBtn.disabled = false;
+        saveBtn.disabled = false;
       }
     });
 
-    // Export Crops
-    exportJsonBtn.addEventListener('click', async () => {
+    async function loadCloudCrops() {
       try {
         const res = await fetch('/api/approve-merch');
-        const data = await res.json();
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'merch-crops.json';
-        a.click();
-        URL.revokeObjectURL(url);
-      } catch {
-        alert('Failed to retrieve crops from cloud.');
-      }
-    });
+        if (res.ok) {
+          const remote = await res.json();
+          for (const [id, crops] of Object.entries(remote)) {
+            const local = catalogData.find(a => a.id === id);
+            if (local) {
+              local.crops = { ...local.crops, ...crops };
+            }
+          }
+          renderRubric();
+        }
+      } catch (e) {}
+    }
 
-    window.addEventListener('resize', draw);
-    switchPhoto();
+    function initStudio() {
+      switchPhoto();
+      loadCloudCrops();
+    }
+
+    window.bootStudioEngine = function() {
+      if (!isStudioInitialized) {
+        isStudioInitialized = true;
+        initStudio();
+      }
+    };
+
+    if (window.isAuthedOnLoad) {
+      window.bootStudioEngine();
+    }
   </script>
 </Layout>

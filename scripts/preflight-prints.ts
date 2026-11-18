@@ -89,7 +89,7 @@ export function calculatePrintDimensions(widthPx: number, heightPx: number) {
  * Matboard: Archival Museum Rag Off-White (#F8F8F6) with bevel drop shadow
  */
 export async function generateFramedMockup(
-  sharpInstance: sharp.Sharp,
+  sharpInstance: ReturnType<typeof sharp>,
   outputPath: string,
   aspectRatio: number
 ) {
@@ -157,7 +157,7 @@ export async function generateFramedMockup(
 /**
  * Extract dominant palette swatches in HEX
  */
-async function extractDominantHex(imageSharp: sharp.Sharp): Promise<string[]> {
+async function extractDominantHex(imageSharp: ReturnType<typeof sharp>): Promise<string[]> {
   try {
     const { dominant } = await imageSharp.stats();
     const hex = (r: number, g: number, b: number) =>

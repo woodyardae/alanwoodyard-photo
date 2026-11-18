@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const env = {};
+const env: Record<string, string> = {};
 const envPath = path.resolve('.env');
 
 if (fs.existsSync(envPath)) {
@@ -65,7 +65,7 @@ async function testProdigi() {
       console.log(`[PRODIGI] Response (HTTP ${res.status}):`, data.errorSummary || data.outcome || JSON.stringify(data));
     }
   } catch (err) {
-    console.error('[PRODIGI] Connection failed:', err.message);
+    console.error('[PRODIGI] Connection failed:', (err as Error).message);
   }
 }
 
@@ -90,7 +90,7 @@ async function testPrintful() {
       console.log(`[PRINTFUL] Response (HTTP ${res.status}):`, data.error?.message || 'Error');
     }
   } catch (err) {
-    console.error('[PRINTFUL] Connection failed:', err.message);
+    console.error('[PRINTFUL] Connection failed:', (err as Error).message);
   }
 }
 

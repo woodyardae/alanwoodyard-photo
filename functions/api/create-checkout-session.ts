@@ -42,14 +42,14 @@ export async function onRequestPost(context: { request: Request; env: Env }) {
       apiVersion: '2024-12-18.acacia' as any,
     });
 
-    const matrix = pricingMatrix as Record<string, { retailPrice: number; name: string }>;
+    const matrix = pricingMatrix as Record<string, { retail: number; category: string; size: string; vendor: string }>;
 
     // Validate prices against authoritative pricing-matrix.json
     const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map((item) => {
       const canonical = matrix[item.sku];
       // If SKU is recognized in matrix, use canonical price; otherwise clamp to submitted price if it's secondary merch
-      const unitAmountCents = canonical 
-        ? Math.round(canonical.retailPrice * 100)
+      const unitAmountCents = canonical && typeof canonical.retail === 'number'
+        ? Math.round(canonical.retail * 100)
         : Math.round(item.price * 100);
 
       return {
@@ -72,7 +72,6 @@ export async function onRequestPost(context: { request: Request; env: Env }) {
     const origin = new URL(request.url).origin;
 
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
       mode: 'payment',
       line_items,
       customer_email: customerEmail || undefined,
