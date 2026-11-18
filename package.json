@@ -11,6 +11,8 @@
         "test": "tsx --test tests/**/*.test.ts",
         "typecheck": "tsc --noEmit",
         "sync-pricing": "tsx scripts/sync-pricing.ts",
+        "sync-queue": "tsx scripts/sync-merch-queue.ts",
+        "sync-shared": "tsx scripts/sync-shared-studio.ts",
         "build": "npm run sync-pricing && astro build",
         "render-crops": "tsx scripts/render-print-crops.ts",
         "syndicate-printify": "tsx scripts/syndicate-printify.ts"

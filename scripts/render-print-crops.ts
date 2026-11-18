@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
+import { resolveRatio } from '../src/lib/merch-studio-shared';
 
 const MANIFEST_DIR = path.resolve('src/content/artworks');
 const OUT_DIR = path.resolve('assets/print-ready');
@@ -11,33 +12,6 @@ interface CropData {
   panY: number;
   zoom: number;
   ratio: number;
-}
-
-const RATIO_MAP: Record<string, number> = {
-  '1:1': 1.0,
-  '2:3': 2 / 3,
-  '4:5': 4 / 5,
-  '3:4': 3 / 4,
-  '16:9': 16 / 9,
-  '16:7': 16 / 7,
-  '17:7': 17 / 7,
-  '1:2': 0.5,
-  '5:7': 5 / 7,
-  '20:29': 20 / 29,
-};
-
-function resolveRatio(key: string, cropInfo: Partial<CropData>): number {
-  if (typeof cropInfo.ratio === 'number' && cropInfo.ratio > 0) {
-    return cropInfo.ratio;
-  }
-  if (RATIO_MAP[key]) {
-    return RATIO_MAP[key];
-  }
-  const parts = key.split(':').map(Number);
-  if (parts.length === 2 && parts[0] > 0 && parts[1] > 0) {
-    return parts[0] / parts[1];
-  }
-  return 1.5;
 }
 
 async function renderCrop() {

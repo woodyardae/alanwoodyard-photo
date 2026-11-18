@@ -17,21 +17,22 @@ const artworks = defineCollection({
     version: z.number().default(1),
     display: z.object({
       watermark: z.string().default('default'),
-    }).optional().default({}),
+    }).default({ watermark: 'default' }),
     capture: z.object({
       date: z.string().optional().default(''),
-      location: z.union([z.string(), z.record(z.any())]).optional().default(''),
+      location: z.union([z.string(), z.record(z.string(), z.any())]).optional().default(''),
       camera: z.string().optional().default(''),
       lens: z.string().optional().default(''),
-      settings: z.record(z.any()).optional().default({}),
+      settings: z.record(z.string(), z.any()).optional().default({}),
       native_dimensions: z.object({
         width: z.number(),
         height: z.number(),
       }).optional(),
       aspect_ratio: z.string().optional(),
-    }).optional().default({}),
+    }).default({ date: '', location: '', camera: '', lens: '', settings: {} }),
     merch_approved: z.array(z.string()).optional().default([]),
-    merch_crops: z.record(z.any()).optional().default({}),
+    merch_rejected: z.boolean().optional().default(false),
+    merch_crops: z.record(z.string(), z.any()).optional().default({}),
     print_variants: z.array(
       z.object({
         sku: z.string(),
