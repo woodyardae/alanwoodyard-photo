@@ -1,85 +1,43 @@
 /**
- * functions/api/stripe-webhook.ts
- *
- * Cloudflare Pages Function: Stripe Webhook Listener
- * Verifies Web Crypto HMAC signatures and routes paid orders to the Top 5 POD labs.
+ * Cloudflare Pages Function: Stripe webhook listener.
+ * Fail-closed signature verification; routes paid orders through src/lib/fulfillment.
  */
 
-import { verifyWebhookSignature } from '../../src/lib/security';
-import { routeOrder, type FulfillmentOrder, type FulfillmentEnv } from '../../src/lib/fulfillment';
+import pricingMatrix from '../../src/content/pricing-matrix.json';
+import type { PricingMatrixEntry } from '../../src/lib/checkout-catalog';
+import { handleStripeWebhook, type StripeWebhookEnv } from '../../src/lib/handle-stripe-webhook';
 
-interface Env extends FulfillmentEnv {
-  STRIPE_WEBHOOK_SECRET?: string;
-}
-
-export async function onRequestPost(context: { request: Request; env: Env }) {
+export async function onRequestPost(context: { request: Request; env: StripeWebhookEnv }) {
   try {
-    const { request, env } = context;
-    const signature = request.headers.get('stripe-signature');
-    const rawBody = await request.text();
+    const result = await handleStripeWebhook(context.request, {
+      STRIPE_SECRET_KEY: context.env.STRIPE_SECRET_KEY,
+      STRIPE_WEBHOOK_SECRET: context.env.STRIPE_WEBHOOK_SECRET,
+      PRODIGI_API_KEY: context.env.PRODIGI_API_KEY,
+      PRINTIFY_API_TOKEN: context.env.PRINTIFY_API_TOKEN,
+      PRINTIFY_SHOP_ID: context.env.PRINTIFY_SHOP_ID,
+      PRINTFUL_API_TOKEN: context.env.PRINTFUL_API_TOKEN,
+      PRINTFUL_STORE_ID: context.env.PRINTFUL_STORE_ID,
+      GELATO_API_KEY: context.env.GELATO_API_KEY,
+      GOOTEN_RECIPE_ID: context.env.GOOTEN_RECIPE_ID,
+      PRINT_MASTERS_BASE_URL: context.env.PRINT_MASTERS_BASE_URL,
+      PRINT_MASTERS_EXTENSION: context.env.PRINT_MASTERS_EXTENSION,
+      ALLOW_CLEAN_PREVIEW_ASSETS: context.env.ALLOW_CLEAN_PREVIEW_ASSETS,
+      RESEND_API_KEY: context.env.RESEND_API_KEY,
+      OPERATOR_EMAIL: context.env.OPERATOR_EMAIL,
+      RESEND_FROM: context.env.RESEND_FROM,
+      pricingMatrix: pricingMatrix as Record<string, PricingMatrixEntry>,
+      // Never pass ALLOW_MOCK_DISPATCH from production webhook path.
+    });
 
-    const webhookSecret = env.STRIPE_WEBHOOK_SECRET;
-
-    // Signature verification
-    if (webhookSecret && signature) {
-      const isValid = await verifyWebhookSignature(rawBody, signature, webhookSecret);
-      if (!isValid) {
-        return new Response(JSON.stringify({ error: 'Invalid webhook signature.' }), {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
-    }
-
-    const event = JSON.parse(rawBody) as {
-      type: string;
-      data: { object: Record<string, any> };
-    };
-
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object;
-
-      // Map session details to FulfillmentOrder
-      const order: FulfillmentOrder = {
-        sessionId: session.id,
-        orderNumber: `AWP-${session.id.slice(-8).toUpperCase()}`,
-        recipient: {
-          name: session.customer_details?.name || session.shipping_details?.name || 'Art Patron',
-          email: session.customer_details?.email || 'patron@example.com',
-          phone: session.customer_details?.phone || '',
-          address1: session.shipping_details?.address?.line1 || '',
-          address2: session.shipping_details?.address?.line2 || '',
-          city: session.shipping_details?.address?.city || '',
-          state: session.shipping_details?.address?.state || '',
-          postalCode: session.shipping_details?.address?.postal_code || '',
-          countryCode: session.shipping_details?.address?.country || 'US'
-        },
-        items: session.metadata?.items ? JSON.parse(session.metadata.items) : [],
-        currency: session.currency?.toUpperCase() || 'USD'
-      };
-
-      console.log(`Routing fulfillment for order: ${order.orderNumber}`);
-      const fulfillmentResult = await routeOrder(order, env);
-
-      return new Response(
-        JSON.stringify({
-          received: true,
-          routed: true,
-          fulfillment: fulfillmentResult
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-
-    return new Response(JSON.stringify({ received: true }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+    return new Response(JSON.stringify(result.body), {
+      status: result.status,
+      headers: { 'Content-Type': 'application/json' },
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Webhook error';
     return new Response(JSON.stringify({ error: message }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
   }
 }

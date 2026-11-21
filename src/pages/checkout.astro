@@ -182,6 +182,9 @@ import Header from '../components/Header.astro';
       loading.classList.add('hidden');
 
       if (data.simulated) {
+        if (import.meta.env.PROD) {
+          throw new Error('Secure checkout is unavailable.');
+        }
         simPanel.classList.remove('hidden');
         mockBtn.addEventListener('click', () => {
           window.location.href = data.returnUrl;
@@ -210,7 +213,9 @@ import Header from '../components/Header.astro';
         throw new Error(data.error || 'Failed to initialize session');
       }
     } catch (err: any) {
-      loading.innerHTML = `<span class="text-red-400">Failed to mount checkout: ${err.message}</span>`;
+      loading.classList.remove('hidden');
+      loading.classList.add('text-red-400');
+      loading.textContent = `Failed to mount checkout: ${err?.message || 'Checkout failed'}`;
     }
   }
 

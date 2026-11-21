@@ -3,6 +3,11 @@ import Layout from '../../layouts/Layout.astro';
 import Header from '../../components/Header.astro';
 import { getCollection } from 'astro:content';
 import pricingMatrixRaw from '../../content/pricing-matrix.json';
+import {
+  labFromVendor,
+  resolveMatrixSku,
+  type PricingMatrixEntry,
+} from '../../lib/checkout-catalog';
 
 export async function getStaticPaths() {
   const artworks = await getCollection('artworks');
@@ -25,50 +30,54 @@ const {
 } = artwork.data;
 
 const hasDisplate = merch_approved.some((p: string) => p.toLowerCase().includes('displate'));
-const matrix = pricingMatrixRaw as Record<string, { retailPrice: number; name: string; provider: string; packagingType: string; spec: string }>;
+const matrix = pricingMatrixRaw as Record<string, PricingMatrixEntry>;
 
 const allMerchCatalog = [
   {
     matchKey: 'mug',
     skuKey: 'AWP-PFY-MUG',
-    title: matrix['AWP-PFY-MUG']?.name || 'Ceramic Waterfront Mug (11oz)',
-    price: matrix['AWP-PFY-MUG']?.retailPrice || 22,
-    spec: matrix['AWP-PFY-MUG']?.spec || 'Dishwasher safe • Full wrap finish',
-    provider: 'printify',
+    title: 'Ceramic Waterfront Mug (11oz)',
+    spec: 'Dishwasher safe • Full wrap finish',
     packaging: 'corrugated_box',
   },
   {
     matchKey: 'coaster',
     skuKey: 'AWP-PFY-COASTERS',
-    title: matrix['AWP-PFY-COASTERS']?.name || 'Hardwood Coaster Set (4-Pk)',
-    price: matrix['AWP-PFY-COASTERS']?.retailPrice || 28,
-    spec: matrix['AWP-PFY-COASTERS']?.spec || 'High-gloss heat-resistant top • Cork base',
-    provider: 'printify',
+    title: 'Hardwood Coaster Set (4-Pk)',
+    spec: 'High-gloss heat-resistant top • Cork base',
     packaging: 'corrugated_box',
   },
   {
     matchKey: 'desk',
     skuKey: 'AWP-PFY-DESKMAT',
-    title: matrix['AWP-PFY-DESKMAT']?.name || 'Studio Panoramic Desk Mat',
-    price: matrix['AWP-PFY-DESKMAT']?.retailPrice || 48,
-    spec: matrix['AWP-PFY-DESKMAT']?.spec || 'Natural rubber base • Stitched border',
-    provider: 'printify',
+    title: 'Studio Panoramic Desk Mat',
+    spec: 'Natural rubber base • Stitched border',
     packaging: 'poly_mailer',
   },
   {
     matchKey: 'acrylic',
     skuKey: 'AWP-GTN-ACRYLIC',
-    title: matrix['AWP-GTN-ACRYLIC']?.name || 'Optical Acrylic Desk Block (6x6")',
-    price: matrix['AWP-GTN-ACRYLIC']?.retailPrice || 55,
-    spec: matrix['AWP-GTN-ACRYLIC']?.spec || '1" thick optical acrylic • Freestanding',
-    provider: 'gooten',
+    title: 'Optical Acrylic Desk Block (6x6")',
+    spec: '1" thick optical acrylic • Freestanding',
     packaging: 'corrugated_box',
   },
 ];
 
-const approvedGoods = allMerchCatalog.filter((item) =>
-  merch_approved.some((approved: string) => approved.toLowerCase().includes(item.matchKey))
-);
+const approvedGoods = allMerchCatalog.flatMap((item) => {
+  const approved = merch_approved.some((name: string) => name.toLowerCase().includes(item.matchKey));
+  if (!approved) return [];
+  const sku = `${item.skuKey}-${artwork.id}`;
+  const matrixSku = resolveMatrixSku(sku, matrix);
+  const entry = matrixSku ? matrix[matrixSku] : undefined;
+  const provider = entry ? labFromVendor(entry.vendor) : null;
+  if (!entry || !provider) return [];
+  return [{
+    ...item,
+    sku,
+    price: entry.retail,
+    provider,
+  }];
+});
 
 const nativeRatio = capture?.aspect_ratio || 'Native';
 const rawVariants = print_variants.length > 0 
@@ -79,18 +88,23 @@ const rawVariants = print_variants.length > 0
       { size: '24x36"', substrate: 'Hahnemühle Photo Rag', price_cents: 34000, sku: 'GLOBAL-FAP-24x36' },
     ];
 
-const prints = rawVariants.map((v: any) => ({
-  sku: v.sku,
-  size: v.size,
-  substrate: v.substrate || 'Hahnemühle Photo Rag 308gsm',
-  price: v.price_cents ? Math.round(v.price_cents / 100) : (matrix[v.sku]?.retailPrice || 185),
-  provider: 'prodigi',
-  packaging: 'rigid_tube',
-}));
+const prints = rawVariants.flatMap((v: { sku: string; size?: string; substrate?: string }) => {
+  const matrixSku = resolveMatrixSku(v.sku, matrix);
+  const entry = matrixSku ? matrix[matrixSku] : undefined;
+  const provider = entry ? labFromVendor(entry.vendor) : null;
+  if (!entry || !provider) return [];
+  return [{
+    sku: v.sku,
+    size: v.size || entry.size,
+    substrate: v.substrate || entry.category || 'Hahnemühle Photo Rag 308gsm',
+    price: entry.retail,
+    provider,
+    packaging: 'rigid_tube',
+  }];
+});
 
-const lowestPrice = approvedGoods.length > 0 
-  ? Math.min(...approvedGoods.map(g => g.price)) 
-  : (prints.length > 0 ? Math.min(...prints.map((p: any) => p.price)) : 185);
+const pricedAmounts = [...approvedGoods.map((item) => item.price), ...prints.map((print) => print.price)];
+const lowestPrice = pricedAmounts.length > 0 ? Math.min(...pricedAmounts) : null;
 ---
 
 <Layout title={`${title} | Alan Woodyard`} theme="walnut">
@@ -137,14 +151,20 @@ const lowestPrice = approvedGoods.length > 0
 
         <!-- Progressive Disclosure CTA Button -->
         <div class="pt-6">
-          <button
-            type="button"
-            id="toggleShopBtn"
-            class="px-8 py-3.5 border border-[var(--theme-accent)] bg-[var(--theme-accent)] text-[var(--theme-bg)] hover:bg-transparent hover:text-[var(--theme-accent)] transition-all font-mono text-xs uppercase tracking-widest font-bold shadow-lg inline-flex items-center gap-2 cursor-pointer"
-          >
-            <span>Explore Prints & Merchandise (From ${lowestPrice})</span>
-            <span id="shopBtnArrow">&darr;</span>
-          </button>
+          {lowestPrice != null ? (
+            <button
+              type="button"
+              id="toggleShopBtn"
+              class="px-8 py-3.5 border border-[var(--theme-accent)] bg-[var(--theme-accent)] text-[var(--theme-bg)] hover:bg-transparent hover:text-[var(--theme-accent)] transition-all font-mono text-xs uppercase tracking-widest font-bold shadow-lg inline-flex items-center gap-2 cursor-pointer"
+            >
+              <span>Explore Prints & Merchandise (From ${lowestPrice})</span>
+              <span id="shopBtnArrow">&darr;</span>
+            </button>
+          ) : (
+            <p class="text-xs font-mono uppercase tracking-widest text-[var(--theme-text-muted)]">
+              Print pricing for this piece is not yet published.
+            </p>
+          )}
         </div>
       </div>
     </section>
@@ -186,7 +206,7 @@ const lowestPrice = approvedGoods.length > 0
                     <button
                       type="button"
                       class="btn-add-cart shrink-0 px-3.5 py-2 text-xs font-mono bg-[var(--theme-accent)] text-[var(--theme-bg)] hover:bg-[var(--theme-accent-hover)] font-bold tracking-wider uppercase transition-colors"
-                      data-sku={`${item.skuKey}-${artwork.id}`}
+                      data-sku={item.sku}
                       data-variant={item.title}
                       data-price={item.price}
                       data-provider={item.provider}

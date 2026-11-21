@@ -237,9 +237,7 @@ async function dispatchProdigiOrder(
   items: OrderItem[],
   env: FulfillmentEnv
 ): Promise<DispatchedParcelResult> {
-  const apiKey = env.PRODIGI_API_KEY;
-
-  if (!apiKey || env.ALLOW_MOCK_DISPATCH === '1') {
+  if (env.ALLOW_MOCK_DISPATCH === '1') {
     return {
       lab: 'prodigi',
       providerName: 'Prodigi Fine-Art Lab',
@@ -247,6 +245,11 @@ async function dispatchProdigiOrder(
       externalOrderId: externalId,
       labOrderId: `prodigi_mock_${Date.now()}`
     };
+  }
+
+  const apiKey = env.PRODIGI_API_KEY;
+  if (!apiKey) {
+    throw new Error('PRODIGI_API_KEY is not configured');
   }
 
   const payload = {
@@ -314,10 +317,7 @@ async function dispatchPrintifyOrder(
   items: OrderItem[],
   env: FulfillmentEnv
 ): Promise<DispatchedParcelResult> {
-  const token = env.PRINTIFY_API_TOKEN;
-  const shopId = env.PRINTIFY_SHOP_ID;
-
-  if (!token || !shopId || env.ALLOW_MOCK_DISPATCH === '1') {
+  if (env.ALLOW_MOCK_DISPATCH === '1') {
     return {
       lab: 'printify',
       providerName: 'Printify Workshop',
@@ -325,6 +325,12 @@ async function dispatchPrintifyOrder(
       externalOrderId: externalId,
       labOrderId: `printify_mock_${Date.now()}`
     };
+  }
+
+  const token = env.PRINTIFY_API_TOKEN;
+  const shopId = env.PRINTIFY_SHOP_ID;
+  if (!token || !shopId) {
+    throw new Error('PRINTIFY_API_TOKEN or PRINTIFY_SHOP_ID is not configured');
   }
 
   const names = order.recipient.name.split(' ');
@@ -388,9 +394,7 @@ async function dispatchPrintfulOrder(
   items: OrderItem[],
   env: FulfillmentEnv
 ): Promise<DispatchedParcelResult> {
-  const token = env.PRINTFUL_API_TOKEN;
-
-  if (!token || env.ALLOW_MOCK_DISPATCH === '1') {
+  if (env.ALLOW_MOCK_DISPATCH === '1') {
     return {
       lab: 'printful',
       providerName: 'Printful Fulfillment Center',
@@ -398,6 +402,11 @@ async function dispatchPrintfulOrder(
       externalOrderId: externalId,
       labOrderId: `printful_mock_${Date.now()}`
     };
+  }
+
+  const token = env.PRINTFUL_API_TOKEN;
+  if (!token) {
+    throw new Error('PRINTFUL_API_TOKEN is not configured');
   }
 
   const payload = {
@@ -460,9 +469,7 @@ async function dispatchGelatoOrder(
   items: OrderItem[],
   env: FulfillmentEnv
 ): Promise<DispatchedParcelResult> {
-  const apiKey = env.GELATO_API_KEY;
-
-  if (!apiKey || env.ALLOW_MOCK_DISPATCH === '1') {
+  if (env.ALLOW_MOCK_DISPATCH === '1') {
     return {
       lab: 'gelato',
       providerName: 'Gelato Global Print Facility',
@@ -470,6 +477,11 @@ async function dispatchGelatoOrder(
       externalOrderId: externalId,
       labOrderId: `gelato_mock_${Date.now()}`
     };
+  }
+
+  const apiKey = env.GELATO_API_KEY;
+  if (!apiKey) {
+    throw new Error('GELATO_API_KEY is not configured');
   }
 
   const names = order.recipient.name.split(' ');
@@ -540,9 +552,7 @@ async function dispatchGootenOrder(
   items: OrderItem[],
   env: FulfillmentEnv
 ): Promise<DispatchedParcelResult> {
-  const recipeId = env.GOOTEN_RECIPE_ID;
-
-  if (!recipeId || env.ALLOW_MOCK_DISPATCH === '1') {
+  if (env.ALLOW_MOCK_DISPATCH === '1') {
     return {
       lab: 'gooten',
       providerName: 'Gooten Decor Facility',
@@ -550,6 +560,11 @@ async function dispatchGootenOrder(
       externalOrderId: externalId,
       labOrderId: `gooten_mock_${Date.now()}`
     };
+  }
+
+  const recipeId = env.GOOTEN_RECIPE_ID;
+  if (!recipeId) {
+    throw new Error('GOOTEN_RECIPE_ID is not configured');
   }
 
   const names = order.recipient.name.split(' ');
@@ -603,7 +618,7 @@ async function dispatchGootenOrder(
  * Main Order Router: routeOrder(order, env)
  *
  * Directs line items to their respective lab adapters, executes discrete dispatches,
- * and compiles the holistic multi-parcel fulfillment report.
+ * and compiles the combined multi-parcel fulfillment report.
  */
 export async function routeOrder(
   order: FulfillmentOrder,

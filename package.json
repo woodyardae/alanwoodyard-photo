@@ -15,7 +15,8 @@
         "sync-shared": "tsx scripts/sync-shared-studio.ts",
         "build": "npm run sync-pricing && astro build",
         "render-crops": "tsx scripts/render-print-crops.ts",
-        "syndicate-printify": "tsx scripts/syndicate-printify.ts"
+        "syndicate-printify": "tsx scripts/syndicate-printify.ts",
+        "export-channels": "tsx scripts/export-channel-packs.ts"
     },
     "dependencies": {
         "@nanostores/persistent": "^1.3.5",

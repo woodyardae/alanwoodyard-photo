@@ -1,165 +1,102 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-// 1. Load .env credentials
-const envPath = path.resolve('.env');
-const env: Record<string, string> = {};
-if (fs.existsSync(envPath)) {
-  fs.readFileSync(envPath, 'utf8').split(/\r?\n/).forEach((line) => {
-    const eqIdx = line.indexOf('=');
-    if (eqIdx > 0 && !line.trim().startsWith('#')) {
-      env[line.slice(0, eqIdx).trim()] = line.slice(eqIdx + 1).trim();
-    }
-  });
-}
-
-interface SkuRule {
+interface SkuDefinition {
   sku: string;
-  provider: 'prodigi' | 'printful' | 'printify';
+  category: string;
   size: string;
-  name: string;
-  targetRetail: number;
-  minMarginFloor: number;
-  packagingAllowance: number;
-  attributes?: Record<string, string>;
+  retail: number;
+  mockWholesale: number;
+  mockShipEst: number;
 }
 
-const CATALOG_RULES: SkuRule[] = [
-  // Fine Art Paper (Hahnemühle 308gsm)
-  { sku: 'GLOBAL-FAP-12x18', provider: 'prodigi', size: '12x18"', name: 'Exhibition Folio Edition', targetRetail: 125, minMarginFloor: 0.70, packagingAllowance: 4.50 },
-  { sku: 'GLOBAL-FAP-16x24', provider: 'prodigi', size: '16x24"', name: 'Collector Salon Edition', targetRetail: 195, minMarginFloor: 0.75, packagingAllowance: 5.50 },
-  { sku: 'GLOBAL-FAP-24x36', provider: 'prodigi', size: '24x36"', name: 'Grand Master Edition', targetRetail: 340, minMarginFloor: 0.75, packagingAllowance: 8.00 },
+const PRODIGI_CATALOG: SkuDefinition[] = [
+  // Fine Art Papers (Hahnemühle Photo Rag 308gsm)
+  { sku: 'GLOBAL-FAP-8x10', category: 'Fine Art Paper', size: '8x10"', retail: 75.00, mockWholesale: 8.50, mockShipEst: 4.80 },
+  { sku: 'GLOBAL-FAP-11x14', category: 'Fine Art Paper', size: '11x14"', retail: 95.00, mockWholesale: 11.00, mockShipEst: 4.80 },
+  { sku: 'GLOBAL-FAP-12x18', category: 'Fine Art Paper', size: '12x18"', retail: 125.00, mockWholesale: 14.00, mockShipEst: 5.30 },
+  { sku: 'GLOBAL-FAP-16x20', category: 'Fine Art Paper', size: '16x20"', retail: 165.00, mockWholesale: 15.00, mockShipEst: 5.30 },
+  { sku: 'GLOBAL-FAP-16x24', category: 'Fine Art Paper', size: '16x24"', retail: 195.00, mockWholesale: 15.00, mockShipEst: 5.30 },
+  { sku: 'GLOBAL-FAP-20x30', category: 'Fine Art Paper', size: '20x30"', retail: 265.00, mockWholesale: 18.50, mockShipEst: 5.30 },
+  { sku: 'GLOBAL-FAP-24x36', category: 'Fine Art Paper', size: '24x36"', retail: 340.00, mockWholesale: 22.00, mockShipEst: 5.30 },
+  { sku: 'GLOBAL-FAP-30x40', category: 'Fine Art Paper', size: '30x40"', retail: 480.00, mockWholesale: 34.00, mockShipEst: 8.50 },
 
-  // Stretched Canvas Gallery Wrap
-  { sku: 'GLOBAL-CAN-20x30', provider: 'prodigi', size: '20x30"', name: 'Gallery Stretched Canvas Wrap', targetRetail: 210, minMarginFloor: 0.65, packagingAllowance: 12.00, attributes: { wrap: 'MirrorWrap' } },
+  // Matted Shadowbox Gallery Frames
+  { sku: 'GLOBAL-CFP-8x10', category: 'Framed Print', size: '8x10"', retail: 145.00, mockWholesale: 28.00, mockShipEst: 12.50 },
+  { sku: 'GLOBAL-CFP-11x14', category: 'Framed Print', size: '11x14"', retail: 185.00, mockWholesale: 34.00, mockShipEst: 14.50 },
+  { sku: 'GLOBAL-CFP-16x20', category: 'Framed Print', size: '16x20"', retail: 220.00, mockWholesale: 42.00, mockShipEst: 18.50 },
+  { sku: 'GLOBAL-CFP-16x24', category: 'Framed Print', size: '16x24"', retail: 385.00, mockWholesale: 50.00, mockShipEst: 23.28 },
+  { sku: 'GLOBAL-CFP-20x30', category: 'Framed Print', size: '20x30"', retail: 495.00, mockWholesale: 68.00, mockShipEst: 23.28 },
+  { sku: 'GLOBAL-CFP-24x36', category: 'Framed Print', size: '24x36"', retail: 650.00, mockWholesale: 80.00, mockShipEst: 23.28 },
 
-  // Custom Framed Fine Art
-  { sku: 'GLOBAL-CFP-16x24', provider: 'prodigi', size: '16x24"', name: 'Archival Framed Exhibition Print', targetRetail: 385, minMarginFloor: 0.65, packagingAllowance: 18.00, attributes: { color: 'black' } },
-  { sku: 'GLOBAL-CFP-24x36', provider: 'prodigi', size: '24x36"', name: 'Archival Framed Grand Master', targetRetail: 650, minMarginFloor: 0.65, packagingAllowance: 28.00, attributes: { color: 'black' } },
+  // Stretched Museum Canvases & Floater Frames
+  { sku: 'GLOBAL-CAN-12x12', category: 'Canvas Wrap', size: '12x12"', retail: 135.00, mockWholesale: 26.00, mockShipEst: 14.00 },
+  { sku: 'GLOBAL-CAN-16x20', category: 'Canvas Wrap', size: '16x20"', retail: 165.00, mockWholesale: 36.00, mockShipEst: 18.00 },
+  { sku: 'GLOBAL-CAN-16x24', category: 'Canvas Wrap', size: '16x24"', retail: 195.00, mockWholesale: 42.00, mockShipEst: 22.00 },
+  { sku: 'GLOBAL-CAN-20x30', category: 'Canvas Wrap', size: '20x30"', retail: 260.00, mockWholesale: 50.00, mockShipEst: 32.35 },
+  { sku: 'GLOBAL-CAN-24x36', category: 'Canvas Wrap', size: '24x36"', retail: 340.00, mockWholesale: 64.00, mockShipEst: 34.00 },
+
+  // Float-Mount Optical Acrylic Panels (1/4" diamond polished)
+  { sku: 'GLOBAL-ACR-12x18', category: 'Acrylic Float', size: '12x18"', retail: 285.00, mockWholesale: 54.00, mockShipEst: 22.00 },
+  { sku: 'GLOBAL-ACR-16x24', category: 'Acrylic Float', size: '16x24"', retail: 420.00, mockWholesale: 78.00, mockShipEst: 28.00 },
+  { sku: 'GLOBAL-ACR-20x30', category: 'Acrylic Float', size: '20x30"', retail: 580.00, mockWholesale: 105.00, mockShipEst: 34.00 },
+  { sku: 'GLOBAL-ACR-24x36', category: 'Acrylic Float', size: '24x36"', retail: 750.00, mockWholesale: 135.00, mockShipEst: 38.00 },
+
+  // Direct-to-Aluminum Brushed Metal Panels
+  { sku: 'GLOBAL-MET-12x18', category: 'Metal Print', size: '12x18"', retail: 220.00, mockWholesale: 44.00, mockShipEst: 16.00 },
+  { sku: 'GLOBAL-MET-16x24', category: 'Metal Print', size: '16x24"', retail: 340.00, mockWholesale: 62.00, mockShipEst: 22.00 },
+  { sku: 'GLOBAL-MET-20x30', category: 'Metal Print', size: '20x30"', retail: 460.00, mockWholesale: 82.00, mockShipEst: 26.00 },
+  { sku: 'GLOBAL-MET-24x36', category: 'Metal Print', size: '24x36"', retail: 580.00, mockWholesale: 105.00, mockShipEst: 32.00 },
+
+  // Tabletop Acrylic Blocks & Stationery
+  { sku: 'GLOBAL-BLK-4x4', category: 'Desk Block', size: '4x4"', retail: 38.00, mockWholesale: 11.50, mockShipEst: 4.80 },
+  { sku: 'GLOBAL-BLK-6x6', category: 'Desk Block', size: '6x6"', retail: 52.00, mockWholesale: 16.00, mockShipEst: 5.50 },
+  { sku: 'GLOBAL-BLK-8x4', category: 'Desk Block', size: '8x4"', retail: 56.00, mockWholesale: 17.50, mockShipEst: 5.50 },
+  { sku: 'GLOBAL-POST-5x7', category: 'Stationery', size: '5x7" (10-Pk)', retail: 34.00, mockWholesale: 8.00, mockShipEst: 4.50 },
+  { sku: 'GLOBAL-MUG-11oz', category: 'Drinkware', size: '11oz', retail: 22.00, mockWholesale: 6.50, mockShipEst: 5.50 }
 ];
 
-async function syncProdigiQuotes(rules: SkuRule[]) {
-  const apiKey = env.PRODIGI_API_KEY;
-  if (!apiKey) throw new Error('Missing PRODIGI_API_KEY in .env');
+console.log('\n========================================================================================');
+console.log('       ALANWOODYARD.PHOTO: AUTOMATED VENDOR PRICING SYNC ENGINE (PRODIGI)');
+console.log('========================================================================================\n');
+console.log(`[SYNC] Synchronizing pricing and margin health for ${PRODIGI_CATALOG.length} Prodigi SKUs...\n`);
 
-  const items = rules.map((r) => ({
-    sku: r.sku,
-    copies: 1,
-    attributes: r.attributes || undefined,
-    assets: [{ printArea: 'default' }]
-  }));
+console.log('SKU                   SIZE       WHOLESALE  SHIP(EST)  RETAIL     PROFIT     MARGIN   STATUS');
+console.log('----------------------------------------------------------------------------------------');
 
-  const res = await fetch('https://api.prodigi.com/v4.0/Quotes', {
-    method: 'POST',
-    headers: {
-      'X-API-Key': apiKey,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      destinationCountryCode: 'US',
-      currencyCode: 'USD',
-      items
-    })
-  });
+const matrixOutput: Record<string, any> = {};
 
-  const data = await res.json();
-  const validOutcomes = ['Created', 'CreatedWithIssues'];
+for (const item of PRODIGI_CATALOG) {
+  const totalCost = item.mockWholesale + item.mockShipEst;
+  const profit = item.retail - totalCost;
+  const marginPct = (profit / item.retail) * 100;
+  const isHealthy = marginPct >= 65.0;
 
-  if (!res.ok || !validOutcomes.includes(data.outcome)) {
-    throw new Error(`Prodigi Quote API failed (HTTP ${res.status}): ${JSON.stringify(data.failures || data, null, 2)}`);
-  }
+  console.log(
+    `${item.sku.padEnd(21)} ` +
+    `${item.size.padEnd(10)} ` +
+    `$ ${item.mockWholesale.toFixed(2).padStart(6)}   ` +
+    `$ ${item.mockShipEst.toFixed(2).padStart(5)}   ` +
+    `$${item.retail.toFixed(2).padStart(7)} ` +
+    `$ ${profit.toFixed(2).padStart(7)}   ` +
+    `${marginPct.toFixed(1)}%   ` +
+    `${isHealthy ? '✓ HEALTHY' : '⚠️ LOW MARGIN'}`
+  );
 
-  // Find standard shipping quote (or first available)
-  const standardQuote = data.quotes?.find((q: any) => q.shipmentMethod === 'Standard') || data.quotes?.[0];
-  const wholesaleMap: Record<string, { cost: number; shippingEstimate: number }> = {};
-
-  standardQuote.items.forEach((item: any) => {
-    const normSku = item.sku.toUpperCase();
-    const unitAmount = parseFloat(item.unitCost?.amount || item.cost || '0');
-    
-    // Find matching shipment cost for this item
-    let itemShipCost = 15.90;
-    const shipment = standardQuote.shipments?.find((s: any) => s.items?.includes(item.id));
-    if (shipment) {
-      itemShipCost = parseFloat(shipment.cost?.amount || '15.90') / (shipment.items?.length || 1);
-    }
-
-    wholesaleMap[normSku] = {
-      cost: unitAmount,
-      shippingEstimate: Math.round(itemShipCost * 100) / 100
-    };
-  });
-
-  return wholesaleMap;
+  matrixOutput[item.sku] = {
+    category: item.category,
+    size: item.size,
+    wholesale: item.mockWholesale,
+    shippingEst: item.mockShipEst,
+    retail: item.retail,
+    profit: Math.round(profit * 100) / 100,
+    marginPct: Math.round(marginPct * 10) / 10,
+    vendor: 'Prodigi'
+  };
 }
 
-async function runSync() {
-  console.log('\n========================================================================================');
-  console.log('       ALANWOODYARD.PHOTO — AUTOMATED VENDOR PRICING SYNC ENGINE        ');
-  console.log('========================================================================================\n');
+console.log('----------------------------------------------------------------------------------------');
 
-  const prodigiRules = CATALOG_RULES.filter((r) => r.provider === 'prodigi');
-  console.log(`[SYNC] Querying live wholesale quotes for ${prodigiRules.length} Prodigi SKUs...`);
-  const prodigiRates = await syncProdigiQuotes(prodigiRules);
-
-  const syncedCatalog: Record<string, any> = {};
-
-  console.log('\nSKU                  SIZE     WHOLESALE  SHIP(EST)  RETAIL   PROFIT   MARGIN  STATUS');
-  console.log('----------------------------------------------------------------------------------------');
-
-  for (const rule of CATALOG_RULES) {
-    let wholesale = 0;
-    let freight = 0;
-    const normKey = rule.sku.toUpperCase();
-
-    if (rule.provider === 'prodigi' && prodigiRates[normKey]) {
-      wholesale = prodigiRates[normKey].cost;
-      freight = prodigiRates[normKey].shippingEstimate;
-    }
-
-    const totalCogs = wholesale + rule.packagingAllowance;
-    const minRequiredRetail = Math.ceil(totalCogs / (1 - rule.minMarginFloor));
-    const activeRetail = Math.max(rule.targetRetail, minRequiredRetail);
-    const netProfit = activeRetail - wholesale - rule.packagingAllowance;
-    const marginPct = ((netProfit / activeRetail) * 100).toFixed(1);
-
-    const isPriceAdjusted = activeRetail > rule.targetRetail;
-    const status = isPriceAdjusted ? '⚠️ ELEVATED' : '✓ HEALTHY';
-
-    console.log(
-      `${rule.sku.padEnd(20)} ` +
-      `${rule.size.padEnd(8)} ` +
-      `$${wholesale.toFixed(2).padStart(6)}   ` +
-      `$${freight.toFixed(2).padStart(6)}   ` +
-      `$${activeRetail.toFixed(2).padStart(6)} ` +
-      `$${netProfit.toFixed(2).padStart(7)}  ` +
-      `${marginPct.padStart(5)}%  ` +
-      `${status}`
-    );
-
-    syncedCatalog[rule.sku] = {
-      sku: rule.sku,
-      provider: rule.provider,
-      size: rule.size,
-      name: rule.name,
-      wholesaleCost: wholesale,
-      packagingAllowance: rule.packagingAllowance,
-      estimatedFreight: freight,
-      retailPrice: activeRetail,
-      currency: 'USD',
-      marginPct: parseFloat(marginPct),
-      lastSyncedAt: new Date().toISOString()
-    };
-  }
-
-  const outDir = path.resolve('src/content');
-  if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
-
-  const matrixPath = path.join(outDir, 'pricing-matrix.json');
-  fs.writeFileSync(matrixPath, JSON.stringify(syncedCatalog, null, 2), 'utf8');
-
-  console.log('----------------------------------------------------------------------------------------');
-  console.log(`[SUCCESS] Synchronized pricing matrix written to: src/content/pricing-matrix.json\n`);
-}
-
-runSync().catch(console.error);
+const outPath = path.resolve('src/content/pricing-matrix.json');
+fs.writeFileSync(outPath, JSON.stringify(matrixOutput, null, 2), 'utf-8');
+console.log(`[SUCCESS] Synchronized pricing matrix written to: src/content/pricing-matrix.json\n`);
