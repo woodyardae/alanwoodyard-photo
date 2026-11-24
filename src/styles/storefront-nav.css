@@ -1,0 +1,447 @@
+/* Storefront navigation. Colors resolve only through existing --awp-* tokens. */
+
+.store-page {
+  overflow-x: clip;
+  max-width: 100%;
+  color: var(--awp-text);
+  background: var(--awp-surface);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.store-sticky-head {
+  background: var(--awp-surface);
+  border-bottom: 1px solid var(--awp-border);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+.store-main {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 1rem max(1rem, env(safe-area-inset-right)) 2.5rem max(1rem, env(safe-area-inset-left));
+}
+
+.store-nav {
+  max-width: 100%;
+  padding: 0.75rem max(1rem, env(safe-area-inset-right)) 0.85rem max(1rem, env(safe-area-inset-left));
+}
+
+.store-dual-nav,
+.shop-by-gift,
+.shop-by-collection,
+.product-grid,
+.store-card,
+.artwork-layout,
+.purchase-panel,
+.offer-row,
+.gift-scroller {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.shop-by-gift h2,
+.shop-by-collection h2,
+.catalog-heading h1,
+.artwork-stage h1,
+.offer-group h2 {
+  margin: 0;
+  color: var(--awp-text);
+  font-weight: 500;
+}
+
+.shop-by-gift h2,
+.shop-by-collection h2,
+.catalog-heading p,
+.card-ratio,
+.card-price,
+.panel-from,
+.offer-spec,
+.offer-price,
+.artwork-kicker {
+  font-family: ui-monospace, monospace;
+  letter-spacing: 0.04em;
+}
+
+.shop-by-gift h2,
+.shop-by-collection h2 {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  color: var(--awp-text-muted);
+}
+
+.collection-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.gift-scroller {
+  display: flex;
+  gap: 0.5rem;
+  padding-top: 0.7rem;
+}
+
+.gift-pill,
+.collection-toggle,
+.collection-close,
+.collection-sheet a,
+.btn-add-cart,
+.offer-external,
+.back-link,
+.store-page header nav a,
+.store-page #openCartTrigger {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.55rem 0.9rem;
+  touch-action: manipulation;
+  text-decoration: none;
+  color: var(--awp-text);
+  background: var(--awp-surface);
+  border: 1px solid var(--awp-border);
+}
+
+.gift-pill[aria-current='page'],
+.collection-sheet a[aria-current='page'],
+.offer-row[data-selected='true'] {
+  border-color: var(--awp-accent);
+  color: var(--awp-accent);
+}
+
+.btn-add-cart {
+  background: var(--awp-accent);
+  color: var(--awp-surface);
+  border-color: var(--awp-accent);
+  cursor: pointer;
+}
+
+.collection-toggle,
+.collection-close {
+  cursor: pointer;
+}
+
+.collection-sheet {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+  background: var(--awp-surface);
+  border: 1px solid var(--awp-border);
+  padding: 0.75rem;
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+}
+
+.collection-sheet a {
+  justify-content: flex-start;
+}
+
+.catalog-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--awp-border);
+  padding-bottom: 0.75rem;
+}
+
+.catalog-heading h1 {
+  font-size: 1.6rem;
+}
+
+.catalog-heading p,
+.card-ratio,
+.offer-spec,
+.artwork-kicker,
+.artwork-description {
+  color: var(--awp-text-muted);
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.store-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  border: 1px solid var(--awp-border);
+  background: var(--awp-surface);
+  padding: 0.75rem;
+}
+
+.card-media {
+  display: block;
+  overflow: hidden;
+  max-width: 100%;
+  background: var(--awp-surface);
+}
+
+.card-media img,
+.artwork-native,
+.crop-preview img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
+.card-copy h3 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.card-copy h3 a {
+  color: var(--awp-text);
+  text-decoration: none;
+}
+
+.card-price,
+.panel-from,
+.offer-price {
+  color: var(--awp-accent);
+}
+
+.store-empty {
+  margin: 1rem 0 0;
+  color: var(--awp-text-muted);
+}
+
+.artwork-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.artwork-stage h1 {
+  margin-top: 0.75rem;
+  font-size: 2rem;
+  font-weight: 400;
+}
+
+.artwork-caption,
+.artwork-description {
+  max-width: 40rem;
+}
+
+.crop-preview {
+  --crop-pan-x: 0;
+  --crop-pan-y: 0;
+  --crop-zoom: 1;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--awp-border);
+  background: var(--awp-surface);
+}
+
+.crop-preview.is-active img {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  object-fit: cover;
+  transform: translate(calc(var(--crop-pan-x) * 1px), calc(var(--crop-pan-y) * 1px)) scale(var(--crop-zoom));
+  transform-origin: center center;
+}
+
+.artwork-native {
+  object-fit: contain;
+  max-height: 75vh;
+  border: 1px solid var(--awp-border);
+}
+
+.purchase-panel {
+  position: static;
+  border: 1px solid var(--awp-border);
+  background: var(--awp-surface);
+  padding: 0.9rem;
+}
+
+.offer-group h2 {
+  margin: 0.4rem 0 0.2rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  color: var(--awp-text-muted);
+}
+
+.offer-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--awp-border);
+}
+
+.offer-copy {
+  flex: 1 1 8rem;
+  min-width: 0;
+}
+
+.offer-title,
+.offer-spec {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.offer-price {
+  font-family: ui-monospace, monospace;
+}
+
+@media (max-width: 767px) {
+  .store-sticky-head {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .store-page header .holiday-ship-banner {
+    padding: 0.35rem 0.75rem;
+    font-size: 10px;
+    overflow-wrap: anywhere;
+  }
+
+  .store-page header > div {
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
+  }
+
+  .store-dual-nav {
+    display: block;
+  }
+
+  .gift-scroller {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+  }
+
+  .gift-pill {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    white-space: nowrap;
+  }
+
+  .collection-sheet {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    visibility: hidden;
+    transform: translateY(110%);
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  .collection-sheet[data-open='true'] {
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .purchase-panel {
+    position: static;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .store-main {
+    max-width: 72rem;
+  }
+
+  .store-dual-nav {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 1fr);
+    gap: 1.25rem;
+    align-items: start;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+
+  .gift-scroller {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+
+  .collection-toggle,
+  .collection-close {
+    display: none;
+  }
+
+  .collection-sheet,
+  .collection-sheet[data-open='false'] {
+    position: static;
+    visibility: visible;
+    transform: none;
+  }
+
+  .artwork-layout {
+    grid-template-columns: minmax(0, 1.3fr) minmax(240px, 0.9fr);
+  }
+
+  .purchase-panel {
+    position: sticky;
+    top: calc(1rem + env(safe-area-inset-top));
+    max-height: calc(100dvh - 2rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    overflow-y: auto;
+  }
+}
+
+@media (min-width: 1025px) {
+  .store-main {
+    max-width: 76rem;
+  }
+
+  .store-dual-nav {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(240px, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+
+  .gift-scroller {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+
+  .collection-toggle,
+  .collection-close {
+    display: none;
+  }
+
+  .collection-sheet,
+  .collection-sheet[data-open='false'] {
+    position: static;
+    visibility: visible;
+    transform: none;
+  }
+
+  .artwork-layout {
+    grid-template-columns: minmax(0, 1.45fr) minmax(240px, 0.8fr);
+  }
+
+  .purchase-panel {
+    position: sticky;
+    top: calc(1rem + env(safe-area-inset-top));
+    max-height: calc(100dvh - 2rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    overflow-y: auto;
+  }
+}

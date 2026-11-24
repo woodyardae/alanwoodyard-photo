@@ -14,6 +14,7 @@
         "sync-queue": "tsx scripts/sync-merch-queue.ts",
         "sync-shared": "tsx scripts/sync-shared-studio.ts",
         "pull-approvals": "tsx scripts/pull-merch-approvals.ts",
+        "pull-merch-kv": "tsx scripts/pull-merch-kv.ts",
         "apply-approvals": "tsx scripts/apply-merch-approvals.ts",
         "build": "npm run sync-pricing && astro build",
         "render-crops": "tsx scripts/render-print-crops.ts",

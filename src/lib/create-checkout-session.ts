@@ -8,6 +8,7 @@
 import Stripe from 'stripe';
 import type { OrderItem } from './fulfillment';
 import { getPublishedArtworkSlugs } from './artwork-catalog';
+import { checkoutArtworkState, type SessionKv } from './artwork-overlay';
 import {
   artworkCropsForSlug,
   catalogUnitAmountCents,
@@ -17,6 +18,7 @@ import {
   labFromVendor,
   mapCategoryToSubstrate,
   normalizeSize,
+  readCropAdjustments,
   resolveCropSelection,
   resolveMatrixSku,
   resolvePrintAssetUrl,
@@ -65,6 +67,13 @@ export interface CreateCheckoutSessionInput {
   attemptNonce?: string;
   /** Test seam. Production callers leave this unset and use the Stripe SDK. */
   stripeClient?: CheckoutStripeClient;
+  /**
+   * Merch Studio KV. When set, crop and approval overlays replace the bundled
+   * JSON for this request. id stays the print-master key.
+   */
+  session?: SessionKv | null;
+  /** Fixture root for tests. Production leaves this unset and uses the bundled catalog. */
+  catalogRoot?: string;
 }
 
 /** Minimal Checkout client so tests can observe idempotency keys without a network call. */
@@ -82,7 +91,7 @@ export interface CheckoutStripeClient {
 export interface CheckoutIdempotencyContext {
   customerEmail?: string;
   /** Resolved crop per cart line id. Crop changes must not reuse a previous Stripe key. */
-  crops?: readonly { id: string; crop?: string; ratio?: string }[];
+  crops?: readonly { id: string; crop?: string; ratio?: string; panX?: number; panY?: number; zoom?: number }[];
   /** Session expires_at actually sent to Stripe, so the key tracks those params. */
   expiresAt?: number;
 }
@@ -128,6 +137,8 @@ function clientPriceCents(price: number): number | null {
 export type CheckoutAssetConfig = PrintAssetConfig & {
   publishedSlugs?: ReadonlySet<string>;
   artworkCrops?: Record<string, Record<string, unknown>>;
+  /** Public slug or bundled id -> immutable artwork id used for masters and crops. */
+  canonicalArtworkIds?: ReadonlyMap<string, string>;
   enabledVendors?: readonly string[] | null;
 };
 
@@ -185,12 +196,13 @@ export function prepareCheckoutCart(
       return { ok: false, status: 400, error: 'Item quantity must be an integer from 1 to 10' };
     }
 
-    const artworkSlug = (item.artworkId || '').trim().toLowerCase();
-    if (!isArtworkSlug(artworkSlug)) {
+    const requestedSlug = (item.artworkId || '').trim().toLowerCase();
+    if (!isArtworkSlug(requestedSlug)) {
       return { ok: false, status: 400, error: 'Artwork slug is not a published print id' };
     }
+    const artworkSlug = config.canonicalArtworkIds?.get(requestedSlug) ?? requestedSlug;
     const published = config.publishedSlugs ?? getPublishedArtworkSlugs();
-    if (!published.has(artworkSlug)) {
+    if (!isArtworkSlug(artworkSlug) || !published.has(artworkSlug)) {
       return { ok: false, status: 400, error: 'Artwork slug is not in the print catalog' };
     }
 
@@ -237,14 +249,16 @@ export function prepareCheckoutCart(
     const supplierSku = `${lab}:${matrixSku}`;
     // Crop path when size, ratio, or artwork mapping names a variant. Uncropped master is
     // allowed only when merch_crops.__uncropped.approved_products explicitly approves this SKU.
+    const crops = artworkCropsForSlug(artworkSlug, config.artworkCrops);
     const selection = resolveCropSelection({
       size,
       sku: `${supplierSku} ${matrixSku}`,
-      crops: artworkCropsForSlug(artworkSlug, config.artworkCrops),
+      crops,
     });
     if (!selection.ok) {
       return skuFailure('unapproved_sku', selection.error, item);
     }
+    const adjustments = readCropAdjustments(crops, selection.ratio, selection.crop);
     const printAsset = resolvePrintAssetUrl(parsedOrigin.origin, artworkSlug, config, selection.crop, lab);
     if (!printAsset.ok) {
       return { ok: false, status: 400, error: printAsset.error };
@@ -265,6 +279,9 @@ export function prepareCheckoutCart(
     };
     if (selection.crop) productMetadata.crop = selection.crop;
     if (selection.ratio) productMetadata.cropRatio = selection.ratio;
+    if (adjustments.panX !== undefined) productMetadata.cropPanX = String(adjustments.panX);
+    if (adjustments.panY !== undefined) productMetadata.cropPanY = String(adjustments.panY);
+    if (adjustments.zoom !== undefined) productMetadata.cropZoom = String(adjustments.zoom);
 
     const orderItem: OrderItem = {
       id: item.id || `${artworkSlug}-${matrixSku}-${index}`,
@@ -351,14 +368,21 @@ export async function computeCheckoutIdempotencyKey(
   const normalized = items
     .map((item) => {
       const crop = cropById.get(item.id);
-      return [
+      const parts = [
         item.id,
         item.sku,
         item.quantity,
         item.price,
         crop?.crop || '',
         crop?.ratio || '',
-      ].join(':');
+      ];
+      if (
+        crop &&
+        (typeof crop.panX === 'number' || typeof crop.panY === 'number' || typeof crop.zoom === 'number')
+      ) {
+        parts.push(crop.panX ?? '', crop.panY ?? '', crop.zoom ?? '');
+      }
+      return parts.join(':');
     })
     .sort()
     .join('|');
@@ -478,6 +502,16 @@ export async function createEmbeddedCheckoutSession(
     enabledVendors: input.enabledVendors,
   };
 
+  if (input.session) {
+    const state = await checkoutArtworkState(
+      { SESSION: input.session },
+      { root: input.catalogRoot, publishedSlugs: input.publishedSlugs }
+    );
+    assetConfig.artworkCrops = state.artworkCrops;
+    assetConfig.canonicalArtworkIds = state.canonicalArtworkIds;
+    assetConfig.publishedSlugs = state.publishedSlugs;
+  }
+
   const prepared = prepareCheckoutCart(items, pricingMatrix, origin, assetConfig);
   if (!prepared.ok) {
     return {
@@ -533,11 +567,23 @@ export async function createEmbeddedCheckoutSession(
   const idempotencyContext: CheckoutIdempotencyContext = {
     customerEmail,
     expiresAt: sessionParams.expires_at,
-    crops: prepared.lines.map((line) => ({
-      id: line.orderItem.id,
-      crop: line.productMetadata.crop || '',
-      ratio: line.productMetadata.cropRatio || '',
-    })),
+    crops: prepared.lines.map((line) => {
+      const panX = line.productMetadata.cropPanX;
+      const panY = line.productMetadata.cropPanY;
+      const zoom = line.productMetadata.cropZoom;
+      return {
+        id: line.orderItem.id,
+        crop: line.productMetadata.crop || '',
+        ratio: line.productMetadata.cropRatio || '',
+        ...(panX !== undefined || panY !== undefined || zoom !== undefined
+          ? {
+              panX: panX !== undefined ? Number(panX) : undefined,
+              panY: panY !== undefined ? Number(panY) : undefined,
+              zoom: zoom !== undefined ? Number(zoom) : undefined,
+            }
+          : {}),
+      };
+    }),
   };
   const created = await createStripeSessionIdempotently(
     stripe,

@@ -3,6 +3,7 @@ import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import pricingMatrix from '../../content/pricing-matrix.json';
 import type { PricingMatrixEntry } from '../../lib/checkout-catalog';
+import { checkoutArtworkState } from '../../lib/artwork-overlay';
 import { handleStripeWebhook } from '../../lib/handle-stripe-webhook';
 
 export const prerender = false;
@@ -26,6 +27,8 @@ export const POST: APIRoute = async (context) => {
   const { request } = context;
 
   try {
+    const sessionKv = readSessionKv();
+    const artworkState = await checkoutArtworkState({ SESSION: sessionKv });
     const result = await handleStripeWebhook(request, {
       STRIPE_SECRET_KEY: readEnv('STRIPE_SECRET_KEY'),
       STRIPE_WEBHOOK_SECRET: readEnv('STRIPE_WEBHOOK_SECRET'),
@@ -42,7 +45,10 @@ export const POST: APIRoute = async (context) => {
       TELEGRAM_BOT_TOKEN: readEnv('TELEGRAM_BOT_TOKEN'),
       TELEGRAM_CHAT_ID: readEnv('TELEGRAM_CHAT_ID'),
       pricingMatrix: pricingMatrix as Record<string, PricingMatrixEntry>,
-      SESSION: readSessionKv(),
+      SESSION: sessionKv,
+      artworkCrops: artworkState.artworkCrops,
+      canonicalArtworkIds: artworkState.canonicalArtworkIds,
+      publishedSlugs: artworkState.publishedSlugs,
       // Never pass ALLOW_MOCK_DISPATCH from production webhook path.
     });
 

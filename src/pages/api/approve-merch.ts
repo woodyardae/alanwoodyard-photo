@@ -1,5 +1,10 @@
 import type { APIRoute } from 'astro';
 import {
+  ARTWORK_DESCRIPTION_MAX,
+  ARTWORK_SLUG_RE,
+  getEffectiveCatalog,
+} from '../../lib/artwork-overlay';
+import {
   artworkQueueStatus,
   isKnownRatioKey,
   isRejectedCropValue,
@@ -35,6 +40,96 @@ async function getKvSession(): Promise<SessionKv | undefined> {
   }
 
   return undefined;
+}
+
+type ArtworkMetadata = {
+  title: string;
+  slug: string;
+  caption: string;
+  description: string;
+  collections: string[];
+  tags: string[];
+};
+
+function uniqueStrings(values: string[]): string[] {
+  const seen = new Set<string>();
+  const unique: string[] = [];
+  for (const value of values) {
+    if (seen.has(value)) continue;
+    seen.add(value);
+    unique.push(value);
+  }
+  return unique;
+}
+
+function parseSlugList(value: unknown, label: string): { values: string[] } | { error: string } {
+  if (!Array.isArray(value)) return { error: `${label} must be a list of slugs.` };
+  const slugs: string[] = [];
+  for (const item of value) {
+    if (typeof item !== 'string') return { error: `${label} must be a list of slugs.` };
+    const slug = item.trim();
+    if (!slug) continue;
+    if (!ARTWORK_SLUG_RE.test(slug)) {
+      return { error: `${label} must match [a-z0-9-]+ with no leading, trailing, or repeated hyphens.` };
+    }
+    slugs.push(slug);
+  }
+  return { values: uniqueStrings(slugs) };
+}
+
+function parseTagList(value: unknown): { values: string[] } | { error: string } {
+  if (!Array.isArray(value)) return { error: 'Tags must be a list of strings.' };
+  const tags: string[] = [];
+  for (const item of value) {
+    if (typeof item !== 'string') return { error: 'Tags must be a list of strings.' };
+    const tag = item.trim();
+    if (!tag) continue;
+    tags.push(tag);
+  }
+  return { values: uniqueStrings(tags) };
+}
+
+function parseArtworkMetadata(body: Record<string, unknown>): { metadata: ArtworkMetadata } | { error: string } {
+  if (typeof body.title !== 'string' || body.title.trim().length === 0) {
+    return { error: 'Title is required.' };
+  }
+  if (typeof body.slug !== 'string' || !ARTWORK_SLUG_RE.test(body.slug.trim())) {
+    return { error: 'Invalid slug. Use lowercase letters, numbers, and single hyphens.' };
+  }
+  if (typeof body.caption !== 'string') return { error: 'Caption must be a string.' };
+  if (typeof body.description !== 'string') return { error: 'Description must be a string.' };
+  if (body.description.length > ARTWORK_DESCRIPTION_MAX) {
+    return { error: `Description must be ${ARTWORK_DESCRIPTION_MAX} characters or fewer.` };
+  }
+  const collections = parseSlugList(body.collections, 'Collections');
+  if ('error' in collections) return collections;
+  const tags = parseTagList(body.tags);
+  if ('error' in tags) return tags;
+  return {
+    metadata: {
+      title: body.title.trim(),
+      slug: body.slug.trim(),
+      caption: body.caption,
+      description: body.description,
+      collections: collections.values,
+      tags: tags.values,
+    },
+  };
+}
+
+function applyArtworkMetadata(existing: Record<string, any>, metadata: ArtworkMetadata): void {
+  existing.title = metadata.title;
+  existing.slug = metadata.slug;
+  existing.caption = metadata.caption;
+  existing.description = metadata.description;
+  existing.collections = metadata.collections;
+  existing.tags = metadata.tags;
+}
+
+async function publicSlugTaken(artworkId: string, slug: string): Promise<boolean> {
+  const kv = await getKvSession();
+  const catalog = await getEffectiveCatalog(kv ? { SESSION: kv } : undefined);
+  return catalog.some((art) => art.id !== artworkId && (art.id === slug || art.slug === slug));
 }
 
 function collectApprovedProducts(crops: Record<string, any>): string[] {
@@ -171,11 +266,32 @@ export const POST: APIRoute = async ({ request }) => {
     const isCropReject = action === 'reject-crop';
     const isCropRestore = action === 'restore-crop';
     const isCropAction = isCropReject || isCropRestore;
-    if (!artworkId || (isCropAction && !isKnownRatioKey(ratioKey)) || (!isSkuAction && !isCropAction && (!ratioKey || !crop))) {
+    const isMetadataSave = action === 'save-metadata';
+    if (!artworkId || (isCropAction && !isKnownRatioKey(ratioKey)) || (!isSkuAction && !isCropAction && !isMetadataSave && (!ratioKey || !crop))) {
       return new Response(JSON.stringify({ error: 'Missing required parameters.' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
+    }
+
+    let metadata: ArtworkMetadata | undefined;
+    if (isMetadataSave) {
+      const parsed = parseArtworkMetadata(
+        body && typeof body === 'object' ? (body as Record<string, unknown>) : {}
+      );
+      if ('error' in parsed) {
+        return new Response(JSON.stringify({ error: parsed.error }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      if (await publicSlugTaken(String(artworkId), parsed.metadata.slug)) {
+        return new Response(JSON.stringify({ error: 'Slug is already used by another artwork.' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      metadata = parsed.metadata;
     }
 
     const decisionFields = isSkuAction
@@ -193,8 +309,11 @@ export const POST: APIRoute = async ({ request }) => {
       if (stored) {
         try { existing = JSON.parse(stored); } catch {}
       }
+      if (!existing || typeof existing !== 'object' || Array.isArray(existing)) existing = {};
 
-      if (action === 'reject') {
+      if (isMetadataSave && metadata) {
+        applyArtworkMetadata(existing, metadata);
+      } else if (action === 'reject') {
         existing.__rejected = true;
       } else if (action === 'unreject') {
         delete existing.__rejected;
@@ -247,6 +366,29 @@ export const POST: APIRoute = async ({ request }) => {
     try {
       const fs = await import('node:fs');
       const path = await import('node:path');
+
+      if (isMetadataSave && metadata) {
+        const filePath = path.resolve('src/content/artworks', `${artworkId}.json`);
+        if (fs.existsSync && fs.existsSync(filePath)) {
+          const raw = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
+          const data = JSON.parse(raw);
+          const fileId = data.id;
+          const masterFile = data.master_file;
+          applyArtworkMetadata(data, metadata);
+          data.id = fileId;
+          if (typeof masterFile === 'string') data.master_file = masterFile;
+          fs.writeFileSync(filePath, JSON.stringify(data, null, 2) + '\n', 'utf8');
+          return new Response(
+            JSON.stringify({ success: true, mode: 'local-disk' }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+        return new Response(
+          JSON.stringify({ success: true, mode: 'noop' }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
       const isSws = store === 'sws' || String(artworkId).startsWith('sws-');
 
       if (isSws) {

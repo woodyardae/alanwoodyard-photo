@@ -1,346 +1,67 @@
 ---
+export const prerender = false;
+
 import Layout from '../../layouts/Layout.astro';
-import Header from '../../components/Header.astro';
-import { getCollection } from 'astro:content';
-import pricingMatrixRaw from '../../content/pricing-matrix.json';
-import {
-  enabledStorefrontLabs,
-  isFineArtPaperListing,
-  labFromVendor,
-  parseEnabledVendorsConfig,
-  resolveApprovedStorefront,
-  resolveMatrixSku,
-  type PricingMatrixEntry,
-  type StorefrontPackaging,
-} from '../../lib/checkout-catalog';
-import type { PodLab } from '../../lib/fulfillment';
+import StorefrontFrame from '../../components/StorefrontFrame.astro';
+// @ts-ignore cloudflare:workers binding is absent during local Node typecheck.
+import { env } from 'cloudflare:workers';
+import { ARTWORK_SLUG_RE, getEffectiveCatalog, type SessionKv } from '../../lib/artwork-overlay';
+import { parseEnabledVendorsConfig } from '../../lib/checkout-catalog';
+import { renderArtworkRoute } from '../../lib/storefront-nav';
 
-export async function getStaticPaths() {
-  const artworks = await getCollection('artworks');
-  return artworks.map((item) => ({
-    params: { id: item.id },
-    props: { artwork: item },
-  }));
+const session = (env as { SESSION?: SessionKv } | undefined)?.SESSION;
+const catalog = await getEffectiveCatalog({ SESSION: session });
+const requested = (Astro.params.id || '').trim().toLowerCase();
+
+if (!ARTWORK_SLUG_RE.test(requested)) {
+  return new Response('Artwork not found', { status: 404, headers: { 'Content-Type': 'text/plain' } });
 }
 
-const { artwork } = Astro.props;
-const { 
-  title, 
-  year, 
-  medium, 
-  caption,
-  description, 
-  merch_approved = [], 
-  print_variants = [],
-  capture = {} 
-} = artwork.data;
-
-const matrix = pricingMatrixRaw as Record<string, PricingMatrixEntry>;
-const enabledVendors = parseEnabledVendorsConfig(
-  (import.meta.env as Record<string, string | undefined>).CHECKOUT_ENABLED_VENDORS
-);
-const enabledLabs = enabledStorefrontLabs(enabledVendors);
-
-interface PrintRow {
-  sku: string;
-  size: string;
-  substrate: string;
-  price: number;
-  provider: PodLab;
-  packaging: StorefrontPackaging;
+const artwork =
+  catalog.find((item) => item.slug === requested) ?? catalog.find((item) => item.id === requested) ?? null;
+if (!artwork) {
+  return new Response('Artwork not found', { status: 404, headers: { 'Content-Type': 'text/plain' } });
+}
+if (artwork.slug !== requested) {
+  return Astro.redirect(`/artwork/${artwork.slug}${Astro.url.search}`, 301);
 }
 
-const nativeRatio = capture?.aspect_ratio || 'Native';
-const rawVariants = print_variants.length > 0 
-  ? print_variants 
-  : [
-      { size: '12x18"', substrate: 'Hahnemühle Photo Rag', price_cents: 12500, sku: 'GLOBAL-FAP-12x18' },
-      { size: '16x24"', substrate: 'Hahnemühle Photo Rag', price_cents: 19500, sku: 'GLOBAL-FAP-16x24' },
-      { size: '24x36"', substrate: 'Hahnemühle Photo Rag', price_cents: 34000, sku: 'GLOBAL-FAP-24x36' },
-    ];
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
 
-const nativePrints: PrintRow[] = rawVariants.flatMap((v: { sku: string; size?: string; substrate?: string }) => {
-  const matrixSku = resolveMatrixSku(v.sku, matrix);
-  const entry = matrixSku ? matrix[matrixSku] : undefined;
-  const provider = entry ? labFromVendor(entry.vendor) : null;
-  if (!entry || !provider || !enabledLabs.has(provider)) return [];
-  return [{
-    sku: v.sku,
-    size: v.size || entry.size,
-    substrate: v.substrate || entry.category || 'Hahnemühle Photo Rag 308gsm',
-    price: entry.retail,
-    provider,
-    packaging: 'rigid_tube' as const,
-  }];
+const page = renderArtworkRoute({
+  artwork,
+  catalog,
+  searchParams: Astro.url.searchParams,
+  enabledVendors: parseEnabledVendorsConfig(
+    (import.meta.env as Record<string, string | undefined>).CHECKOUT_ENABLED_VENDORS
+  ),
 });
-
-const listedPaper = nativePrints.filter((print) => isFineArtPaperListing(print.sku, print.substrate));
-const storefront = resolveApprovedStorefront(merch_approved, {
-  matrix,
-  crops: (artwork.data.merch_crops || null) as Record<string, unknown> | null,
-  listedPaperSizes: listedPaper.map((print) => print.size),
-  listedPaperSkus: listedPaper.map((print) => print.sku),
-  enabledVendors,
-});
-
-const prints: PrintRow[] = [
-  ...nativePrints,
-  ...storefront.prints.map((item) => ({
-    sku: item.sku,
-    size: item.size,
-    substrate: item.spec,
-    price: item.price,
-    provider: item.provider,
-    packaging: item.packaging,
-  })),
-];
-
-const approvedGoods = storefront.goods;
-const legacyDisplate =
-  storefront.external.length === 0 &&
-  merch_approved.some((name: string) => name.toLowerCase().includes('displate'));
-
-const pricedAmounts = [...approvedGoods.map((item) => item.price), ...prints.map((print) => print.price)];
-const lowestPrice = pricedAmounts.length > 0 ? Math.min(...pricedAmounts) : null;
 ---
 
-<Layout title={`${title} | Alan Woodyard`} theme="walnut">
-  <Header />
-
-  <main class="w-full max-w-6xl mx-auto px-6 lg:px-12 py-10 flex-1">
-    <div class="mb-8">
-      <a href="/artworks" class="inline-flex items-center gap-2 text-xs font-mono text-[var(--theme-text-muted)] hover:text-[var(--theme-accent)] transition-colors">
-        <span>&larr;</span>
-        <span class="tracking-widest uppercase text-[11px]">Back to Artworks</span>
-      </a>
-    </div>
-
-    <!-- STAGE 1: Museum Presentation -->
-    <section class="flex flex-col items-center">
-      <div class="relative w-full bg-[#0a0807] border border-[var(--theme-border)] p-4 sm:p-8 flex items-center justify-center shadow-2xl">
-        <img
-          id="artworkImage"
-          src={`/images/artworks/${artwork.id}.webp`}
-          alt={title}
-          class="w-full h-auto max-h-[75vh] object-contain select-none"
-          loading="eager"
-        />
-      </div>
-
-      <!-- Museum Placard & Caption Block -->
-      <div class="w-full mt-8 max-w-3xl text-center space-y-4">
-        <span class="text-[11px] font-mono text-[var(--theme-accent)] tracking-[0.25em] uppercase block">
-          {year || '2026 Collection'} &bull; Ratio {nativeRatio}
-        </span>
-        <h1 class="font-serif text-3xl sm:text-4xl text-[var(--theme-text)] font-light tracking-wide">
-          {title}
-        </h1>
-        {caption && (
-          <p class="font-serif italic text-sm text-[var(--theme-text-muted)] max-w-xl mx-auto leading-relaxed">
-            "{caption}"
-          </p>
-        )}
-        {description && (
-          <p class="font-sans text-xs text-[var(--theme-text-muted)]/90 max-w-xl mx-auto leading-relaxed font-light">
-            {description}
-          </p>
-        )}
-
-        <!-- Progressive Disclosure CTA Button -->
-        <div class="pt-6">
-          {lowestPrice != null ? (
-            <button
-              type="button"
-              id="toggleShopBtn"
-              class="px-8 py-3.5 border border-[var(--theme-accent)] bg-[var(--theme-accent)] text-[var(--theme-bg)] hover:bg-transparent hover:text-[var(--theme-accent)] transition-all font-mono text-xs uppercase tracking-widest font-bold shadow-lg inline-flex items-center gap-2 cursor-pointer"
-            >
-              <span>Explore Prints & Merchandise (From ${lowestPrice})</span>
-              <span id="shopBtnArrow">&darr;</span>
-            </button>
-          ) : (
-            <p class="text-xs font-mono uppercase tracking-widest text-[var(--theme-text-muted)]">
-              Print pricing for this piece is not yet published.
-            </p>
-          )}
-        </div>
-      </div>
-    </section>
-
-    <!-- STAGE 2: Purchasing Controls (Unlocks on click) -->
-    <section id="shoppingSection" class="hidden mt-16 pt-12 border-t border-[var(--theme-border)] transition-all duration-500">
-      <div class="max-w-4xl mx-auto space-y-12">
-        <div class="text-center">
-          <span class="text-[11px] font-mono text-[var(--theme-accent)] tracking-[0.2em] uppercase block mb-1">
-            Order Direct
-          </span>
-          <h2 class="font-serif text-2xl text-[var(--theme-text)] font-light">
-            Available Physical Formats
-          </h2>
-          <p class="text-[11px] font-mono text-[var(--theme-text-muted)] max-w-2xl mx-auto mt-3 leading-relaxed">
-            Backlit sRGB screen previews differ slightly from matte cotton rag pigment and dye-sublimation prints. Digital mockups shown here illustrate the approved crop ratio, not final color.
-          </p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-          
-          <!-- Column 1: Approved Goods & Merch -->
-          <div class="space-y-4">
-            <div class="flex items-baseline justify-between border-b border-[var(--theme-border)] pb-2">
-              <h3 class="text-xs font-mono tracking-wider uppercase text-[var(--theme-accent)] font-bold">
-                Studio Goods & Gifts
-              </h3>
-              <span class="text-[10px] font-mono text-emerald-400">✓ Manually Approved Crops</span>
-            </div>
-
-            {approvedGoods.length > 0 ? (
-              <div class="space-y-3">
-                {approvedGoods.map((item) => (
-                  <div class="p-3.5 border border-[var(--theme-border)] bg-[var(--theme-surface)] flex items-center justify-between hover:border-[var(--theme-accent)]/50 transition-colors">
-                    <div class="pr-3 min-w-0">
-                      <div class="flex items-center gap-2">
-                        <span class="text-xs font-mono font-medium text-[var(--theme-text)] truncate">{item.title}</span>
-                        <span class="text-sm font-sans font-bold text-[var(--theme-accent)]">${item.price}</span>
-                      </div>
-                      <p class="text-[10px] font-mono text-[var(--theme-text-muted)] mt-0.5">{item.spec}</p>
-                    </div>
-                    <button
-                      type="button"
-                      class="btn-add-cart shrink-0 px-3.5 py-2 text-xs font-mono bg-[var(--theme-accent)] text-[var(--theme-bg)] hover:bg-[var(--theme-accent-hover)] font-bold tracking-wider uppercase transition-colors"
-                      data-sku={item.sku}
-                      data-variant={item.title}
-                      data-price={item.price}
-                      data-provider={item.provider}
-                      data-packaging={item.packaging}
-                    >
-                      Add to Cart &rarr;
-                    </button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div class="p-6 border border-dashed border-[var(--theme-border)] text-center text-xs font-mono text-[var(--theme-text-muted)]">
-                No everyday merchandise has been manually approved for this piece yet.
-              </div>
-            )}
-          </div>
-
-          <!-- Column 2: Archival Prints -->
-          <div class="space-y-4">
-            <div class="flex items-baseline justify-between border-b border-[var(--theme-border)] pb-2">
-              <h3 class="text-xs font-mono tracking-wider uppercase text-[var(--theme-accent)] font-bold">
-                Archival Fine-Art Prints
-              </h3>
-              <span class="text-[10px] font-mono text-[var(--theme-text-muted)]">Free Art Freight</span>
-            </div>
-
-            <div class="space-y-3">
-              {prints.map((print) => (
-                <div class="p-3.5 border border-[var(--theme-border)] bg-[var(--theme-surface)] flex items-center justify-between hover:border-[var(--theme-accent)]/50 transition-colors">
-                  <div class="pr-3">
-                    <div class="flex items-center gap-2">
-                      <span class="text-xs font-mono font-bold text-[var(--theme-text)]">{print.size}</span>
-                      <span class="text-sm font-sans font-bold text-[var(--theme-accent)]">${print.price}</span>
-                    </div>
-                    <p class="text-[10px] font-mono text-[var(--theme-text-muted)] mt-0.5">{print.substrate}</p>
-                  </div>
-                  <button
-                    type="button"
-                    class="btn-add-cart shrink-0 px-3.5 py-2 text-xs font-mono border border-[var(--theme-accent)] text-[var(--theme-accent)] hover:bg-[var(--theme-accent)] hover:text-[var(--theme-bg)] font-bold tracking-wider uppercase transition-colors"
-                    data-sku={print.sku}
-                    data-variant={`${print.size} Fine-Art Print`}
-                    data-price={print.price}
-                    data-provider={print.provider}
-                    data-packaging={print.packaging}
-                  >
-                    Add to Cart &rarr;
-                  </button>
-                </div>
-              ))}
-
-              {storefront.external.map((item) => (
-                <div class="p-3.5 border border-[var(--theme-border)] bg-[var(--theme-surface)] flex items-center justify-between">
-                  <div class="pr-3 min-w-0">
-                    <div class="flex items-center gap-2">
-                      <span class="text-xs font-mono font-medium text-[var(--theme-text)] truncate">{item.title}</span>
-                      <span class="text-sm font-sans font-bold text-[var(--theme-accent)]">${item.price}</span>
-                    </div>
-                    <p class="text-[10px] font-mono text-[var(--theme-text-muted)] mt-0.5">{item.spec}</p>
-                  </div>
-                  <a
-                    href={item.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="shrink-0 px-3.5 py-2 text-xs font-mono border border-white/20 text-[var(--theme-text)] hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] transition-colors inline-flex items-center gap-1.5 uppercase tracking-wider"
-                  >
-                    <span>Displate</span>
-                    <span class="text-xs">&nearr;</span>
-                  </a>
-                </div>
-              ))}
-
-              {legacyDisplate && (
-                <div class="p-3.5 border border-[var(--theme-border)] bg-[var(--theme-surface)] flex items-center justify-between">
-                  <div>
-                    <p class="text-xs font-mono font-medium text-[var(--theme-text)]">Displate Metal Poster</p>
-                    <p class="text-[10px] font-mono text-[var(--theme-text-muted)] mt-0.5">Magnetic Mount &bull; External Platform</p>
-                  </div>
-                  <a
-                    href="https://displate.com/alanwoodyard"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="px-3.5 py-2 text-xs font-mono border border-white/20 text-[var(--theme-text)] hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] transition-colors inline-flex items-center gap-1.5 uppercase tracking-wider"
-                  >
-                    <span>Displate</span>
-                    <span class="text-xs">&nearr;</span>
-                  </a>
-                </div>
-              )}
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-  </main>
+<Layout title={page.title} theme="walnut">
+  <StorefrontFrame navHtml={page.navHtml} mainHtml={page.mainHtml} />
 </Layout>
 
 <script>
   import { addItem, type CartItem, type ProviderId } from '../../stores/cart';
 
   const title = document.querySelector('h1')?.textContent?.trim() || 'Alan Woodyard Photograph';
-  const artworkImg = document.getElementById('artworkImage') as HTMLImageElement;
+  const artworkImg = document.getElementById('artworkImage') as HTMLImageElement | null;
   const imageSrc = artworkImg ? artworkImg.src : '';
-  const currentPath = window.location.pathname;
-  const artworkId = currentPath.split('/').filter(Boolean).pop() || 'artwork';
+  const stage = document.querySelector('[data-artwork-id]');
+  const artworkId = stage?.getAttribute('data-artwork-id')
+    || window.location.pathname.split('/').filter(Boolean).pop()
+    || 'artwork';
 
-  // Toggle Shopping Drawer
-  const toggleBtn = document.getElementById('toggleShopBtn');
-  const shopSection = document.getElementById('shoppingSection');
-  const arrow = document.getElementById('shopBtnArrow');
-
-  if (toggleBtn && shopSection) {
-    toggleBtn.addEventListener('click', () => {
-      const isHidden = shopSection.classList.contains('hidden');
-      if (isHidden) {
-        shopSection.classList.remove('hidden');
-        if (arrow) arrow.innerHTML = '&uarr;';
-        shopSection.scrollIntoView({ behavior: 'smooth' });
-      } else {
-        shopSection.classList.add('hidden');
-        if (arrow) arrow.innerHTML = '&darr;';
-      }
-    });
-  }
-
-  // Add to Cart
   document.querySelectorAll('.btn-add-cart').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      const el = e.currentTarget as HTMLButtonElement;
-      const sku = el.dataset.sku!;
-      const variantTitle = el.dataset.variant!;
+    btn.addEventListener('click', (event) => {
+      const el = event.currentTarget as HTMLButtonElement;
+      const sku = el.dataset.sku || '';
+      const variantTitle = el.dataset.variant || title;
       const price = parseFloat(el.dataset.price || '0');
       const provider = el.dataset.provider as ProviderId;
-      const packagingType = (el.dataset.packaging || 'rigid_tube') as any;
+      const packagingType = (el.dataset.packaging || 'rigid_tube') as CartItem['packagingType'];
+      if (!sku || !provider || !(price > 0)) return;
 
       const item: CartItem = {
         id: `${artworkId}-${sku}`,

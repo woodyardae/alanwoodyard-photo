@@ -1,0 +1,65 @@
+---
+import Header from './Header.astro';
+import Footer from './Footer.astro';
+import '../styles/storefront-nav.css';
+
+interface Props {
+  navHtml: string;
+  mainHtml: string;
+}
+
+const { navHtml, mainHtml } = Astro.props;
+---
+
+<div class="store-page">
+  <div class="store-sticky-head">
+    <Header />
+    <div set:html={navHtml} />
+  </div>
+  <main class="store-main" set:html={mainHtml} />
+  <Footer />
+</div>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('.collection-toggle');
+  const sheet = document.querySelector<HTMLElement>('.collection-sheet');
+  const closeBtn = document.querySelector<HTMLButtonElement>('.collection-close');
+
+  const setSheetOpen = (open: boolean) => {
+    if (!sheet || !toggle) return;
+    sheet.setAttribute('data-open', open ? 'true' : 'false');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  };
+
+  toggle?.addEventListener('click', () => {
+    setSheetOpen(sheet?.getAttribute('data-open') !== 'true');
+  });
+  closeBtn?.addEventListener('click', () => setSheetOpen(false));
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') setSheetOpen(false);
+  });
+
+  const frame = document.querySelector<HTMLElement>('.crop-preview');
+  document.querySelectorAll<HTMLElement>('.offer-row').forEach((row) => {
+    row.addEventListener('click', (event) => {
+      const target = event.target;
+      if (target instanceof Element && target.closest('.btn-add-cart, a')) return;
+      if (!frame) return;
+      const ratio = row.dataset.ratio || '';
+      const parts = ratio.split(':');
+      if (parts.length === 2 && parts[0] && parts[1]) {
+        frame.style.aspectRatio = `${parts[0]} / ${parts[1]}`;
+      }
+      frame.dataset.ratio = ratio;
+      frame.dataset.gift = row.dataset.gift || '';
+      frame.dataset.sku = row.dataset.sku || '';
+      frame.style.setProperty('--crop-pan-x', row.dataset.panX || '0');
+      frame.style.setProperty('--crop-pan-y', row.dataset.panY || '0');
+      frame.style.setProperty('--crop-zoom', row.dataset.zoom || '1');
+      frame.classList.add('is-active');
+      document.querySelectorAll<HTMLElement>('.offer-row').forEach((other) => {
+        other.setAttribute('data-selected', other === row ? 'true' : 'false');
+      });
+    });
+  });
+</script>

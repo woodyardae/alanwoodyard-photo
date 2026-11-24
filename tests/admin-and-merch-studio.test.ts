@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { parseArtworkOverlay } from '../src/lib/artwork-overlay';
 import { GET, POST, __setSessionKvForTests } from '../src/pages/api/approve-merch';
 import {
   RATIO_KEYS,
@@ -604,6 +605,281 @@ test('Merch studio can accept or reject each ratio without rejecting the SKU', (
   assert.doesNotMatch(actions, /\u2014|\u2013/);
   assert.doesNotMatch(actions, /\([^)]*\)\s*\(/);
   assert.doesNotMatch(actions, /seamless|leverage|robust|elevate|empower|unlock/i);
+});
+
+function metadataRequest(body: Record<string, unknown>) {
+  return new Request('http://localhost:4321/api/approve-merch', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      authToken: MASTER_PASSWORD,
+      caption: '',
+      collections: [],
+      tags: [],
+      ...body,
+    }),
+  });
+}
+
+test('POST /api/approve-merch persists metadata beside merch crops and approvals', async () => {
+  const flatCrop = {
+    panX: 3,
+    panY: -2,
+    zoom: 1.25,
+    approved_products: ['printify-coasters'],
+  };
+  const nestedCrops = {
+    '2:3': { panX: 8, panY: 1, zoom: 1.4, approved_products: ['GLOBAL-FAP-16x24'] },
+  };
+  const mockStorage = new Map<string, string>([
+    ['crops:flat-art', JSON.stringify({ '1:1': flatCrop })],
+    ['crops:wrapped-art', JSON.stringify({
+      merch_crops: nestedCrops,
+      merch_approved: ['keep-sku'],
+      '4:5': { panX: 1, panY: 0, zoom: 1.05 },
+    })],
+  ]);
+  const mockKv = {
+    get: async (key: string) => mockStorage.get(key) || null,
+    put: async (key: string, val: string) => { mockStorage.set(key, val); },
+  };
+
+  await withMockSessionKv(mockKv, async () => {
+    const flatRes = await POST({
+      request: metadataRequest({
+        action: 'save-metadata',
+        artworkId: 'flat-art',
+        title: 'Flat Title',
+        slug: 'flat-art-public',
+        caption: 'Flat caption',
+        description: 'Flat description',
+        collections: ['germany', 'night-harbor'],
+        tags: [' mono ', 'harbor', ''],
+      }),
+    } as any);
+    assert.equal(flatRes.status, 200);
+    const flatJson = await flatRes.json();
+    assert.equal(flatJson.success, true);
+    assert.equal(flatJson.mode, 'cloudflare-kv');
+
+    const flatStored = JSON.parse(mockStorage.get('crops:flat-art') || '{}');
+    assert.equal(flatStored.title, 'Flat Title');
+    assert.equal(flatStored.slug, 'flat-art-public');
+    assert.equal(flatStored.caption, 'Flat caption');
+    assert.equal(flatStored.description, 'Flat description');
+    assert.deepEqual(flatStored.collections, ['germany', 'night-harbor']);
+    assert.deepEqual(flatStored.tags, ['mono', 'harbor']);
+    assert.deepEqual(flatStored['1:1'], flatCrop);
+    assert.equal(flatStored.merch_crops, undefined);
+    assert.equal(flatStored.merch_approved, undefined);
+    assert.equal(flatStored.id, undefined);
+    assert.equal(flatStored.master_file, undefined);
+
+    const flatOverlay = parseArtworkOverlay(flatStored);
+    assert.equal(flatOverlay?.title, 'Flat Title');
+    assert.equal(flatOverlay?.slug, 'flat-art-public');
+    assert.deepEqual(flatOverlay?.merch_crops?.['1:1'], flatCrop);
+
+    const wrappedRes = await POST({
+      request: metadataRequest({
+        action: 'save-metadata',
+        artworkId: 'wrapped-art',
+        title: 'Wrapped Title',
+        slug: 'wrapped-art-public',
+        caption: 'Wrapped caption',
+        description: 'Wrapped description',
+        collections: ['seascape'],
+        tags: ['live'],
+      }),
+    } as any);
+    assert.equal(wrappedRes.status, 200);
+    const wrappedStored = JSON.parse(mockStorage.get('crops:wrapped-art') || '{}');
+    assert.equal(wrappedStored.title, 'Wrapped Title');
+    assert.equal(wrappedStored.slug, 'wrapped-art-public');
+    assert.equal(wrappedStored.caption, 'Wrapped caption');
+    assert.equal(wrappedStored.description, 'Wrapped description');
+    assert.deepEqual(wrappedStored.collections, ['seascape']);
+    assert.deepEqual(wrappedStored.tags, ['live']);
+    assert.deepEqual(wrappedStored.merch_crops, nestedCrops);
+    assert.deepEqual(wrappedStored.merch_approved, ['keep-sku']);
+    assert.deepEqual(wrappedStored['4:5'], { panX: 1, panY: 0, zoom: 1.05 });
+    assert.equal(wrappedStored.id, undefined);
+    assert.equal(wrappedStored.master_file, undefined);
+
+    const wrappedOverlay = parseArtworkOverlay(wrappedStored);
+    assert.equal(wrappedOverlay?.slug, 'wrapped-art-public');
+    assert.deepEqual(wrappedOverlay?.merch_crops, nestedCrops);
+    assert.deepEqual(wrappedOverlay?.merch_approved, ['keep-sku']);
+
+    const snapshot = JSON.parse(mockStorage.get('awp_merch_crops') || '{}');
+    assert.equal(snapshot['flat-art'].slug, 'flat-art-public');
+    assert.deepEqual(snapshot['flat-art']['1:1'], flatCrop);
+    assert.equal(snapshot['wrapped-art'].title, 'Wrapped Title');
+    assert.deepEqual(snapshot['wrapped-art'].merch_crops, nestedCrops);
+    assert.deepEqual(snapshot['wrapped-art'].merch_approved, ['keep-sku']);
+    const listed = JSON.parse(mockStorage.get('crops:_modified_list') || '[]');
+    assert.ok(listed.includes('flat-art'));
+    assert.ok(listed.includes('wrapped-art'));
+
+    const cropRes = await POST({
+      request: new Request('http://localhost:4321/api/approve-merch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          artworkId: 'flat-art',
+          ratioKey: '16:9',
+          crop: { panX: 0, panY: 4, zoom: 1.1, approved_products: ['prodigi-can-18x32'] },
+          authToken: MASTER_PASSWORD,
+        }),
+      }),
+    } as any);
+    assert.equal(cropRes.status, 200);
+    const afterCrop = JSON.parse(mockStorage.get('crops:flat-art') || '{}');
+    assert.equal(afterCrop.title, 'Flat Title');
+    assert.equal(afterCrop.slug, 'flat-art-public');
+    assert.deepEqual(afterCrop.collections, ['germany', 'night-harbor']);
+    assert.deepEqual(afterCrop.tags, ['mono', 'harbor']);
+    assert.deepEqual(afterCrop['1:1'], flatCrop);
+    assert.equal(afterCrop['16:9'].zoom, 1.1);
+    assert.equal(afterCrop.merch_approved, undefined);
+
+    const afterWrappedCrop = await POST({
+      request: new Request('http://localhost:4321/api/approve-merch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          artworkId: 'wrapped-art',
+          ratioKey: '1:1',
+          crop: { panX: 2, panY: 2, zoom: 1.2 },
+          authToken: MASTER_PASSWORD,
+        }),
+      }),
+    } as any);
+    assert.equal(afterWrappedCrop.status, 200);
+    const wrappedAfter = JSON.parse(mockStorage.get('crops:wrapped-art') || '{}');
+    assert.equal(wrappedAfter.slug, 'wrapped-art-public');
+    assert.deepEqual(wrappedAfter.merch_crops, nestedCrops);
+    assert.deepEqual(wrappedAfter.merch_approved, ['keep-sku']);
+    assert.equal(wrappedAfter['1:1'].zoom, 1.2);
+    assert.equal(wrappedAfter['4:5'].zoom, 1.05);
+  });
+});
+
+test('POST /api/approve-merch rejects invalid slugs and descriptions over 320 characters', async () => {
+  const unauth = await POST({
+    request: metadataRequest({
+      action: 'save-metadata',
+      artworkId: 'metadata-guard',
+      title: 'Guard',
+      slug: 'metadata-guard',
+      description: 'ok',
+      authToken: 'nope',
+    }),
+  } as any);
+  assert.equal(unauth.status, 401);
+
+  const seed = {
+    '1:1': { panX: 1, panY: 0, zoom: 1 },
+    merch_crops: { '2:3': { panX: 4, panY: 0, zoom: 1.2 } },
+    merch_approved: ['keep-sku'],
+    title: 'Stay',
+  };
+  const mockStorage = new Map<string, string>([
+    ['crops:metadata-guard', JSON.stringify(seed)],
+  ]);
+  const mockKv = {
+    get: async (key: string) => mockStorage.get(key) || null,
+    put: async (key: string, val: string) => { mockStorage.set(key, val); },
+  };
+  const before = mockStorage.get('crops:metadata-guard');
+
+  await withMockSessionKv(mockKv, async () => {
+    for (const slug of ['Bad Slug', 'bad_slug', 'UPPERCASE', '-leading', 'trailing-', 'double--dash', 'a/b', '']) {
+      const res = await POST({
+        request: metadataRequest({
+          action: 'save-metadata',
+          artworkId: 'metadata-guard',
+          title: 'Guard',
+          slug,
+          description: 'ok',
+        }),
+      } as any);
+      assert.equal(res.status, 400, `slug ${JSON.stringify(slug)}`);
+      const body = await res.json();
+      assert.match(body.error, /slug/i);
+    }
+
+    const badCollection = await POST({
+      request: metadataRequest({
+        action: 'save-metadata',
+        artworkId: 'metadata-guard',
+        title: 'Guard',
+        slug: 'metadata-guard',
+        description: 'ok',
+        collections: ['Not A Slug'],
+      }),
+    } as any);
+    assert.equal(badCollection.status, 400);
+
+    const tooLong = await POST({
+      request: metadataRequest({
+        action: 'save-metadata',
+        artworkId: 'metadata-guard',
+        title: 'Guard',
+        slug: 'metadata-guard',
+        description: 'x'.repeat(321),
+      }),
+    } as any);
+    assert.equal(tooLong.status, 400);
+    const tooLongBody = await tooLong.json();
+    assert.match(tooLongBody.error, /320/);
+    assert.equal(mockStorage.get('crops:metadata-guard'), before);
+    assert.equal(mockStorage.has('awp_merch_crops'), false);
+
+    const exact = await POST({
+      request: metadataRequest({
+        action: 'save-metadata',
+        artworkId: 'metadata-guard',
+        title: 'Guard',
+        slug: 'metadata-guard',
+        description: 'x'.repeat(320),
+      }),
+    } as any);
+    assert.equal(exact.status, 200);
+    const saved = JSON.parse(mockStorage.get('crops:metadata-guard') || '{}');
+    assert.equal(saved.description.length, 320);
+    assert.equal(saved.slug, 'metadata-guard');
+    assert.deepEqual(saved['1:1'], seed['1:1']);
+    assert.deepEqual(saved.merch_crops, seed.merch_crops);
+    assert.deepEqual(saved.merch_approved, seed.merch_approved);
+  });
+});
+
+test('Merch studio artwork copy panel posts effective-catalog metadata', () => {
+  const studio = fs.readFileSync('src/pages/admin/merch-studio.astro', 'utf8');
+  const panelStart = studio.indexOf('id="artwork-copy-panel"');
+  const panel = studio.slice(panelStart, studio.indexOf('</details>', panelStart) + '</details>'.length);
+  assert.match(panel, /Artwork Copy &amp; Metadata/);
+  assert.match(panel, /id="meta-title"/);
+  assert.match(panel, /id="meta-slug"[\s\S]*pattern="\[a-z0-9-\]\+"/);
+  assert.match(panel, /id="meta-caption"/);
+  assert.match(panel, /id="meta-description"[\s\S]*maxlength=\{ARTWORK_DESCRIPTION_MAX\}/);
+  assert.match(panel, /id="meta-description-count"[\s\S]*0 \/ \{ARTWORK_DESCRIPTION_MAX\}/);
+  assert.match(panel, /id="meta-collections"/);
+  assert.match(panel, /id="meta-new-collection"/);
+  assert.match(panel, /id="meta-tags"/);
+  assert.match(panel, /Save Metadata/);
+  assert.match(panel, /--awp-surface/);
+  assert.match(panel, /--awp-text/);
+  assert.match(panel, /--awp-text-muted/);
+  assert.match(panel, /--awp-border/);
+  assert.match(panel, /--awp-accent/);
+  assert.match(studio, /id="artwork-copy-panel" class="order-6 lg:order-none/);
+  assert.match(studio, /getEffectiveCatalog/);
+  assert.match(studio, /action: 'save-metadata'/);
+  assert.doesNotMatch(panel, /#[0-9a-fA-F]{3,8}/);
+  assert.doesNotMatch(panel, /\u2014|\u2013/);
+  assert.doesNotMatch(panel, /\([^)]*\)\s*\(/);
 });
 
 test('Internal admin links strictly use trailing slashes to avoid 307 redirects', () => {

@@ -370,6 +370,47 @@ export function resolveCropSelection(input: CropSelectionInput): CropSelection {
   };
 }
 
+function finiteCropNumber(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+}
+
+/**
+ * pan/zoom saved on the crop entry for the resolved ratio or crop file.
+ * Studio crops nest the numbers under `crop` or store them on the entry itself.
+ */
+export function readCropAdjustments(
+  crops: Record<string, unknown> | null | undefined,
+  ratio: string | null,
+  cropToken?: string | null
+): { panX?: number; panY?: number; zoom?: number } {
+  if (!crops) return {};
+  let entry: unknown;
+  if (ratio && Object.prototype.hasOwnProperty.call(crops, ratio)) {
+    entry = crops[ratio];
+  } else if (cropToken) {
+    for (const [key, value] of Object.entries(crops)) {
+      if (cropFileToken(key) === cropToken) {
+        entry = value;
+        break;
+      }
+    }
+  }
+  if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return {};
+  const record = entry as Record<string, unknown>;
+  const nested =
+    record.crop && typeof record.crop === 'object' && !Array.isArray(record.crop)
+      ? (record.crop as Record<string, unknown>)
+      : record;
+  const panX = finiteCropNumber(nested.panX);
+  const panY = finiteCropNumber(nested.panY);
+  const zoom = finiteCropNumber(nested.zoom);
+  return {
+    ...(panX !== undefined ? { panX } : {}),
+    ...(panY !== undefined ? { panY } : {}),
+    ...(zoom !== undefined ? { zoom } : {}),
+  };
+}
+
 const cropCache = new Map<string, Record<string, unknown>>();
 
 export function resetArtworkCropCache(): void {

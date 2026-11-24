@@ -22,6 +22,7 @@ interface Env {
   ALLOW_CLEAN_PREVIEW_ASSETS?: string;
   CHECKOUT_ENABLED_VENDORS?: string;
   CHECKOUT_ALLOWED_COUNTRIES?: string;
+  SESSION?: { get(key: string): Promise<string | null> };
 }
 
 export async function onRequestPost(context: { request: Request; env: Env }) {
@@ -48,6 +49,7 @@ export async function onRequestPost(context: { request: Request; env: Env }) {
       enabledVendors: parseEnabledVendorsConfig(env.CHECKOUT_ENABLED_VENDORS),
       allowedCountries: parseAllowedCountriesConfig(env.CHECKOUT_ALLOWED_COUNTRIES),
       attemptNonce: body.nonce,
+      session: env.SESSION,
     });
 
     return new Response(JSON.stringify(result.body), {

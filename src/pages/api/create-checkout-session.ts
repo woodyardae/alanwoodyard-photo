@@ -43,6 +43,7 @@ export const POST: APIRoute = async (context) => {
       enabledVendors: parseEnabledVendorsConfig(readEnv('CHECKOUT_ENABLED_VENDORS')),
       allowedCountries: parseAllowedCountriesConfig(readEnv('CHECKOUT_ALLOWED_COUNTRIES')),
       attemptNonce: body.nonce,
+      session: (env as { SESSION?: { get(key: string): Promise<string | null> } } | undefined)?.SESSION,
     });
 
     return new Response(JSON.stringify(result.body), {

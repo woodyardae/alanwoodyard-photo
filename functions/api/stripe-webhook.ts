@@ -6,11 +6,13 @@
  */
 
 import pricingMatrix from '../../src/content/pricing-matrix.json';
+import { checkoutArtworkState } from '../../src/lib/artwork-overlay';
 import type { PricingMatrixEntry } from '../../src/lib/checkout-catalog';
 import { handleStripeWebhook, type StripeWebhookEnv } from '../../src/lib/handle-stripe-webhook';
 
 export async function onRequestPost(context: { request: Request; env: StripeWebhookEnv }) {
   try {
+    const artworkState = await checkoutArtworkState({ SESSION: context.env.SESSION });
     const result = await handleStripeWebhook(context.request, {
       STRIPE_SECRET_KEY: context.env.STRIPE_SECRET_KEY,
       STRIPE_WEBHOOK_SECRET: context.env.STRIPE_WEBHOOK_SECRET,
@@ -28,6 +30,9 @@ export async function onRequestPost(context: { request: Request; env: StripeWebh
       TELEGRAM_CHAT_ID: context.env.TELEGRAM_CHAT_ID,
       pricingMatrix: pricingMatrix as Record<string, PricingMatrixEntry>,
       SESSION: context.env.SESSION,
+      artworkCrops: artworkState.artworkCrops,
+      canonicalArtworkIds: artworkState.canonicalArtworkIds,
+      publishedSlugs: artworkState.publishedSlugs,
       // Never pass ALLOW_MOCK_DISPATCH from production webhook path.
     });
 

@@ -6,6 +6,7 @@
  */
 
 import { getPublishedArtworkSlugs } from './artwork-catalog';
+import { checkoutArtworkState } from './artwork-overlay';
 import {
   readDispatchReceipt,
   readParcelReceipts,
@@ -51,7 +52,11 @@ export interface StripeWebhookEnv extends FulfillmentEnv, NotificationEnv {
   pricingMatrix?: Record<string, PricingMatrixEntry>;
   publishedSlugs?: ReadonlySet<string>;
   artworkCrops?: Record<string, Record<string, unknown>>;
-  /** Cloudflare KV binding for durable webhook dispatch and per-lab parcel receipts. */
+  /** Public slug or bundled id -> immutable artwork id. */
+  canonicalArtworkIds?: ReadonlyMap<string, string>;
+  /** Fixture root for tests. Production leaves this unset. */
+  catalogRoot?: string;
+  /** Cloudflare KV binding for merch overlays, dispatch receipts, and parcel receipts. */
   SESSION?: KVNamespaceLike;
 }
 
@@ -152,7 +157,8 @@ function orderItemsFromLineItems(
   matrix: Record<string, PricingMatrixEntry>,
   assetConfig: PrintAssetConfig,
   publishedSlugs: ReadonlySet<string>,
-  artworkCrops?: Record<string, Record<string, unknown>>
+  artworkCrops?: Record<string, Record<string, unknown>>,
+  canonicalArtworkIds?: ReadonlyMap<string, string>
 ): { items: OrderItem[] } | { error: string } {
   const items: OrderItem[] = [];
 
@@ -164,7 +170,8 @@ function orderItemsFromLineItems(
         : undefined;
     const meta = product?.metadata || {};
     const sku = meta.sku || '';
-    const artworkSlug = (meta.artworkSlug || meta.artworkId || '').trim().toLowerCase();
+    const requestedSlug = (meta.artworkSlug || meta.artworkId || '').trim().toLowerCase();
+    const artworkSlug = canonicalArtworkIds?.get(requestedSlug) ?? requestedSlug;
     const matrixSku = meta.matrixSku || '';
     const canonical = matrix[matrixSku];
     const expectedCents = canonical ? catalogUnitAmountCents(canonical) : null;
@@ -201,7 +208,11 @@ function orderItemsFromLineItems(
     if (meta.unitAmountCents && Number(meta.unitAmountCents) !== unitPriceCents) {
       return { error: `Charged amount for ${sku} does not match session metadata` };
     }
-    if (meta.artworkSlug && meta.artworkSlug !== artworkSlug) {
+    if (
+      meta.artworkSlug &&
+      meta.artworkSlug !== requestedSlug &&
+      meta.artworkSlug !== artworkSlug
+    ) {
       return { error: 'Line item artwork slug does not match session metadata' };
     }
 
@@ -523,7 +534,18 @@ export async function handleStripeWebhook(
   }
 
   const origin = new URL(request.url).origin;
-  const publishedSlugs = env.publishedSlugs ?? getPublishedArtworkSlugs();
+  let publishedSlugs = env.publishedSlugs ?? getPublishedArtworkSlugs();
+  let artworkCrops = env.artworkCrops;
+  let canonicalArtworkIds = env.canonicalArtworkIds;
+  if (!artworkCrops && env.SESSION) {
+    const state = await checkoutArtworkState(
+      { SESSION: env.SESSION },
+      { root: env.catalogRoot, publishedSlugs }
+    );
+    artworkCrops = state.artworkCrops;
+    canonicalArtworkIds = state.canonicalArtworkIds;
+    publishedSlugs = state.publishedSlugs;
+  }
   const assetConfig = assetConfigFromEnv(env);
   const lineItems = await listSessionLineItems(session.id, stripeSecret);
   const built = orderItemsFromLineItems(
@@ -533,7 +555,8 @@ export async function handleStripeWebhook(
     matrix,
     assetConfig,
     publishedSlugs,
-    env.artworkCrops
+    artworkCrops,
+    canonicalArtworkIds
   );
   if ('error' in built) {
     return {

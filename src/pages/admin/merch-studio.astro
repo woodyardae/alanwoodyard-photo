@@ -3,6 +3,8 @@ export const prerender = false;
 import Layout from '../../layouts/Layout.astro';
 import swsQueue from '../../data/sws-queue.json';
 import { getCollection } from 'astro:content';
+// @ts-ignore cloudflare:workers binding is absent during local Node typecheck.
+import { env } from 'cloudflare:workers';
 import {
   PHOTO_RATIO_PRODUCTS,
   SWS_RATIO_PRODUCTS,
@@ -10,21 +12,41 @@ import {
   RATIO_MAP,
   RATIO_LABELS,
 } from '../../lib/merch-studio-shared';
+import {
+  ARTWORK_DESCRIPTION_MAX,
+  ARTWORK_SLUG_RE,
+  getEffectiveCatalog,
+  type SessionKv,
+} from '../../lib/artwork-overlay';
 
 const artworks = await getCollection('artworks');
+const session = (env as { SESSION?: SessionKv } | undefined)?.SESSION;
+const effectiveCatalog = await getEffectiveCatalog({ SESSION: session });
+const effectiveById = new Map(effectiveCatalog.map((art) => [art.id, art]));
+const catalogCollections = [...new Set(effectiveCatalog.flatMap((art) => art.collections))].sort();
 
-const photoItems = artworks.map((art) => ({
-  id: art.id,
-  store: 'photo' as const,
-  title: art.data.title,
-  category: art.data.collections?.[0] || art.data.mood || 'Alan Woodyard Photography',
-  img: `/images/artworks/${art.id}.webp`,
-  width: art.data.capture?.native_dimensions?.width || 6000,
-  height: art.data.capture?.native_dimensions?.height || 4000,
-  crops: art.data.merch_crops || {},
-  approved: art.data.merch_approved || [],
-  rejected: Boolean(art.data.merch_rejected),
-}));
+const photoItems = artworks.map((art) => {
+  const entryId = typeof art.data.id === 'string' && art.data.id ? art.data.id : art.id;
+  const live = effectiveById.get(entryId) || effectiveById.get(art.id);
+  const collections = live?.collections ?? art.data.collections ?? [];
+  return {
+    id: art.id,
+    store: 'photo' as const,
+    title: live?.title || art.data.title,
+    slug: live?.slug || entryId,
+    caption: live?.caption ?? art.data.caption ?? '',
+    description: live?.description ?? art.data.description ?? '',
+    collections,
+    tags: live?.tags ?? art.data.tags ?? [],
+    category: collections[0] || art.data.mood || 'Alan Woodyard Photography',
+    img: `/images/artworks/${art.id}.webp`,
+    width: art.data.capture?.native_dimensions?.width || 6000,
+    height: art.data.capture?.native_dimensions?.height || 4000,
+    crops: art.data.merch_crops || {},
+    approved: art.data.merch_approved || [],
+    rejected: Boolean(art.data.merch_rejected),
+  };
+});
 
 const swsItems = (Array.isArray(swsQueue) ? swsQueue : []).map((item) => ({
   id: item.id,
@@ -214,6 +236,56 @@ const catalogData = [...photoItems, ...swsItems];
           </div>
         </div>
 
+        <details id="artwork-copy-panel" class="order-6 lg:order-none bg-[var(--awp-surface)] border border-[var(--awp-border)] rounded">
+          <summary class="cursor-pointer px-4 py-3 text-xs font-mono uppercase tracking-wider text-[var(--awp-text-muted)]">
+            Artwork Copy &amp; Metadata
+          </summary>
+          <div class="space-y-3 border-t border-[var(--awp-border)] px-4 py-3">
+            <p id="meta-sws-note" class="hidden text-[11px] font-mono text-[var(--awp-text-muted)]">
+              Copy editing applies to photo artworks.
+            </p>
+            <div id="meta-photo-fields" class="space-y-3">
+              <label class="block space-y-1" for="meta-title">
+                <span class="block text-[11px] font-mono uppercase tracking-wider text-[var(--awp-text-muted)]">Title</span>
+                <input id="meta-title" type="text" autocomplete="off" class="w-full min-h-11 bg-transparent border border-[var(--awp-border)] text-[var(--awp-text)] font-mono text-sm px-2" />
+              </label>
+              <label class="block space-y-1" for="meta-slug">
+                <span class="block text-[11px] font-mono uppercase tracking-wider text-[var(--awp-text-muted)]">Slug</span>
+                <input id="meta-slug" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" pattern="[a-z0-9-]+" class="w-full min-h-11 bg-transparent border border-[var(--awp-border)] text-[var(--awp-text)] font-mono text-sm px-2" />
+                <span class="block text-[11px] font-mono text-[var(--awp-text-muted)]">
+                  Lowercase letters, numbers, and hyphens. The artwork id and Backblaze master_file stay unchanged. Changing this slug 301-redirects /artwork/old-slug to /artwork/new-slug.
+                </span>
+              </label>
+              <label class="block space-y-1" for="meta-caption">
+                <span class="block text-[11px] font-mono uppercase tracking-wider text-[var(--awp-text-muted)]">Caption</span>
+                <input id="meta-caption" type="text" autocomplete="off" class="w-full min-h-11 bg-transparent border border-[var(--awp-border)] text-[var(--awp-text)] font-mono text-sm px-2" />
+              </label>
+              <div class="space-y-1">
+                <div class="flex items-center justify-between gap-2">
+                  <label class="text-[11px] font-mono uppercase tracking-wider text-[var(--awp-text-muted)]" for="meta-description">Description</label>
+                  <span id="meta-description-count" class="text-[11px] font-mono text-[var(--awp-text-muted)]">0 / {ARTWORK_DESCRIPTION_MAX}</span>
+                </div>
+                <textarea id="meta-description" rows="4" maxlength={ARTWORK_DESCRIPTION_MAX} class="w-full bg-transparent border border-[var(--awp-border)] text-[var(--awp-text)] font-mono text-sm px-2 py-2"></textarea>
+              </div>
+              <fieldset class="space-y-2 border border-[var(--awp-border)] p-2">
+                <legend class="px-1 text-[11px] font-mono uppercase tracking-wider text-[var(--awp-text-muted)]">Collections</legend>
+                <div id="meta-collections" class="max-h-36 space-y-1 overflow-y-auto"></div>
+                <div class="flex items-center gap-2">
+                  <input id="meta-new-collection" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" pattern="[a-z0-9-]+" placeholder="new-collection" class="min-w-0 flex-1 min-h-11 bg-transparent border border-[var(--awp-border)] text-[var(--awp-text)] font-mono text-sm px-2" />
+                  <button type="button" id="meta-add-collection" class="shrink-0 min-h-11 px-3 border border-[var(--awp-border)] bg-[var(--awp-surface)] text-[var(--awp-text)] text-xs font-mono hover:border-[var(--awp-accent)] cursor-pointer">Add</button>
+                </div>
+              </fieldset>
+              <label class="block space-y-1" for="meta-tags">
+                <span class="block text-[11px] font-mono uppercase tracking-wider text-[var(--awp-text-muted)]">Tags</span>
+                <input id="meta-tags" type="text" autocomplete="off" placeholder="comma, separated, tags" class="w-full min-h-11 bg-transparent border border-[var(--awp-border)] text-[var(--awp-text)] font-mono text-sm px-2" />
+              </label>
+              <button id="save-metadata-btn" type="button" class="w-full bg-[var(--awp-accent)] text-[var(--awp-surface)] font-mono text-xs uppercase tracking-wider py-3.5 px-3 rounded font-bold hover:opacity-90 transition active:scale-[0.98] cursor-pointer">
+                Save Metadata
+              </button>
+            </div>
+          </div>
+        </details>
+
         <div class="order-4 lg:order-none bg-[#141210] border border-white/[0.06] p-4 rounded">
           <label class="block text-xs font-mono uppercase tracking-wider text-[var(--theme-text-muted)] mb-2">2. Aspect Ratio Cluster</label>
           <select id="ratio-select" class="w-full bg-[#080706] border border-white/[0.1] rounded p-2.5 text-sm font-mono text-[#f7f4ee]">
@@ -269,7 +341,7 @@ const catalogData = [...photoItems, ...swsItems];
   </script>
 
   <!-- SCRIPT 2: UNIFIED MOBILE QUEUE ENGINE -->
-  <script define:vars={{ catalogData, PHOTO_RATIO_PRODUCTS, SWS_RATIO_PRODUCTS, RATIO_KEYS }}>
+  <script define:vars={{ catalogData, PHOTO_RATIO_PRODUCTS, SWS_RATIO_PRODUCTS, RATIO_KEYS, catalogCollections, descriptionMax: ARTWORK_DESCRIPTION_MAX, artworkSlugPattern: ARTWORK_SLUG_RE.source }}>
     const MASTER_KEY = '30S!g%zlxg&gJ2is';
     const DESK_MAT_RATIOS = new Set(['16:7', '2:1']);
     const DESK_MAT_KEYBOARD_ZONE = 0.4;
@@ -316,6 +388,21 @@ const catalogData = [...photoItems, ...swsItems];
     const rejectCropBtn = document.getElementById('reject-crop-btn');
     const rejectBtn = document.getElementById('reject-btn');
     const statusMsg = document.getElementById('status-msg');
+    const metaPhotoFields = document.getElementById('meta-photo-fields');
+    const metaSwsNote = document.getElementById('meta-sws-note');
+    const metaTitle = document.getElementById('meta-title');
+    const metaSlug = document.getElementById('meta-slug');
+    const metaCaption = document.getElementById('meta-caption');
+    const metaDescription = document.getElementById('meta-description');
+    const metaDescriptionCount = document.getElementById('meta-description-count');
+    const metaCollections = document.getElementById('meta-collections');
+    const metaNewCollection = document.getElementById('meta-new-collection');
+    const metaAddCollection = document.getElementById('meta-add-collection');
+    const metaTags = document.getElementById('meta-tags');
+    const saveMetadataBtn = document.getElementById('save-metadata-btn');
+    const artworkSlugRe = new RegExp(artworkSlugPattern || '^[a-z0-9]+(?:-[a-z0-9]+)*$');
+    const descriptionLimit = Number(descriptionMax) || 320;
+    const knownCollections = Array.isArray(catalogCollections) ? catalogCollections.slice() : [];
 
     function isRejectedCropValue(value) {
       return Boolean(value && typeof value === 'object' && !Array.isArray(value) && value.rejected === true);
@@ -766,9 +853,115 @@ const catalogData = [...photoItems, ...swsItems];
       setZoom(Math.round((zoom + delta) * 100) / 100);
     }
 
+    function collectionChoices() {
+      const names = new Set(knownCollections);
+      catalogData.forEach((item) => {
+        const list = Array.isArray(item.collections) ? item.collections : [];
+        list.forEach((name) => {
+          if (typeof name === 'string' && name) names.add(name);
+        });
+      });
+      return Array.from(names).sort();
+    }
+
+    function selectedCollections() {
+      if (!metaCollections) return [];
+      return Array.from(metaCollections.querySelectorAll('.meta-collection-cb:checked')).map((box) => box.value);
+    }
+
+    function renderCollections(selected) {
+      if (!metaCollections) return;
+      const selectedSet = new Set(Array.isArray(selected) ? selected : []);
+      metaCollections.innerHTML = '';
+      collectionChoices().forEach((name) => {
+        const label = document.createElement('label');
+        label.className = 'flex items-center gap-2 text-xs font-mono text-[var(--awp-text)]';
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.className = 'meta-collection-cb accent-[var(--awp-accent)]';
+        input.value = name;
+        input.checked = selectedSet.has(name);
+        const span = document.createElement('span');
+        span.textContent = name;
+        label.appendChild(input);
+        label.appendChild(span);
+        metaCollections.appendChild(label);
+      });
+    }
+
+    function syncDescriptionCount() {
+      if (!metaDescriptionCount) return;
+      const len = metaDescription ? metaDescription.value.length : 0;
+      metaDescriptionCount.textContent = len + ' / ' + descriptionLimit;
+    }
+
+    function parseTagInput(value) {
+      return String(value || '').split(',').map((tag) => tag.trim()).filter((tag) => tag.length > 0);
+    }
+
+    function syncArtworkCopy(art) {
+      const isPhoto = Boolean(art && art.store === 'photo');
+      if (metaPhotoFields) metaPhotoFields.hidden = !isPhoto;
+      if (metaSwsNote) metaSwsNote.hidden = isPhoto;
+      if (saveMetadataBtn) saveMetadataBtn.disabled = !isPhoto;
+      if (!isPhoto) {
+        syncDescriptionCount();
+        return;
+      }
+      if (metaTitle) metaTitle.value = art.title || '';
+      if (metaSlug) metaSlug.value = art.slug || art.id || '';
+      if (metaCaption) metaCaption.value = art.caption || '';
+      if (metaDescription) metaDescription.value = art.description || '';
+      if (metaTags) metaTags.value = Array.isArray(art.tags) ? art.tags.join(', ') : '';
+      renderCollections(Array.isArray(art.collections) ? art.collections : []);
+      syncDescriptionCount();
+    }
+
+    function applyRemoteRecord(local, record) {
+      if (!record || typeof record !== 'object' || Array.isArray(record)) return;
+      if (typeof record.title === 'string' && record.title.trim()) local.title = record.title;
+      if (typeof record.slug === 'string' && record.slug.trim()) local.slug = record.slug;
+      if (typeof record.caption === 'string') local.caption = record.caption;
+      if (typeof record.description === 'string') local.description = record.description;
+      if (Array.isArray(record.collections)) {
+        local.collections = record.collections.filter((item) => typeof item === 'string');
+      }
+      if (Array.isArray(record.tags)) {
+        local.tags = record.tags.filter((item) => typeof item === 'string');
+      }
+      if (Array.isArray(record.merch_approved)) {
+        local.approved = record.merch_approved.filter((item) => typeof item === 'string');
+      }
+      const skip = {
+        title: true,
+        slug: true,
+        caption: true,
+        description: true,
+        collections: true,
+        tags: true,
+        merch_approved: true,
+        merch_crops: true,
+        master_file: true,
+        id: true,
+      };
+      const crops = {};
+      Object.keys(record).forEach((key) => {
+        if (!skip[key]) crops[key] = record[key];
+      });
+      if (record.merch_crops && typeof record.merch_crops === 'object' && !Array.isArray(record.merch_crops)) {
+        Object.keys(record.merch_crops).forEach((key) => {
+          crops[key] = record.merch_crops[key];
+        });
+      }
+      local.crops = { ...(local.crops || {}), ...crops };
+      if (crops.__rejected === true) local.rejected = true;
+      else if (crops.__rejected === false) local.rejected = false;
+    }
+
     function switchPhoto() {
       renderRubric();
       const art = getSelectedArtwork();
+      syncArtworkCopy(art);
       const ratioKey = ratioSelect.value;
 
       if (!art) {
@@ -1002,6 +1195,110 @@ const catalogData = [...photoItems, ...swsItems];
     saveBtn.addEventListener('click', () => saveCurrentCrop(false));
     saveNextBtn.addEventListener('click', () => saveCurrentCrop(true));
 
+    if (metaDescription) metaDescription.addEventListener('input', syncDescriptionCount);
+
+    if (metaAddCollection) {
+      metaAddCollection.addEventListener('click', () => {
+        const raw = metaNewCollection ? metaNewCollection.value.trim().toLowerCase() : '';
+        if (!raw) return;
+        if (!artworkSlugRe.test(raw)) {
+          statusMsg.className = 'text-xs font-mono text-center text-red-400';
+          statusMsg.innerText = 'Collection slugs use lowercase letters, numbers, and single hyphens.';
+          return;
+        }
+        if (!knownCollections.includes(raw)) knownCollections.push(raw);
+        const selected = selectedCollections();
+        if (!selected.includes(raw)) selected.push(raw);
+        if (metaNewCollection) metaNewCollection.value = '';
+        renderCollections(selected);
+      });
+    }
+
+    if (saveMetadataBtn) {
+      saveMetadataBtn.addEventListener('click', async () => {
+        const art = getSelectedArtwork();
+        if (!art || art.store !== 'photo') return;
+
+        const title = metaTitle ? metaTitle.value.trim() : '';
+        const slug = metaSlug ? metaSlug.value.trim() : '';
+        const caption = metaCaption ? metaCaption.value : '';
+        const description = metaDescription ? metaDescription.value : '';
+        const tags = parseTagInput(metaTags ? metaTags.value : '');
+        const collections = selectedCollections();
+        const pendingCollection = metaNewCollection ? metaNewCollection.value.trim().toLowerCase() : '';
+        if (pendingCollection) {
+          if (!artworkSlugRe.test(pendingCollection)) {
+            statusMsg.className = 'text-xs font-mono text-center text-red-400';
+            statusMsg.innerText = 'Collection slugs use lowercase letters, numbers, and single hyphens.';
+            return;
+          }
+          if (!collections.includes(pendingCollection)) collections.push(pendingCollection);
+        }
+
+        if (!title) {
+          statusMsg.className = 'text-xs font-mono text-center text-red-400';
+          statusMsg.innerText = 'Title is required.';
+          return;
+        }
+        if (!artworkSlugRe.test(slug)) {
+          statusMsg.className = 'text-xs font-mono text-center text-red-400';
+          statusMsg.innerText = 'Invalid slug. Use lowercase letters, numbers, and single hyphens.';
+          return;
+        }
+        if (description.length > descriptionLimit) {
+          statusMsg.className = 'text-xs font-mono text-center text-red-400';
+          statusMsg.innerText = 'Description must be ' + descriptionLimit + ' characters or fewer.';
+          return;
+        }
+
+        saveMetadataBtn.disabled = true;
+        statusMsg.className = 'text-xs font-mono text-center text-[var(--theme-text-muted)]';
+        statusMsg.innerText = 'Saving artwork copy...';
+
+        try {
+          const res = await fetch('/api/approve-merch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              artworkId: art.id,
+              store: art.store,
+              action: 'save-metadata',
+              authToken: MASTER_KEY,
+              title,
+              slug,
+              caption,
+              description,
+              collections,
+              tags,
+            }),
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            art.title = title;
+            art.slug = slug;
+            art.caption = caption;
+            art.description = description;
+            art.collections = collections;
+            art.tags = tags;
+            collections.forEach((name) => {
+              if (!knownCollections.includes(name)) knownCollections.push(name);
+            });
+            if (metaNewCollection) metaNewCollection.value = '';
+            statusMsg.className = 'text-xs font-mono text-center text-emerald-400';
+            statusMsg.innerText = 'Saved copy. Public URL /artwork/' + slug + '.';
+            rebuildQueue(art.id);
+          } else {
+            throw new Error(data.error || 'Request failed');
+          }
+        } catch (err) {
+          statusMsg.className = 'text-xs font-mono text-center text-red-400';
+          statusMsg.innerText = 'Error: ' + err.message;
+        } finally {
+          saveMetadataBtn.disabled = false;
+        }
+      });
+    }
+
     rejectCropBtn.addEventListener('click', async () => {
       const art = getSelectedArtwork();
       if (!art) return;
@@ -1112,16 +1409,9 @@ const catalogData = [...photoItems, ...swsItems];
         const res = await fetch('/api/approve-merch');
         if (res.ok) {
           const remote = await res.json();
-          for (const [id, crops] of Object.entries(remote)) {
+          for (const [id, record] of Object.entries(remote)) {
             const local = catalogData.find((a) => a.id === id);
-            if (local) {
-              local.crops = { ...local.crops, ...crops };
-              if (crops && crops.__rejected === true) {
-                local.rejected = true;
-              } else if (crops && crops.__rejected === false) {
-                local.rejected = false;
-              }
-            }
+            if (local) applyRemoteRecord(local, record);
           }
           rebuildQueue(artworkSelect.value);
         }
