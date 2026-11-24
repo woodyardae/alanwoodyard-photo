@@ -1,14 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
+import Stripe from 'stripe';
 import pricingMatrix from '../src/content/pricing-matrix.json';
 import {
   buildCheckoutSessionMetadata,
   buildStripeSessionParams,
   computeCheckoutIdempotencyKey,
   createEmbeddedCheckoutSession,
+  isIdempotencyParameterMismatch,
   prepareCheckoutCart,
   type CheckoutCartItem,
+  type CheckoutStripeClient,
   type PricingMatrixEntry,
 } from '../src/lib/create-checkout-session';
 import {
@@ -1394,6 +1397,11 @@ test('buildStripeSessionParams enables phone collection, promotion codes, a 4 ho
   assert.equal(params.allow_promotion_codes, true);
   assert.deepEqual(params.shipping_address_collection?.allowed_countries, ['US']);
   assert.equal(params.expires_at, Math.floor(nowMs / 1000) + 4 * 60 * 60);
+
+  const insideBucket = buildStripeSessionParams(prepared, { origin }, nowMs + 30_000);
+  const nextBucket = buildStripeSessionParams(prepared, { origin }, nowMs + 10 * 60 * 1000);
+  assert.equal(insideBucket.expires_at, params.expires_at);
+  assert.notEqual(nextBucket.expires_at, params.expires_at);
   assert.equal(params.ui_mode, 'embedded');
   assert.equal(params.return_url, `${origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`);
 });
@@ -1447,6 +1455,183 @@ test('getOrCreateCheckoutNonce reuses the stored nonce for an unchanged cart and
     cartFingerprint(items),
     cartFingerprint([...items].reverse())
   );
+  assert.notEqual(
+    cartFingerprint([{ id: 'a', sku: 'GLOBAL-FAP-16x24', quantity: 1, price: 195 }]),
+    cartFingerprint([{ id: 'a', sku: 'GLOBAL-FAP-16x24', quantity: 1, price: 180 }])
+  );
+});
+
+test('changing cart quantity from 2 to 1 produces a distinct Stripe idempotency key', async () => {
+  const nonce = 'attempt-stable';
+  const context = {
+    customerEmail: 'collector@example.com',
+    expiresAt: 1_800_000_000,
+    crops: [{ id: 'norderney-62-prodigi:rag-16x24', crop: '2-3', ratio: '2:3' }],
+  };
+  const quantityTwo = await computeCheckoutIdempotencyKey([cartItem({ quantity: 2 })], nonce, context);
+  const quantityTwoAgain = await computeCheckoutIdempotencyKey([cartItem({ quantity: 2 })], nonce, context);
+  const quantityOne = await computeCheckoutIdempotencyKey([cartItem({ quantity: 1 })], nonce, context);
+  const otherCrop = await computeCheckoutIdempotencyKey([cartItem({ quantity: 2 })], nonce, {
+    ...context,
+    crops: [{ id: 'norderney-62-prodigi:rag-16x24', crop: '1-1', ratio: '1:1' }],
+  });
+  const otherEmail = await computeCheckoutIdempotencyKey([cartItem({ quantity: 2 })], nonce, {
+    ...context,
+    customerEmail: 'other@example.com',
+  });
+
+  assert.equal(quantityTwo, quantityTwoAgain);
+  assert.notEqual(quantityTwo, quantityOne);
+  assert.notEqual(quantityTwo, otherCrop);
+  assert.notEqual(quantityTwo, otherEmail);
+  assert.match(quantityTwo, /^awp_checkout_[0-9a-f]{32}$/);
+  assert.match(quantityOne, /^awp_checkout_[0-9a-f]{32}$/);
+});
+
+function stripeMismatch(): Error {
+  return new Stripe.errors.StripeIdempotencyError({
+    type: 'idempotency_error',
+    statusCode: 400,
+    message:
+      "Keys for idempotent requests can only be used with the same parameters they were first used with. Try using a key other than 'awp_checkout_abc' if you meant to execute a different request.",
+  });
+}
+
+test('a Stripe idempotency parameter mismatch rotates the attempt key once and retries', async () => {
+  assert.equal(isIdempotencyParameterMismatch(stripeMismatch()), true);
+  assert.equal(
+    isIdempotencyParameterMismatch(
+      new Stripe.errors.StripeIdempotencyError({
+        type: 'idempotency_error',
+        statusCode: 409,
+        message: 'There is currently another in-progress request using this Idempotent Key',
+      })
+    ),
+    false
+  );
+  assert.equal(
+    isIdempotencyParameterMismatch(
+      new Stripe.errors.StripeInvalidRequestError({
+        type: 'invalid_request_error',
+        statusCode: 400,
+        message: 'Invalid email',
+      })
+    ),
+    false
+  );
+
+  const seen: { key: string; expiresAt?: number; quantity?: number }[] = [];
+  let calls = 0;
+  const stripeClient: CheckoutStripeClient = {
+    checkout: {
+      sessions: {
+        create: async (params, options) => {
+          calls += 1;
+          seen.push({
+            key: options?.idempotencyKey || '',
+            expiresAt: params.expires_at,
+            quantity: params.line_items?.[0]?.quantity,
+          });
+          if (calls === 1) throw stripeMismatch();
+          return { client_secret: 'cs_test_secret_retry' };
+        },
+      },
+    },
+  };
+
+  const result = await createEmbeddedCheckoutSession({
+    items: [cartItem()],
+    origin,
+    stripeSecretKey: 'sk_test_real',
+    stripePublishableKey: 'pk_test_real',
+    pricingMatrix: matrix,
+    printMastersBaseUrl: masters,
+    attemptNonce: 'nonce-1',
+    customerEmail: ' Collector@Example.com ',
+    stripeClient,
+  });
+
+  assert.equal(result.status, 200);
+  assert.equal(result.body.clientSecret, 'cs_test_secret_retry');
+  assert.equal(calls, 2);
+  assert.equal(seen[0].expiresAt, seen[1].expiresAt);
+  assert.equal(seen[0].quantity, 1);
+  assert.equal(seen[1].quantity, 1);
+  assert.notEqual(seen[0].key, seen[1].key);
+  assert.match(seen[0].key, /^awp_checkout_[0-9a-f]{32}$/);
+  assert.match(seen[1].key, /^awp_checkout_[0-9a-f]{32}$/);
+  assert.equal(typeof result.body.attemptNonce, 'string');
+  assert.notEqual(result.body.attemptNonce, 'nonce-1');
+
+  const context = {
+    customerEmail: 'Collector@Example.com',
+    expiresAt: seen[0].expiresAt,
+    crops: [{ id: cartItem().id, crop: '2-3', ratio: '2:3' }],
+  };
+  assert.equal(seen[0].key, await computeCheckoutIdempotencyKey([cartItem()], 'nonce-1', context));
+  assert.equal(
+    seen[1].key,
+    await computeCheckoutIdempotencyKey([cartItem()], String(result.body.attemptNonce), context)
+  );
+});
+
+test('a second idempotency mismatch is not retried again', async () => {
+  let calls = 0;
+  const stripeClient: CheckoutStripeClient = {
+    checkout: {
+      sessions: {
+        create: async () => {
+          calls += 1;
+          throw stripeMismatch();
+        },
+      },
+    },
+  };
+
+  await assert.rejects(() =>
+    createEmbeddedCheckoutSession({
+      items: [cartItem()],
+      origin,
+      stripeSecretKey: 'sk_test_real',
+      stripePublishableKey: 'pk_test_real',
+      pricingMatrix: matrix,
+      printMastersBaseUrl: masters,
+      attemptNonce: 'nonce-1',
+      stripeClient,
+    })
+  );
+  assert.equal(calls, 2);
+});
+
+test('non-idempotency Stripe errors are not retried', async () => {
+  let calls = 0;
+  const stripeClient: CheckoutStripeClient = {
+    checkout: {
+      sessions: {
+        create: async () => {
+          calls += 1;
+          throw new Stripe.errors.StripeInvalidRequestError({
+            type: 'invalid_request_error',
+            statusCode: 400,
+            message: 'Invalid email',
+          });
+        },
+      },
+    },
+  };
+
+  await assert.rejects(() =>
+    createEmbeddedCheckoutSession({
+      items: [cartItem()],
+      origin,
+      stripeSecretKey: 'sk_test_real',
+      stripePublishableKey: 'pk_test_real',
+      pricingMatrix: matrix,
+      printMastersBaseUrl: masters,
+      stripeClient,
+    })
+  );
+  assert.equal(calls, 1);
 });
 
 test('checkout.session.async_payment_succeeded is routed the same as checkout.session.completed', async () => {

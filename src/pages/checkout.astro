@@ -147,7 +147,10 @@ import Header from '../components/Header.astro';
     $cartSubtotal, 
     $fulfillmentPackages, 
     $totalShipping,
+    CART_MAX_QUANTITY,
+    clearCart,
     removeItem,
+    updateItemQuantity,
     type CartItem,
   } from '../stores/cart';
   import {
@@ -157,6 +160,7 @@ import Header from '../components/Header.astro';
     identifyUnavailableCartItem,
     isRecoverableCartFailure,
     readStoredCartItems,
+    rememberCheckoutNonce,
     storedCartNeedsHeal,
     type CheckoutSkuFailure,
   } from '../lib/checkout-recovery';
@@ -183,6 +187,24 @@ import Header from '../components/Header.astro';
 
   let unavailableItemId = '';
   let stripeCheckout: { destroy?: () => void } | null = null;
+  let checkoutTask: Promise<void> | null = null;
+  let queuedCheckout = false;
+  let acceptCartUpdates = false;
+
+  function quantityControls(item: CartItem): string {
+    const title = escapeCheckoutText(item.artworkTitle || 'item');
+    const id = escapeCheckoutText(item.id);
+    const atMax = item.quantity >= CART_MAX_QUANTITY;
+    const decreaseLabel =
+      item.quantity <= 1 ? `Remove ${title} from cart` : `Decrease quantity of ${title}`;
+    return `
+      <div class="mt-2 inline-flex items-center gap-1" role="group" aria-label="Quantity for ${title}">
+        <button type="button" data-qty-dec="${id}" aria-label="${decreaseLabel}" class="inline-flex min-h-11 min-w-11 items-center justify-center border border-[var(--awp-border)] bg-[var(--awp-surface)] font-mono text-sm text-[var(--awp-text)] hover:border-[var(--awp-accent)] hover:text-[var(--awp-accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--awp-accent)]">-</button>
+        <span class="min-w-6 text-center font-mono text-xs text-[var(--awp-text)]" aria-live="polite">${item.quantity}</span>
+        <button type="button" data-qty-inc="${id}" aria-label="Increase quantity of ${title}" class="inline-flex min-h-11 min-w-11 items-center justify-center border border-[var(--awp-border)] bg-[var(--awp-surface)] font-mono text-sm text-[var(--awp-text)] hover:border-[var(--awp-accent)] hover:text-[var(--awp-accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--awp-accent)] disabled:cursor-not-allowed disabled:opacity-40" ${atMax ? 'disabled' : ''}>+</button>
+      </div>
+    `;
+  }
 
   function loadCartItems(): CartItem[] {
     if (typeof localStorage !== 'undefined') {
@@ -248,8 +270,8 @@ import Header from '../components/Header.astro';
     clearStripeMount();
     showLoading();
     // A per-cart attempt nonce reused via sessionStorage so a reload or a double
-    // submit within the same cart reuses the same Stripe idempotency key. The
-    // nonce is invalidated automatically whenever the cart contents change.
+    // submit within the same cart reuses the same Stripe idempotency key. Cart
+    // edits clear it, and a Stripe idempotency mismatch rotates it once.
     const nonce =
       typeof sessionStorage !== 'undefined' ? getOrCreateCheckoutNonce(items, sessionStorage) : '';
     const res = await fetch('/api/create-checkout-session', {
@@ -263,6 +285,7 @@ import Header from '../components/Header.astro';
       returnUrl?: string;
       clientSecret?: string;
       publishableKey?: string;
+      attemptNonce?: string;
     } = {};
     try {
       data = await res.json();
@@ -276,6 +299,14 @@ import Header from '../components/Header.astro';
         return;
       }
       throw new Error(data.error || 'Failed to initialize session');
+    }
+
+    if (
+      typeof data.attemptNonce === 'string' &&
+      data.attemptNonce &&
+      typeof sessionStorage !== 'undefined'
+    ) {
+      rememberCheckoutNonce(items, data.attemptNonce, sessionStorage);
     }
 
     loading.classList.add('hidden');
@@ -320,6 +351,7 @@ import Header from '../components/Header.astro';
       resetBtn.disabled = true;
       try {
         const items = loadCartItems();
+        acceptCartUpdates = true;
         if (!items.length) {
           showEmpty();
           return;
@@ -334,7 +366,8 @@ import Header from '../components/Header.astro';
             <div class="flex-1 min-w-0">
               <h3 class="font-serif text-sm text-[var(--theme-text)] truncate">${escapeCheckoutText(item.artworkTitle)}</h3>
               <p class="text-[11px] font-mono text-[var(--theme-text-muted)]">${escapeCheckoutText(item.variantTitle)}</p>
-              <p class="text-[11px] font-mono text-[var(--theme-accent)]">$${item.price.toFixed(2)} &times; ${item.quantity}</p>
+              <p class="text-[11px] font-mono text-[var(--awp-accent)]">$${item.price.toFixed(2)}</p>
+              ${quantityControls(item)}
             </div>
           </div>
         `).join('');
@@ -371,19 +404,49 @@ import Header from '../components/Header.astro';
     });
   }
 
+  function scheduleCheckout() {
+    if (checkoutTask) {
+      queuedCheckout = true;
+      return;
+    }
+    const run = init().finally(() => {
+      checkoutTask = null;
+      if (queuedCheckout) {
+        queuedCheckout = false;
+        scheduleCheckout();
+      }
+    });
+    checkoutTask = run;
+  }
+
+  itemsList.addEventListener('click', (event) => {
+    const button = (event.target as HTMLElement | null)?.closest('button');
+    if (!button) return;
+    const decId = button.getAttribute('data-qty-dec');
+    const incId = button.getAttribute('data-qty-inc');
+    const id = decId || incId;
+    if (!id) return;
+    const item = $cartItems.get().find((entry) => entry.id === id);
+    if (!item) return;
+    updateItemQuantity(id, item.quantity + (incId ? 1 : -1));
+  });
+
   removeBtn.addEventListener('click', () => {
     if (!unavailableItemId) return;
     const id = unavailableItemId;
     unavailableItemId = '';
     removeItem(id);
-    void init();
   });
 
   resetBtn.addEventListener('click', () => {
     unavailableItemId = '';
-    $cartItems.set([]);
-    void init();
+    clearCart();
   });
 
-  void init();
+  $cartItems.subscribe(() => {
+    if (!acceptCartUpdates) return;
+    scheduleCheckout();
+  });
+
+  scheduleCheckout();
 </script>

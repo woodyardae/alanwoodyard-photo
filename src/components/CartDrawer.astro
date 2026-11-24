@@ -84,10 +84,13 @@
     $isCartOpen, 
     $cartSubtotal, 
     $fulfillmentPackages, 
-    $totalShipping, 
-    removeItem, 
+    $totalShipping,
+    CART_MAX_QUANTITY,
+    removeItem,
+    updateItemQuantity,
     consolidateItem 
   } from '../stores/cart';
+  import { escapeCheckoutText } from '../lib/checkout-recovery';
 
   const modal = document.getElementById('cartModal')!;
   const panel = document.getElementById('cartPanel')!;
@@ -105,6 +108,21 @@
 
   if (typeof window !== 'undefined') { localStorage.removeItem('awp_cart_open'); }
   let currentConsolidationTargetId: string | null = null;
+
+  function quantityControls(item: { id: string; artworkTitle: string; quantity: number }): string {
+    const title = escapeCheckoutText(item.artworkTitle || 'item');
+    const id = escapeCheckoutText(item.id);
+    const atMax = item.quantity >= CART_MAX_QUANTITY;
+    const decreaseLabel =
+      item.quantity <= 1 ? `Remove ${title} from cart` : `Decrease quantity of ${title}`;
+    return `
+      <div class="mt-2 inline-flex items-center gap-1" role="group" aria-label="Quantity for ${title}">
+        <button type="button" data-qty-dec="${id}" aria-label="${decreaseLabel}" class="inline-flex min-h-11 min-w-11 items-center justify-center border border-[var(--awp-border)] bg-[var(--awp-surface)] font-mono text-sm text-[var(--awp-text)] hover:border-[var(--awp-accent)] hover:text-[var(--awp-accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--awp-accent)]">-</button>
+        <span class="min-w-6 text-center font-mono text-xs text-[var(--awp-text)]" aria-live="polite">${item.quantity}</span>
+        <button type="button" data-qty-inc="${id}" aria-label="Increase quantity of ${title}" class="inline-flex min-h-11 min-w-11 items-center justify-center border border-[var(--awp-border)] bg-[var(--awp-surface)] font-mono text-sm text-[var(--awp-text)] hover:border-[var(--awp-accent)] hover:text-[var(--awp-accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--awp-accent)] disabled:cursor-not-allowed disabled:opacity-40" ${atMax ? 'disabled' : ''}>+</button>
+      </div>
+    `;
+  }
 
   function renderCart() {
     const items = $cartItems.get();
@@ -124,13 +142,14 @@
     } else {
       itemList.innerHTML = items.map((item) => `
         <div class="p-3 border border-[var(--theme-border)] bg-[var(--theme-bg)] flex gap-4 items-center">
-          <img src="${item.imageSrc}" alt="${item.artworkTitle}" class="w-16 h-16 object-cover border border-white/10" />
+          <img src="${escapeCheckoutText(item.imageSrc)}" alt="${escapeCheckoutText(item.artworkTitle)}" class="w-16 h-16 object-cover border border-white/10" />
           <div class="flex-1 min-w-0">
-            <h3 class="font-serif text-sm text-[var(--theme-text)] truncate">${item.artworkTitle}</h3>
-            <p class="text-[11px] font-mono text-[var(--theme-text-muted)]">${item.variantTitle}</p>
-            <p class="text-[11px] font-mono text-[var(--theme-accent)] mt-1">$${item.price.toFixed(2)} &times; ${item.quantity}</p>
+            <h3 class="font-serif text-sm text-[var(--theme-text)] truncate">${escapeCheckoutText(item.artworkTitle)}</h3>
+            <p class="text-[11px] font-mono text-[var(--theme-text-muted)]">${escapeCheckoutText(item.variantTitle)}</p>
+            <p class="text-[11px] font-mono text-[var(--theme-accent)] mt-1">$${item.price.toFixed(2)}</p>
+            ${quantityControls(item)}
           </div>
-          <button type="button" data-remove="${item.id}" class="text-xs font-mono text-[var(--theme-text-muted)] hover:text-red-400 p-2">
+          <button type="button" data-remove="${escapeCheckoutText(item.id)}" aria-label="Remove ${escapeCheckoutText(item.artworkTitle)} from cart" class="text-xs font-mono text-[var(--theme-text-muted)] hover:text-red-400 p-2">
             &times;
           </button>
         </div>
@@ -190,10 +209,21 @@
   closeBtn.addEventListener('click', () => $isCartOpen.set(false));
   backdrop.addEventListener('click', () => $isCartOpen.set(false));
 
-  itemList.addEventListener('click', (e) => {
-    const target = e.target as HTMLElement;
-    const removeId = target.getAttribute('data-remove');
-    if (removeId) removeItem(removeId);
+  itemList.addEventListener('click', (event) => {
+    const button = (event.target as HTMLElement | null)?.closest('button');
+    if (!button) return;
+    const removeId = button.getAttribute('data-remove');
+    if (removeId) {
+      removeItem(removeId);
+      return;
+    }
+    const decId = button.getAttribute('data-qty-dec');
+    const incId = button.getAttribute('data-qty-inc');
+    const id = decId || incId;
+    if (!id) return;
+    const item = $cartItems.get().find((entry) => entry.id === id);
+    if (!item) return;
+    updateItemQuantity(id, item.quantity + (incId ? 1 : -1));
   });
 
   consolidateBtn.addEventListener('click', () => {

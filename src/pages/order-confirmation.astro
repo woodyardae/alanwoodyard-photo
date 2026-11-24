@@ -50,6 +50,6 @@ const sessionId = Astro.url.searchParams.get('session_id') || '';
 </Layout>
 
 <script>
-  import { $cartItems } from '../stores/cart';
-  $cartItems.set([]);
+  import { clearCart } from '../stores/cart';
+  clearCart();
 </script>

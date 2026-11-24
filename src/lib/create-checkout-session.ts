@@ -63,6 +63,28 @@ export interface CreateCheckoutSessionInput {
    * the same cart reuse the same Checkout Session instead of creating duplicates.
    */
   attemptNonce?: string;
+  /** Test seam. Production callers leave this unset and use the Stripe SDK. */
+  stripeClient?: CheckoutStripeClient;
+}
+
+/** Minimal Checkout client so tests can observe idempotency keys without a network call. */
+export interface CheckoutStripeClient {
+  checkout: {
+    sessions: {
+      create(
+        params: Stripe.Checkout.SessionCreateParams,
+        options?: { idempotencyKey?: string }
+      ): Promise<{ client_secret: string | null }>;
+    };
+  };
+}
+
+export interface CheckoutIdempotencyContext {
+  customerEmail?: string;
+  /** Resolved crop per cart line id. Crop changes must not reuse a previous Stripe key. */
+  crops?: readonly { id: string; crop?: string; ratio?: string }[];
+  /** Session expires_at actually sent to Stripe, so the key tracks those params. */
+  expiresAt?: number;
 }
 
 export interface CreateCheckoutSessionResult {
@@ -302,27 +324,103 @@ export function buildCheckoutSessionMetadata(orderItems: OrderItem[]): Record<st
 
 const DEFAULT_ALLOWED_COUNTRIES: readonly string[] = ['US'];
 const CHECKOUT_SESSION_EXPIRY_SECONDS = 4 * 60 * 60; // 4 hours, within Stripe's 30min-24h window.
+const CHECKOUT_EXPIRY_BUCKET_SECONDS = 10 * 60;
 
 /**
- * Deterministic idempotency key from the cart contents plus a per-cart attempt nonce.
- * A page reload or double-submit with the same cart and nonce reuses the same
- * Stripe Checkout Session instead of creating a duplicate.
+ * Stripe rejects a reused idempotency key when any param differs, including expires_at.
+ * Bucket the timestamp so a reload inside the window sends the same expiry.
+ */
+export function checkoutExpiresAt(nowMs: number): number {
+  const nowSeconds = Math.floor(nowMs / 1000);
+  const bucketStart = nowSeconds - (nowSeconds % CHECKOUT_EXPIRY_BUCKET_SECONDS);
+  return bucketStart + CHECKOUT_SESSION_EXPIRY_SECONDS;
+}
+
+/**
+ * Deterministic idempotency key from the canonical cart payload plus a per-cart
+ * attempt nonce. Quantity, crop, email, or expiry changes mint a new key so Stripe
+ * never sees an old `awp_checkout_…` key reused with different Checkout params.
+ * A page reload or double-submit with the same payload reuses the same session.
  */
 export async function computeCheckoutIdempotencyKey(
   items: readonly CheckoutCartItem[],
-  attemptNonce: string
+  attemptNonce: string,
+  context: CheckoutIdempotencyContext = {}
 ): Promise<string> {
+  const cropById = new Map((context.crops ?? []).map((entry) => [entry.id, entry]));
   const normalized = items
-    .map((item) => `${item.id}:${item.sku}:${item.quantity}:${item.price}`)
+    .map((item) => {
+      const crop = cropById.get(item.id);
+      return [
+        item.id,
+        item.sku,
+        item.quantity,
+        item.price,
+        crop?.crop || '',
+        crop?.ratio || '',
+      ].join(':');
+    })
     .sort()
     .join('|');
+  const email = (context.customerEmail || '').trim();
+  const expiresAt = context.expiresAt ?? '';
   const encoder = new TextEncoder();
-  const data = encoder.encode(`${normalized}#${attemptNonce || ''}`);
+  const data = encoder.encode(`${normalized}#${email}#${expiresAt}#${attemptNonce || ''}`);
   const digest = await crypto.subtle.digest('SHA-256', data);
   const hash = Array.from(new Uint8Array(digest))
     .map((byte) => byte.toString(16).padStart(2, '0'))
     .join('');
   return `awp_checkout_${hash.slice(0, 32)}`;
+}
+
+const IDEMPOTENCY_MISMATCH =
+  /same parameters they were first used with|idempotency parameter mismatch/i;
+
+/** True only for Stripe's 400 "key reused with different parameters" error. */
+export function isIdempotencyParameterMismatch(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const err = error as {
+    type?: string;
+    rawType?: string;
+    statusCode?: number;
+    message?: string;
+    raw?: { type?: string; message?: string; statusCode?: number };
+  };
+  const status = err.statusCode ?? err.raw?.statusCode;
+  if (status != null && status !== 400) return false;
+  const type = err.type || err.rawType || err.raw?.type || '';
+  const message = err.message || err.raw?.message || '';
+  const idempotencyType = type === 'StripeIdempotencyError' || type === 'idempotency_error';
+  return idempotencyType && IDEMPOTENCY_MISMATCH.test(message);
+}
+
+function rotateAttemptNonce(nonce: string): string {
+  const seed =
+    typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+  return `${nonce || 'attempt'}:retry:${seed}`;
+}
+
+async function createStripeSessionIdempotently(
+  stripe: CheckoutStripeClient,
+  params: Stripe.Checkout.SessionCreateParams,
+  keyForNonce: (nonce: string) => Promise<string>,
+  attemptNonce: string
+): Promise<{ clientSecret: string | null; attemptNonce: string }> {
+  const firstNonce = attemptNonce || '';
+  const firstKey = await keyForNonce(firstNonce);
+  try {
+    const session = await stripe.checkout.sessions.create(params, { idempotencyKey: firstKey });
+    return { clientSecret: session.client_secret, attemptNonce: firstNonce };
+  } catch (error) {
+    if (!isIdempotencyParameterMismatch(error)) throw error;
+    const rotated = rotateAttemptNonce(firstNonce);
+    const retryKey = await keyForNonce(rotated);
+    if (retryKey === firstKey) throw error;
+    const session = await stripe.checkout.sessions.create(params, { idempotencyKey: retryKey });
+    return { clientSecret: session.client_secret, attemptNonce: rotated };
+  }
 }
 
 /**
@@ -361,7 +459,7 @@ export function buildStripeSessionParams(
     },
     phone_number_collection: { enabled: true },
     allow_promotion_codes: true,
-    expires_at: Math.floor(nowMs / 1000) + CHECKOUT_SESSION_EXPIRY_SECONDS,
+    expires_at: checkoutExpiresAt(nowMs),
     metadata: buildCheckoutSessionMetadata(prepared.orderItems),
     return_url: `${input.origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`,
   };
@@ -370,8 +468,8 @@ export function buildStripeSessionParams(
 export async function createEmbeddedCheckoutSession(
   input: CreateCheckoutSessionInput
 ): Promise<CreateCheckoutSessionResult> {
-  const { items, customerEmail, origin, stripeSecretKey, stripePublishableKey, pricingMatrix } =
-    input;
+  const { items, origin, stripeSecretKey, stripePublishableKey, pricingMatrix } = input;
+  const customerEmail = (input.customerEmail || '').trim();
   const assetConfig: CheckoutAssetConfig = {
     printMastersBaseUrl: input.printMastersBaseUrl,
     printMastersExtension: input.printMastersExtension,
@@ -420,25 +518,41 @@ export async function createEmbeddedCheckoutSession(
     };
   }
 
-  const stripe = new Stripe(stripeSecretKey as string, {
-    // Pin to the account's Checkout API revision used elsewhere in this repo.
-    apiVersion: '2024-12-18.acacia' as any,
-  });
+  const stripe: CheckoutStripeClient =
+    input.stripeClient ??
+    new Stripe(stripeSecretKey as string, {
+      // Pin to the account's Checkout API revision used elsewhere in this repo.
+      apiVersion: '2024-12-18.acacia' as any,
+    });
 
   const sessionParams = buildStripeSessionParams(prepared, {
     origin,
-    customerEmail,
+    customerEmail: customerEmail || undefined,
     allowedCountries: input.allowedCountries,
   });
-  const idempotencyKey = await computeCheckoutIdempotencyKey(items, input.attemptNonce || '');
-  const session = await stripe.checkout.sessions.create(sessionParams, { idempotencyKey });
+  const idempotencyContext: CheckoutIdempotencyContext = {
+    customerEmail,
+    expiresAt: sessionParams.expires_at,
+    crops: prepared.lines.map((line) => ({
+      id: line.orderItem.id,
+      crop: line.productMetadata.crop || '',
+      ratio: line.productMetadata.cropRatio || '',
+    })),
+  };
+  const created = await createStripeSessionIdempotently(
+    stripe,
+    sessionParams,
+    (nonce) => computeCheckoutIdempotencyKey(items, nonce, idempotencyContext),
+    input.attemptNonce || ''
+  );
 
   return {
     status: 200,
     body: {
-      clientSecret: session.client_secret,
+      clientSecret: created.clientSecret,
       publishableKey: stripePublishableKey,
       simulated: false,
+      attemptNonce: created.attemptNonce,
     },
   };
 }

@@ -1,6 +1,9 @@
 import { persistentAtom } from '@nanostores/persistent';
 import { atom, computed } from 'nanostores';
-import { readStoredCartItems } from '../lib/checkout-recovery';
+import { clearCheckoutNonce, readStoredCartItems } from '../lib/checkout-recovery';
+
+/** Matches the stored-cart reader, which drops quantities outside 1..10. */
+export const CART_MAX_QUANTITY = 10;
 
 export type ProviderId = 'prodigi' | 'printful' | 'printify' | 'gelato' | 'gooten';
 
@@ -122,22 +125,75 @@ export const $totalShipping = computed($fulfillmentPackages, (packages) =>
   packages.reduce((sum, pkg) => sum + pkg.estimatedShipping, 0)
 );
 
+function invalidateCachedCheckoutAttempt(): void {
+  if (typeof sessionStorage === 'undefined') return;
+  try {
+    clearCheckoutNonce(sessionStorage);
+  } catch {
+    // Private mode can throw on storage access. The cart write still stands.
+  }
+}
+
 export function addItem(newItem: CartItem) {
   const current = $cartItems.get();
   const existingIdx = current.findIndex((i) => i.id === newItem.id);
 
   if (existingIdx > -1) {
-    const updated = [...current];
-    updated[existingIdx].quantity += newItem.quantity;
-    $cartItems.set(updated);
+    const existing = current[existingIdx];
+    const quantity = Math.min(CART_MAX_QUANTITY, existing.quantity + newItem.quantity);
+    if (quantity === existing.quantity) {
+      $isCartOpen.set(true);
+      return;
+    }
+    $cartItems.set(
+      current.map((item, index) => (index === existingIdx ? { ...item, quantity } : item))
+    );
   } else {
-    $cartItems.set([...current, newItem]);
+    const quantity = Math.min(CART_MAX_QUANTITY, newItem.quantity);
+    $cartItems.set([
+      ...current,
+      quantity === newItem.quantity ? newItem : { ...newItem, quantity },
+    ]);
   }
+  invalidateCachedCheckoutAttempt();
   $isCartOpen.set(true);
 }
 
 export function removeItem(id: string) {
-  $cartItems.set($cartItems.get().filter((i) => i.id !== id));
+  const current = $cartItems.get();
+  const next = current.filter((item) => item.id !== id);
+  if (next.length === current.length) return;
+  $cartItems.set(next);
+  invalidateCachedCheckoutAttempt();
+}
+
+/**
+ * Set a line quantity. Values at or below 0 remove the line.
+ * Values above the cart maximum clamp to that maximum.
+ */
+export function updateItemQuantity(keyOrId: string, quantity: number) {
+  if (typeof quantity !== 'number' || !Number.isFinite(quantity)) return;
+  const current = $cartItems.get();
+  const index = current.findIndex((item) => item.id === keyOrId);
+  if (index < 0) return;
+  const nextQuantity = Math.trunc(quantity);
+  if (nextQuantity <= 0) {
+    removeItem(keyOrId);
+    return;
+  }
+  const clamped = Math.min(CART_MAX_QUANTITY, nextQuantity);
+  if (current[index].quantity === clamped) return;
+  $cartItems.set(
+    current.map((item, itemIndex) => (itemIndex === index ? { ...item, quantity: clamped } : item))
+  );
+  invalidateCachedCheckoutAttempt();
+}
+
+export function clearCart() {
+  if ($cartItems.get().length > 0) {
+    $cartItems.set([]);
+  }
+  invalidateCachedCheckoutAttempt();
 }
 
 export function consolidateItem(targetItemId: string) {
@@ -166,4 +222,5 @@ export function consolidateItem(targetItemId: string) {
   } else {
     $cartItems.set([...updated, replaced]);
   }
+  invalidateCachedCheckoutAttempt();
 }

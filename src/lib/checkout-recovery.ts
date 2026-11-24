@@ -186,12 +186,20 @@ const CHECKOUT_NONCE_FINGERPRINT_KEY = 'awp_checkout_nonce_fingerprint';
 export interface CheckoutNonceStorage {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
+  removeItem?(key: string): void;
 }
 
+type CheckoutFingerprintItem = {
+  id: string;
+  sku: string;
+  quantity: number;
+  price?: number;
+};
+
 /** Order-insensitive fingerprint of a cart's billable contents. */
-export function cartFingerprint(items: readonly { id: string; sku: string; quantity: number }[]): string {
+export function cartFingerprint(items: readonly CheckoutFingerprintItem[]): string {
   return items
-    .map((item) => `${item.id}:${item.sku}:${item.quantity}`)
+    .map((item) => `${item.id}:${item.sku}:${item.quantity}:${item.price ?? ''}`)
     .sort()
     .join('|');
 }
@@ -209,7 +217,7 @@ function randomNonce(): string {
  * Any change to the cart contents mints and persists a new nonce.
  */
 export function getOrCreateCheckoutNonce(
-  items: readonly { id: string; sku: string; quantity: number }[],
+  items: readonly CheckoutFingerprintItem[],
   storage: CheckoutNonceStorage
 ): string {
   const fingerprint = cartFingerprint(items);
@@ -222,6 +230,29 @@ export function getOrCreateCheckoutNonce(
   storage.setItem(CHECKOUT_NONCE_KEY, nonce);
   storage.setItem(CHECKOUT_NONCE_FINGERPRINT_KEY, fingerprint);
   return nonce;
+}
+
+/** Persist the nonce that actually created the Checkout Session. */
+export function rememberCheckoutNonce(
+  items: readonly CheckoutFingerprintItem[],
+  nonce: string,
+  storage: CheckoutNonceStorage
+): void {
+  const trimmed = nonce.trim();
+  if (!trimmed) return;
+  storage.setItem(CHECKOUT_NONCE_KEY, trimmed);
+  storage.setItem(CHECKOUT_NONCE_FINGERPRINT_KEY, cartFingerprint(items));
+}
+
+/** Drop the cached attempt so the next checkout cannot reuse a stale Stripe key. */
+export function clearCheckoutNonce(storage: CheckoutNonceStorage): void {
+  if (typeof storage.removeItem === 'function') {
+    storage.removeItem(CHECKOUT_NONCE_KEY);
+    storage.removeItem(CHECKOUT_NONCE_FINGERPRINT_KEY);
+    return;
+  }
+  storage.setItem(CHECKOUT_NONCE_KEY, '');
+  storage.setItem(CHECKOUT_NONCE_FINGERPRINT_KEY, '');
 }
 
 /** Share one in-flight checkout mount. A later call starts a new mount. */
