@@ -17,7 +17,7 @@ const photoItems = artworks.map((art) => ({
   id: art.id,
   store: 'photo' as const,
   title: art.data.title,
-  category: art.data.collections?.[0] || art.data.mood || 'Fine Art Photography',
+  category: art.data.collections?.[0] || art.data.mood || 'Alan Woodyard Photography',
   img: `/images/artworks/${art.id}.webp`,
   width: art.data.capture?.native_dimensions?.width || 6000,
   height: art.data.capture?.native_dimensions?.height || 4000,
@@ -75,6 +75,7 @@ const catalogData = [...photoItems, ...swsItems];
         <!-- Queue Status Tabs -->
         <div class="flex flex-wrap items-center gap-1.5">
           <span class="text-[10px] font-mono uppercase tracking-wider text-[#a89f91] mr-1">Queue:</span>
+          <button type="button" class="queue-filter px-2.5 py-1.5 rounded bg-white/[0.05] hover:bg-white/[0.1] text-xs font-mono cursor-pointer" data-queue="all">All (<span id="count-queue-all">0</span>)</button>
           <button type="button" class="queue-filter px-2.5 py-1.5 rounded bg-[#c5a059] text-black text-xs font-mono font-bold cursor-pointer" data-queue="needs_review">Needs Review (<span id="count-queue-needs_review">0</span>)</button>
           <button type="button" class="queue-filter px-2.5 py-1.5 rounded bg-white/[0.05] hover:bg-white/[0.1] text-xs font-mono text-emerald-300 cursor-pointer" data-queue="approved">Approved (<span id="count-queue-approved">0</span>)</button>
           <button type="button" class="queue-filter px-2.5 py-1.5 rounded bg-white/[0.05] hover:bg-white/[0.1] text-xs font-mono text-rose-300 cursor-pointer" data-queue="rejected">Rejected (<span id="count-queue-rejected">0</span>)</button>
@@ -115,6 +116,7 @@ const catalogData = [...photoItems, ...swsItems];
               >
                 <span class="ratio-pill-label">{rk}</span>
                 <span class="ratio-pill-check hidden ml-1 text-emerald-400">✓</span>
+                <span class="ratio-pill-no hidden ml-1 text-rose-300">&times;</span>
               </button>
             ))}
           </div>
@@ -142,9 +144,12 @@ const catalogData = [...photoItems, ...swsItems];
             <span>Auto-advance ratios</span>
           </label>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
             <button id="save-btn" type="button" class="bg-[var(--theme-accent)] text-black font-mono text-xs uppercase tracking-wider py-3.5 px-3 rounded font-bold hover:opacity-90 transition active:scale-[0.98] cursor-pointer">
               &check; Save Ratio
+            </button>
+            <button id="reject-crop-btn" type="button" class="border border-[var(--awp-border)] bg-[var(--awp-surface)] text-[var(--awp-text)] font-mono text-xs uppercase tracking-wider py-3.5 px-3 rounded font-bold hover:border-[var(--awp-accent)] transition active:scale-[0.98] cursor-pointer">
+              &times; Reject Crop
             </button>
             <button id="save-next-btn" type="button" class="bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs uppercase tracking-wider py-3.5 px-3 rounded font-bold transition active:scale-[0.98] cursor-pointer">
               Approve &amp; Next SKU &rarr;
@@ -308,19 +313,63 @@ const catalogData = [...photoItems, ...swsItems];
     const toggleAllBtn = document.getElementById('toggle-all-btn');
     const saveBtn = document.getElementById('save-btn');
     const saveNextBtn = document.getElementById('save-next-btn');
+    const rejectCropBtn = document.getElementById('reject-crop-btn');
     const rejectBtn = document.getElementById('reject-btn');
     const statusMsg = document.getElementById('status-msg');
 
+    function isRejectedCropValue(value) {
+      return Boolean(value && typeof value === 'object' && !Array.isArray(value) && value.rejected === true);
+    }
+
+    function isAcceptedCropValue(value) {
+      if (!value || typeof value !== 'object' || Array.isArray(value) || isRejectedCropValue(value)) return false;
+      return typeof value.panX === 'number' ||
+        typeof value.panY === 'number' ||
+        typeof value.zoom === 'number' ||
+        (typeof value.approved_at === 'string' && value.approved_at.length > 0) ||
+        Array.isArray(value.approved_products) ||
+        (value.crop && typeof value.crop === 'object');
+    }
+
+    function cropDecisionForRatio(crops, ratioKey) {
+      if (!RATIO_KEYS.includes(ratioKey)) return 'pending';
+      const entry = crops ? crops[ratioKey] : undefined;
+      if (isRejectedCropValue(entry)) return 'rejected';
+      if (isAcceptedCropValue(entry)) return 'accepted';
+      return 'pending';
+    }
+
     function getItemStatus(item) {
       if (!item) return 'needs_review';
-      if (item.rejected || (item.crops && item.crops.__rejected === true)) {
-        return 'rejected';
+      const crops = item.crops || {};
+      if (item.rejected || crops.__rejected === true) return 'rejected';
+      const pending = RATIO_KEYS.some((key) => cropDecisionForRatio(crops, key) === 'pending');
+      return pending ? 'needs_review' : 'approved';
+    }
+
+    function nextPendingRatio(crops, afterKey) {
+      const start = RATIO_KEYS.indexOf(afterKey);
+      const ordered = start >= 0
+        ? RATIO_KEYS.slice(start + 1).concat(RATIO_KEYS.slice(0, start + 1))
+        : RATIO_KEYS.slice();
+      return ordered.find((rk) => cropDecisionForRatio(crops, rk) === 'pending') || null;
+    }
+
+    function setDecisionButtonsDisabled(disabled) {
+      if (saveBtn) saveBtn.disabled = disabled;
+      if (saveNextBtn) saveNextBtn.disabled = disabled;
+      if (rejectCropBtn) rejectCropBtn.disabled = disabled;
+      if (rejectBtn) rejectBtn.disabled = disabled;
+    }
+
+    function syncCropRejectButton(art) {
+      if (!rejectCropBtn) return;
+      if (!art) {
+        rejectCropBtn.textContent = '× Reject Crop';
+        return;
       }
-      const cropKeys = Object.keys(item.crops || {}).filter((k) => k !== '__rejected');
-      if (cropKeys.length > 0 || (Array.isArray(item.approved) && item.approved.length > 0)) {
-        return 'approved';
-      }
-      return 'needs_review';
+      const decision = cropDecisionForRatio(art.crops, ratioSelect.value);
+      rejectCropBtn.textContent = decision === 'rejected' ? '↺ Restore Crop' : '× Reject Crop';
     }
 
     function getSelectedArtwork() {
@@ -350,9 +399,11 @@ const catalogData = [...photoItems, ...swsItems];
         else nr++;
       });
 
+      const qAllEl = document.getElementById('count-queue-all');
       const qNrEl = document.getElementById('count-queue-needs_review');
       const qApEl = document.getElementById('count-queue-approved');
       const qRjEl = document.getElementById('count-queue-rejected');
+      if (qAllEl) qAllEl.textContent = String(storeScoped.length);
       if (qNrEl) qNrEl.textContent = String(nr);
       if (qApEl) qApEl.textContent = String(ap);
       if (qRjEl) qRjEl.textContent = String(rj);
@@ -362,6 +413,7 @@ const catalogData = [...photoItems, ...swsItems];
       updateFilterCounts();
       filteredQueue = catalogData.filter((item) => {
         if (activeStoreFilter !== 'all' && item.store !== activeStoreFilter) return false;
+        if (activeQueueFilter === 'all') return true;
         return getItemStatus(item) === activeQueueFilter;
       });
 
@@ -402,6 +454,7 @@ const catalogData = [...photoItems, ...swsItems];
           itemStoreBadge.className = 'px-1.5 py-0.5 rounded text-[10px] font-bold bg-white/10 text-[#a89f91]';
         }
         if (rejectBtn) rejectBtn.textContent = '× Reject SKU';
+        syncCropRejectButton(null);
         return;
       }
 
@@ -416,7 +469,7 @@ const catalogData = [...photoItems, ...swsItems];
         nativeResVal.textContent = `${art.width} × ${art.height} px`;
       }
       if (storeRubricLabel) {
-        storeRubricLabel.textContent = art.store === 'sws' ? 'SeeWhatSticks.store POD' : 'Alan Woodyard Fine Art';
+        storeRubricLabel.textContent = art.store === 'sws' ? 'SeeWhatSticks.store POD' : 'Alan Woodyard Photography';
       }
       if (itemStoreBadge) {
         if (art.store === 'sws') {
@@ -430,18 +483,18 @@ const catalogData = [...photoItems, ...swsItems];
       if (rejectBtn) {
         rejectBtn.textContent = getItemStatus(art) === 'rejected' ? '↺ Restore SKU' : '× Reject SKU';
       }
+      syncCropRejectButton(art);
     }
 
     function updateRatioPills(art) {
       const activeKey = ratioSelect.value;
       document.querySelectorAll('.ratio-pill').forEach((pill) => {
         const rk = pill.getAttribute('data-ratio-key');
+        const decision = art && rk ? cropDecisionForRatio(art.crops, rk) : 'pending';
         const checkEl = pill.querySelector('.ratio-pill-check');
-        const hasCrop = Boolean(art && art.crops && art.crops[rk]);
-        if (checkEl) {
-          if (hasCrop) checkEl.classList.remove('hidden');
-          else checkEl.classList.add('hidden');
-        }
+        const noEl = pill.querySelector('.ratio-pill-no');
+        if (checkEl) checkEl.classList.toggle('hidden', decision !== 'accepted');
+        if (noEl) noEl.classList.toggle('hidden', decision !== 'rejected');
         if (rk === activeKey) {
           pill.classList.add('border-[#c5a059]', 'bg-[#c5a059]/20', 'text-[#f7f4ee]');
           pill.classList.remove('border-white/[0.1]', 'bg-[#080706]');
@@ -466,11 +519,21 @@ const catalogData = [...photoItems, ...swsItems];
       const storeRubricMap = art.store === 'sws' ? SWS_RATIO_PRODUCTS : PHOTO_RATIO_PRODUCTS;
       const allProducts = storeRubricMap[ratioKey] || [];
       const existingCrop = (art.crops && art.crops[ratioKey]) || {};
-      const approvedList = existingCrop.approved_products;
+      const cropRejected = isRejectedCropValue(existingCrop);
+      const approvedList = Array.isArray(existingCrop.approved_products) ? existingCrop.approved_products : null;
 
       rubricContainer.innerHTML = '';
+      if (cropRejected) {
+        const note = document.createElement('p');
+        note.className = 'text-xs font-mono text-rose-300 mb-2';
+        note.textContent = 'This ratio is rejected for this image. Other saved ratios stay available.';
+        rubricContainer.appendChild(note);
+      }
       if (!allProducts.length) {
-        rubricContainer.innerHTML = '<p class="text-xs font-mono text-[var(--theme-text-muted)]">No products mapped for this ratio.</p>';
+        const empty = document.createElement('p');
+        empty.className = 'text-xs font-mono text-[var(--theme-text-muted)]';
+        empty.textContent = 'No products mapped for this ratio.';
+        rubricContainer.appendChild(empty);
         return;
       }
 
@@ -484,7 +547,7 @@ const catalogData = [...photoItems, ...swsItems];
       }
 
       products.forEach((prod) => {
-        const isChecked = approvedList ? approvedList.includes(prod.id) : true;
+        const isChecked = cropRejected ? false : (approvedList ? approvedList.includes(prod.id) : true);
         const div = document.createElement('label');
         div.className = 'flex items-center justify-between p-2 rounded bg-white/[0.02] border border-white/[0.04] hover:border-white/[0.1] cursor-pointer text-xs font-mono';
 
@@ -496,7 +559,7 @@ const catalogData = [...photoItems, ...swsItems];
 
         div.innerHTML = `
           <div class="flex items-center gap-2">
-            <input type="checkbox" value="${prod.id}" class="rubric-cb accent-[var(--theme-accent)]" ${isChecked ? 'checked' : ''} />
+            <input type="checkbox" value="${prod.id}" class="rubric-cb accent-[var(--theme-accent)]" ${isChecked ? 'checked' : ''} ${cropRejected ? 'disabled' : ''} />
             <div class="flex flex-col">
               <span class="text-[#f7f4ee]">${prod.name}</span>
               <span class="text-[9px] text-[var(--theme-text-muted)]">Req: ${prod.minPx} @ ${prod.minDpi} DPI</span>
@@ -715,7 +778,7 @@ const catalogData = [...photoItems, ...swsItems];
       }
 
       const existingCrop = art.crops ? art.crops[ratioKey] : null;
-      if (existingCrop) {
+      if (existingCrop && !isRejectedCropValue(existingCrop)) {
         panX = existingCrop.panX || 0;
         panY = existingCrop.panY || 0;
         zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Number(existingCrop.zoom) || 1));
@@ -860,8 +923,13 @@ const catalogData = [...photoItems, ...swsItems];
       const art = getSelectedArtwork();
       if (!art) return;
 
-      saveBtn.disabled = true;
-      saveNextBtn.disabled = true;
+      if (cropDecisionForRatio(art.crops, ratioSelect.value) === 'rejected') {
+        statusMsg.className = 'text-xs font-mono text-center text-amber-300';
+        statusMsg.innerText = 'This ratio is rejected. Restore the crop before saving it.';
+        return;
+      }
+
+      setDecisionButtonsDisabled(true);
       statusMsg.className = 'text-xs font-mono text-center text-[var(--theme-text-muted)]';
       statusMsg.innerText = 'Saving crop & products...';
 
@@ -910,12 +978,10 @@ const catalogData = [...photoItems, ...swsItems];
           if (advanceToNextItem) {
             rebuildQueue(nextItemInQueue && nextItemInQueue !== art.id ? nextItemInQueue : undefined);
           } else {
-            updateRatioPills(art);
-            updateFilterCounts();
-            if (autoAdvanceCb && autoAdvanceCb.checked) {
-              const curR = RATIO_KEYS.indexOf(ratioSelect.value);
-              const nextUnset = RATIO_KEYS.slice(curR + 1).find((rk) => !art.crops[rk]) ||
-                RATIO_KEYS.find((rk) => !art.crops[rk]);
+            rebuildQueue(art.id);
+            const still = getSelectedArtwork();
+            if (still && still.id === art.id && autoAdvanceCb && autoAdvanceCb.checked) {
+              const nextUnset = nextPendingRatio(still.crops, ratioSelect.value);
               if (nextUnset && nextUnset !== ratioSelect.value) {
                 ratioSelect.value = nextUnset;
                 switchPhoto();
@@ -929,13 +995,70 @@ const catalogData = [...photoItems, ...swsItems];
         statusMsg.className = 'text-xs font-mono text-center text-red-400';
         statusMsg.innerText = `Error: ${err.message}`;
       } finally {
-        saveBtn.disabled = false;
-        saveNextBtn.disabled = false;
+        setDecisionButtonsDisabled(false);
       }
     }
 
     saveBtn.addEventListener('click', () => saveCurrentCrop(false));
     saveNextBtn.addEventListener('click', () => saveCurrentCrop(true));
+
+    rejectCropBtn.addEventListener('click', async () => {
+      const art = getSelectedArtwork();
+      if (!art) return;
+
+      const ratioKey = ratioSelect.value;
+      const decision = cropDecisionForRatio(art.crops, ratioKey);
+      const action = decision === 'rejected' ? 'restore-crop' : 'reject-crop';
+
+      setDecisionButtonsDisabled(true);
+      statusMsg.className = 'text-xs font-mono text-center text-[var(--theme-text-muted)]';
+      statusMsg.innerText = action === 'reject-crop' ? 'Rejecting this crop...' : 'Restoring this crop...';
+
+      try {
+        const res = await fetch('/api/approve-merch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            artworkId: art.id,
+            store: art.store,
+            action,
+            ratioKey,
+            authToken: MASTER_KEY,
+          }),
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          art.crops = art.crops || {};
+          if (action === 'reject-crop') {
+            art.crops[ratioKey] = { rejected: true, rejected_at: new Date().toISOString() };
+          } else {
+            delete art.crops[ratioKey];
+          }
+
+          statusMsg.className = 'text-xs font-mono text-center text-amber-300';
+          statusMsg.innerText = action === 'reject-crop'
+            ? `Rejected ${ratioKey} for this image.`
+            : `Restored ${ratioKey}. This ratio is undecided.`;
+
+          rebuildQueue(art.id);
+          const still = getSelectedArtwork();
+          if (still && still.id === art.id && action === 'reject-crop' && autoAdvanceCb && autoAdvanceCb.checked) {
+            const nextUnset = nextPendingRatio(still.crops, ratioKey);
+            if (nextUnset && nextUnset !== ratioKey) {
+              ratioSelect.value = nextUnset;
+              switchPhoto();
+            }
+          }
+        } else {
+          throw new Error(data.error || 'Request failed');
+        }
+      } catch (err) {
+        statusMsg.className = 'text-xs font-mono text-center text-red-400';
+        statusMsg.innerText = `Error: ${err.message}`;
+      } finally {
+        setDecisionButtonsDisabled(false);
+      }
+    });
 
     rejectBtn.addEventListener('click', async () => {
       const art = getSelectedArtwork();
@@ -948,7 +1071,7 @@ const catalogData = [...photoItems, ...swsItems];
         ? filteredQueue[currentIdx + 1].id
         : filteredQueue[0]?.id;
 
-      rejectBtn.disabled = true;
+      setDecisionButtonsDisabled(true);
       statusMsg.className = 'text-xs font-mono text-center text-[var(--theme-text-muted)]';
       statusMsg.innerText = action === 'reject' ? 'Marking rejected...' : 'Restoring to queue...';
 
@@ -980,7 +1103,7 @@ const catalogData = [...photoItems, ...swsItems];
         statusMsg.className = 'text-xs font-mono text-center text-red-400';
         statusMsg.innerText = `Error: ${err.message}`;
       } finally {
-        rejectBtn.disabled = false;
+        setDecisionButtonsDisabled(false);
       }
     });
 

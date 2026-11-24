@@ -18,13 +18,14 @@ const {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
-    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
-    <!-- Google Fonts: Mid-Century Modern Typography -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=Italiana&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Self-Hosted Mid-Century Modern Typography -->
+    <link rel="stylesheet" href="/fonts/fonts.css">
+      <meta name="p:domain_verify" content="10f6c4e5aed5a17a4af78dc54140236c" />
+    <script defer src="/stats/script.js" data-website-id="a1a40000-7407-4000-8000-a1a400007407" data-host-url="/stats" onerror="this.onerror=null;var s=document.createElement('script');s.defer=true;s.src='https://analytics.alanwoodyard.com/script.js';s.setAttribute('data-website-id','a1a40000-7407-4000-8000-a1a400007407');document.head.appendChild(s);"></script>
   </head>
 
   <body 
@@ -41,6 +42,53 @@ const {
     --font-serif: 'Italiana', serif;
     --font-sans: 'DM Sans', sans-serif;
     --font-mono: 'Space Mono', monospace;
+    /* AWP design tokens (holiday banners resolve only through --awp-*) */
+    --awp-surface: var(--theme-surface);
+    --awp-text: var(--theme-text);
+    --awp-text-muted: var(--theme-text-muted);
+    --awp-border: var(--theme-border);
+    --awp-accent: var(--theme-accent);
+    --holiday-banner-bg: var(--awp-surface);
+    --holiday-banner-text: var(--awp-text);
+    --holiday-banner-muted: var(--awp-text-muted);
+    --holiday-banner-border: var(--awp-border);
+  }
+
+  .holiday-ship-banner {
+    margin: 0;
+    padding: 0.55rem 1.25rem;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1.45;
+    color: var(--awp-text);
+    background: var(--awp-surface);
+    border-bottom: 1px solid var(--awp-border);
+  }
+
+  .holiday-ship-banner strong {
+    color: var(--awp-text);
+    font-weight: 700;
+  }
+
+  .holiday-ship-note {
+    margin: 0.75rem 0 0;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    line-height: 1.5;
+    color: var(--awp-text-muted);
+    background: var(--awp-surface);
+    border: 1px solid var(--awp-border);
+  }
+
+  .holiday-ship-note strong {
+    color: var(--awp-text);
+    font-weight: 700;
   }
 
   /* 1. WALNUT & TEAK (Warm, rich woodgrain dusk - Artwork viewing & Checkout) */

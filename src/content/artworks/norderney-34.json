@@ -1,0 +1,54 @@
+{
+  "id": "norderney-34",
+  "title": "Norderney 34",
+  "caption": "",
+  "description": "Norderney 34 by Alan Woodyard. Archival fine-art edition.",
+  "mood": "all",
+  "collections": [
+    "germany",
+    "seascape"
+  ],
+  "tags": [
+    "fine art",
+    "photography",
+    "germany",
+    "beach",
+    "seascape",
+    "baltic"
+  ],
+  "solo_display": true,
+  "master_file": "assets/source-masters/norderney-34.tif",
+  "sha256": "570b904a29954fe0c3aef8f852a902bff3a8e358b59fb61e14b2b355c91078cd",
+  "version": 1,
+  "display": {
+    "watermark": "none"
+  },
+  "capture": {
+    "date": "2026-11-10",
+    "location": "Germany Coast",
+    "camera": "",
+    "lens": "",
+    "settings": {},
+    "native_dimensions": {
+      "width": 4032,
+      "height": 2268
+    },
+    "aspect_ratio": "16:9"
+  },
+  "merch_approved": [],
+  "merch_crops": {},
+  "print_variants": [
+    {
+      "sku": "prodigi:rag-16x24",
+      "substrate": "Hahnemühle Photo Rag",
+      "size": "16x24",
+      "price_cents": 19500
+    },
+    {
+      "sku": "prodigi:rag-24x36",
+      "substrate": "Hahnemühle Photo Rag",
+      "size": "24x36",
+      "price_cents": 34000
+    }
+  ]
+}

@@ -25,6 +25,15 @@ const sessionId = Astro.url.searchParams.get('session_id') || '';
       We've received your order and are getting it prepared. You'll receive an email confirmation shortly, followed by tracking info as soon as your package ships.
     </p>
 
+    <p class="holiday-ship-note max-w-lg mb-8">
+      <strong>Order by Dec. 7 for economy, or Dec. 9 for standard, for Christmas Delivery.&nbsp;</strong>
+      Contiguous-US orders submitted by Dec. 7 for economy shipping, or by Dec. 9 for standard shipping, have the best chance of arrival by Dec. 24. This is not a delivery guarantee. Printify adds a $0.40 US shipping surcharge from Oct. 15, 2026 through Jan. 17, 2027. Alaska, Hawaii, and US territories need extra transit time.
+    </p>
+
+    <p class="text-xs font-sans text-[var(--theme-text-muted)] max-w-lg leading-relaxed mb-8">
+      Orders mixing archival prints with studio merchandise may arrive in separate tracked parcels. All items are produced to order from the studio in Katy, Texas. To request cancellation before production begins, email <a href="mailto:studio@alanwoodyard.photo" class="text-[var(--theme-accent)] hover:underline">studio@alanwoodyard.photo</a> with your order reference.
+    </p>
+
     {sessionId && (
       <div class="p-4 border border-[var(--theme-border)] bg-[var(--theme-surface)] font-mono text-xs text-[var(--theme-text-muted)] mb-8">
         Order Reference: <span class="text-[var(--theme-text)]">{sessionId}</span>

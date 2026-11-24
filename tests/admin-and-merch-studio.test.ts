@@ -1,10 +1,30 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { GET, POST } from '../src/pages/api/approve-merch';
+import { GET, POST, __setSessionKvForTests } from '../src/pages/api/approve-merch';
+import {
+  RATIO_KEYS,
+  artworkQueueStatus,
+  cropDecisionForRatio,
+} from '../src/lib/merch-studio-shared';
+import {
+  decideAdminAccess,
+  normalizeAdminPath,
+  safeDecodePathname,
+} from '../src/lib/admin-session';
 import fs from 'node:fs';
 import path from 'node:path';
 
 const MASTER_PASSWORD = '30S!g%zlxg&gJ2is';
+
+function withMockSessionKv<T>(
+  mockKv: { get: (key: string) => Promise<string | null>; put: (key: string, val: string) => Promise<void> },
+  fn: () => Promise<T>,
+): Promise<T> {
+  __setSessionKvForTests(mockKv);
+  return fn().finally(() => {
+    __setSessionKvForTests(undefined);
+  });
+}
 
 test('POST /api/approve-merch rejects invalid or missing authToken with HTTP 401', async () => {
   const reqNoAuth = new Request('http://localhost:4321/api/approve-merch', {
@@ -16,7 +36,7 @@ test('POST /api/approve-merch rejects invalid or missing authToken with HTTP 401
       crop: { panX: 0, panY: 0, zoom: 1 }
     })
   });
-  const resNoAuth = await POST({ request: reqNoAuth, locals: {} } as any);
+  const resNoAuth = await POST({ request: reqNoAuth } as any);
   assert.equal(resNoAuth.status, 401);
   const dataNoAuth = await resNoAuth.json();
   assert.match(dataNoAuth.error, /Unauthorized/);
@@ -31,8 +51,35 @@ test('POST /api/approve-merch rejects invalid or missing authToken with HTTP 401
       authToken: 'wrong-pass'
     })
   });
-  const resBadAuth = await POST({ request: reqBadAuth, locals: {} } as any);
+  const resBadAuth = await POST({ request: reqBadAuth } as any);
   assert.equal(resBadAuth.status, 401);
+});
+
+test('POST /api/approve-merch requires a known ratio to reject one crop', async () => {
+  const missingRatio = new Request('http://localhost:4321/api/approve-merch', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      authToken: MASTER_PASSWORD,
+      artworkId: 'a-dock-mono',
+      action: 'reject-crop'
+    })
+  });
+  const missingRes = await POST({ request: missingRatio } as any);
+  assert.equal(missingRes.status, 400);
+
+  const unknownRatio = new Request('http://localhost:4321/api/approve-merch', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      authToken: MASTER_PASSWORD,
+      artworkId: 'a-dock-mono',
+      action: 'reject-crop',
+      ratioKey: '9:16'
+    })
+  });
+  const unknownRes = await POST({ request: unknownRatio } as any);
+  assert.equal(unknownRes.status, 400);
 });
 
 test('POST /api/approve-merch returns 400 when missing required parameters', async () => {
@@ -45,7 +92,7 @@ test('POST /api/approve-merch returns 400 when missing required parameters', asy
       // missing ratioKey and crop
     })
   });
-  const res = await POST({ request: req, locals: {} } as any);
+  const res = await POST({ request: req } as any);
   assert.equal(res.status, 400);
 });
 
@@ -75,32 +122,26 @@ test('POST /api/approve-merch persists to Cloudflare KV when env.SESSION is avai
     })
   });
 
-  const locals = {
-    runtime: {
-      env: {
-        SESSION: mockKv
-      }
-    }
-  };
+  await withMockSessionKv(mockKv, async () => {
+    const res = await POST({ request: req } as any);
+    assert.equal(res.status, 200);
+    const json = await res.json();
+    assert.equal(json.success, true);
+    assert.equal(json.mode, 'cloudflare-kv');
 
-  const res = await POST({ request: req, locals } as any);
-  assert.equal(res.status, 200);
-  const json = await res.json();
-  assert.equal(json.success, true);
-  assert.equal(json.mode, 'cloudflare-kv');
+    // Verify KV storage contents
+    const storedCrop = JSON.parse(mockStorage.get('crops:test-art-kv') || '{}');
+    assert.deepEqual(storedCrop['1:1'], cropData);
 
-  // Verify KV storage contents
-  const storedCrop = JSON.parse(mockStorage.get('crops:test-art-kv') || '{}');
-  assert.deepEqual(storedCrop['1:1'], cropData);
+    const storedList = JSON.parse(mockStorage.get('crops:_modified_list') || '[]');
+    assert.ok(storedList.includes('test-art-kv'));
 
-  const storedList = JSON.parse(mockStorage.get('crops:_modified_list') || '[]');
-  assert.ok(storedList.includes('test-art-kv'));
-
-  // Test GET retrieves crops from KV
-  const getRes = await GET({ locals } as any);
-  assert.equal(getRes.status, 200);
-  const getJson = await getRes.json();
-  assert.deepEqual(getJson['test-art-kv'], { '1:1': cropData });
+    // Test GET retrieves crops from KV
+    const getRes = await GET({} as any);
+    assert.equal(getRes.status, 200);
+    const getJson = await getRes.json();
+    assert.deepEqual(getJson['test-art-kv'], { '1:1': cropData });
+  });
 });
 
 async function withoutLocalMerchFallback<T>(fn: () => Promise<T>): Promise<T> {
@@ -122,17 +163,18 @@ test('GET /api/approve-merch returns 200 {} when KV snapshot and list are missin
       get: async (key: string) => mockStorage.get(key) || null,
       put: async (key: string, val: string) => { mockStorage.set(key, val); }
     };
-    const locals = { runtime: { env: { SESSION: mockKv } } };
 
-    const emptyRes = await GET({ locals } as any);
-    assert.equal(emptyRes.status, 200);
-    assert.deepEqual(await emptyRes.json(), {});
+    await withMockSessionKv(mockKv, async () => {
+      const emptyRes = await GET({} as any);
+      assert.equal(emptyRes.status, 200);
+      assert.deepEqual(await emptyRes.json(), {});
 
-    mockStorage.set('awp_merch_crops', '');
-    mockStorage.set('crops:_modified_list', '[]');
-    const blankRes = await GET({ locals } as any);
-    assert.equal(blankRes.status, 200);
-    assert.deepEqual(await blankRes.json(), {});
+      mockStorage.set('awp_merch_crops', '');
+      mockStorage.set('crops:_modified_list', '[]');
+      const blankRes = await GET({} as any);
+      assert.equal(blankRes.status, 200);
+      assert.deepEqual(await blankRes.json(), {});
+    });
   });
 });
 
@@ -146,11 +188,12 @@ test('GET /api/approve-merch returns 200 JSON when snapshot or list JSON is malf
       get: async (key: string) => mockStorage.get(key) || null,
       put: async (key: string, val: string) => { mockStorage.set(key, val); }
     };
-    const locals = { runtime: { env: { SESSION: mockKv } } };
 
-    const res = await GET({ locals } as any);
-    assert.equal(res.status, 200);
-    assert.deepEqual(await res.json(), {});
+    await withMockSessionKv(mockKv, async () => {
+      const res = await GET({} as any);
+      assert.equal(res.status, 200);
+      assert.deepEqual(await res.json(), {});
+    });
   });
 });
 
@@ -164,13 +207,14 @@ test('GET /api/approve-merch skips corrupt crop entries and still returns 200', 
     get: async (key: string) => mockStorage.get(key) || null,
     put: async (key: string, val: string) => { mockStorage.set(key, val); }
   };
-  const locals = { runtime: { env: { SESSION: mockKv } } };
 
-  const res = await GET({ locals } as any);
-  assert.equal(res.status, 200);
-  const json = await res.json();
-  assert.deepEqual(json['good-art'], { '1:1': { panX: 1, panY: 2, zoom: 1.1 } });
-  assert.equal(json['bad-art'], undefined);
+  await withMockSessionKv(mockKv, async () => {
+    const res = await GET({} as any);
+    assert.equal(res.status, 200);
+    const json = await res.json();
+    assert.deepEqual(json['good-art'], { '1:1': { panX: 1, panY: 2, zoom: 1.1 } });
+    assert.equal(json['bad-art'], undefined);
+  });
 });
 
 test('GET /api/approve-merch returns 200 {} when KV get throws (Workers-style failure)', async () => {
@@ -183,11 +227,12 @@ test('GET /api/approve-merch returns 200 {} when KV get throws (Workers-style fa
         throw new Error('KV unavailable');
       }
     };
-    const locals = { runtime: { env: { SESSION: mockKv } } };
 
-    const res = await GET({ locals } as any);
-    assert.equal(res.status, 200);
-    assert.deepEqual(await res.json(), {});
+    await withMockSessionKv(mockKv, async () => {
+      const res = await GET({} as any);
+      assert.equal(res.status, 200);
+      assert.deepEqual(await res.json(), {});
+    });
   });
 });
 
@@ -198,45 +243,167 @@ test('POST /api/approve-merch marks item rejected and restores it cleanly in Clo
     put: async (key: string, val: string) => { mockStorage.set(key, val); }
   };
 
-  const locals = { runtime: { env: { SESSION: mockKv } } };
-
-  const rejRes = await POST({
-    request: new Request('http://localhost:4321/api/approve-merch', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        artworkId: 'sws-retro-neon-dreams-bomber',
-        store: 'sws',
-        action: 'reject',
-        authToken: MASTER_PASSWORD
+  await withMockSessionKv(mockKv, async () => {
+    const rejRes = await POST({
+      request: new Request('http://localhost:4321/api/approve-merch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          artworkId: 'sws-retro-neon-dreams-bomber',
+          store: 'sws',
+          action: 'reject',
+          authToken: MASTER_PASSWORD
+        })
       })
-    }),
-    locals
-  } as any);
-  assert.equal(rejRes.status, 200);
-  const rejJson = await rejRes.json();
-  assert.equal(rejJson.success, true);
-  assert.equal(rejJson.rejected, true);
-  assert.equal(JSON.parse(mockStorage.get('crops:sws-retro-neon-dreams-bomber') || '{}').__rejected, true);
+    } as any);
+    assert.equal(rejRes.status, 200);
+    const rejJson = await rejRes.json();
+    assert.equal(rejJson.success, true);
+    assert.equal(rejJson.rejected, true);
+    assert.equal(JSON.parse(mockStorage.get('crops:sws-retro-neon-dreams-bomber') || '{}').__rejected, true);
 
-  const restoreRes = await POST({
-    request: new Request('http://localhost:4321/api/approve-merch', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        artworkId: 'sws-retro-neon-dreams-bomber',
-        store: 'sws',
-        action: 'unreject',
-        authToken: MASTER_PASSWORD
+    const restoreRes = await POST({
+      request: new Request('http://localhost:4321/api/approve-merch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          artworkId: 'sws-retro-neon-dreams-bomber',
+          store: 'sws',
+          action: 'unreject',
+          authToken: MASTER_PASSWORD
+        })
       })
-    }),
-    locals
-  } as any);
-  assert.equal(restoreRes.status, 200);
-  const restoreJson = await restoreRes.json();
-  assert.equal(restoreJson.success, true);
-  assert.equal(restoreJson.rejected, false);
-  assert.equal(JSON.parse(mockStorage.get('crops:sws-retro-neon-dreams-bomber') || '{}').__rejected, undefined);
+    } as any);
+    assert.equal(restoreRes.status, 200);
+    const restoreJson = await restoreRes.json();
+    assert.equal(restoreJson.success, true);
+    assert.equal(restoreJson.rejected, false);
+    assert.equal(JSON.parse(mockStorage.get('crops:sws-retro-neon-dreams-bomber') || '{}').__rejected, undefined);
+  });
+});
+
+test('POST /api/approve-merch stores a per-crop rejection without rejecting the SKU', async () => {
+  const mockStorage = new Map<string, string>();
+  const mockKv = {
+    get: async (key: string) => mockStorage.get(key) || null,
+    put: async (key: string, val: string) => { mockStorage.set(key, val); }
+  };
+  const savedCrop = {
+    panX: 4,
+    panY: 1,
+    zoom: 1.2,
+    approved_products: ['rag-16x24'],
+    approved_at: '2026-01-01T00:00:00.000Z'
+  };
+
+  await withMockSessionKv(mockKv, async () => {
+    const saveRes = await POST({
+      request: new Request('http://localhost:4321/api/approve-merch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          artworkId: 'crop-decision-art',
+          ratioKey: '2:3',
+          crop: savedCrop,
+          authToken: MASTER_PASSWORD
+        })
+      })
+    } as any);
+    assert.equal(saveRes.status, 200);
+
+    const rejectRes = await POST({
+      request: new Request('http://localhost:4321/api/approve-merch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          artworkId: 'crop-decision-art',
+          ratioKey: '2:3',
+          action: 'reject-crop',
+          authToken: MASTER_PASSWORD
+        })
+      })
+    } as any);
+    assert.equal(rejectRes.status, 200);
+    const rejectJson = await rejectRes.json();
+    assert.equal(rejectJson.success, true);
+    assert.equal(rejectJson.cropDecision, 'rejected');
+    assert.equal(rejectJson.rejected, undefined);
+
+    const stored = JSON.parse(mockStorage.get('crops:crop-decision-art') || '{}');
+    assert.equal(stored.__rejected, undefined);
+    assert.equal(stored['2:3'].rejected, true);
+    assert.equal(stored['2:3'].zoom, undefined);
+    assert.equal(stored['2:3'].approved_products, undefined);
+
+    const otherRes = await POST({
+      request: new Request('http://localhost:4321/api/approve-merch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          artworkId: 'crop-decision-art',
+          ratioKey: '1:1',
+          crop: { panX: 0, panY: 0, zoom: 1, approved_products: ['printify-coasters'] },
+          authToken: MASTER_PASSWORD
+        })
+      })
+    } as any);
+    assert.equal(otherRes.status, 200);
+    const both = JSON.parse(mockStorage.get('crops:crop-decision-art') || '{}');
+    assert.equal(both['2:3'].rejected, true);
+    assert.equal(both['1:1'].zoom, 1);
+    assert.equal(both.__rejected, undefined);
+
+    const restoreRes = await POST({
+      request: new Request('http://localhost:4321/api/approve-merch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          artworkId: 'crop-decision-art',
+          ratioKey: '2:3',
+          action: 'restore-crop',
+          authToken: MASTER_PASSWORD
+        })
+      })
+    } as any);
+    assert.equal(restoreRes.status, 200);
+    const restored = JSON.parse(mockStorage.get('crops:crop-decision-art') || '{}');
+    assert.equal(restored['2:3'], undefined);
+    assert.equal(restored['1:1'].zoom, 1);
+
+    const getRes = await GET({} as any);
+    const dumped = await getRes.json();
+    assert.equal(dumped['crop-decision-art']['1:1'].zoom, 1);
+    assert.equal(dumped['crop-decision-art']['2:3'], undefined);
+  });
+});
+
+function decidedCropSet(overrides: Record<string, unknown> = {}) {
+  const crops: Record<string, unknown> = {};
+  for (const key of RATIO_KEYS) {
+    crops[key] = { rejected: true, rejected_at: '2026-01-01T00:00:00.000Z' };
+  }
+  return { ...crops, ...overrides };
+}
+
+test('artwork crop set stays needs_review until every ratio is accepted or rejected', () => {
+  assert.equal(artworkQueueStatus(null), 'needs_review');
+  assert.equal(artworkQueueStatus({ crops: {} }), 'needs_review');
+  assert.equal(artworkQueueStatus({
+    crops: {
+      '1:1': { panX: 0, panY: 0, zoom: 1, approved_products: ['printify-coasters'], approved_at: '2026-01-01T00:00:00.000Z' }
+    }
+  }), 'needs_review');
+  assert.equal(cropDecisionForRatio({ '2:3': { rejected: true } }, '2:3'), 'rejected');
+  assert.equal(cropDecisionForRatio({ '2:3': { panX: 1, panY: 0, zoom: 1.1 } }, '2:3'), 'accepted');
+  assert.equal(cropDecisionForRatio({}, '2:3'), 'pending');
+
+  const mixed = decidedCropSet({
+    '2:3': { panX: 1, panY: 2, zoom: 1.1, approved_products: ['rag-16x24'], approved_at: '2026-01-01T00:00:00.000Z' }
+  });
+  assert.equal(artworkQueueStatus({ crops: mixed }), 'approved');
+  assert.equal(artworkQueueStatus({ crops: decidedCropSet() }), 'approved');
+  assert.equal(artworkQueueStatus({ rejected: true, crops: mixed }), 'rejected');
+  assert.equal(artworkQueueStatus({ crops: { ...mixed, __rejected: true } }), 'rejected');
 });
 
 test('POST /api/approve-merch falls back to local disk persistence when running in Node mode without KV', async () => {
@@ -264,7 +431,7 @@ test('POST /api/approve-merch falls back to local disk persistence when running 
       })
     });
 
-    const res = await POST({ request: req, locals: {} } as any);
+    const res = await POST({ request: req } as any);
     assert.equal(res.status, 200);
     const json = await res.json();
     assert.equal(json.success, true);
@@ -275,6 +442,50 @@ test('POST /api/approve-merch falls back to local disk persistence when running 
     assert.deepEqual(updated.merch_crops['1:1'], cropData);
     assert.ok(updated.merch_approved.includes('printify-coasters'));
     assert.ok(updated.merch_approved.includes('printful-tote'));
+
+    const rejectReq = new Request('http://localhost:4321/api/approve-merch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        artworkId,
+        ratioKey: '4:5',
+        action: 'reject-crop',
+        authToken: MASTER_PASSWORD
+      })
+    });
+    const rejectRes = await POST({ request: rejectReq } as any);
+    assert.equal(rejectRes.status, 200);
+    const rejectJson = await rejectRes.json();
+    assert.equal(rejectJson.success, true);
+    assert.equal(rejectJson.cropDecision, 'rejected');
+    assert.equal(rejectJson.rejected, undefined);
+
+    const rejectedFile = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    assert.equal(rejectedFile.merch_crops['4:5'].rejected, true);
+    assert.equal(typeof rejectedFile.merch_crops['4:5'].rejected_at, 'string');
+    assert.equal(rejectedFile.merch_crops['4:5'].zoom, undefined);
+    assert.deepEqual(rejectedFile.merch_crops['1:1'], cropData);
+    assert.equal(rejectedFile.merch_rejected, undefined);
+    assert.ok(rejectedFile.merch_approved.includes('printify-coasters'));
+    assert.equal(rejectedFile.merch_approved.includes('4:5'), false);
+
+    const restoreReq = new Request('http://localhost:4321/api/approve-merch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        artworkId,
+        ratioKey: '4:5',
+        action: 'restore-crop',
+        authToken: MASTER_PASSWORD
+      })
+    });
+    const restoreRes = await POST({ request: restoreReq } as any);
+    assert.equal(restoreRes.status, 200);
+    const restoreJson = await restoreRes.json();
+    assert.equal(restoreJson.cropDecision, 'pending');
+    const restoredFile = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    assert.equal(restoredFile.merch_crops['4:5'], undefined);
+    assert.deepEqual(restoredFile.merch_crops['1:1'], cropData);
   } finally {
     // Restore original file
     fs.writeFileSync(filePath, originalContent, 'utf8');
@@ -352,6 +563,49 @@ test('Merch studio framing controls stay in the sidebar for desktop and touch', 
   assert.doesNotMatch(framing, /\([^)]*\)\s*\(/);
 });
 
+test('Merch studio queue can show every item without a status filter', () => {
+  const studio = fs.readFileSync('src/pages/admin/merch-studio.astro', 'utf8');
+  const queueBar = studio.slice(
+    studio.indexOf('Queue Status Tabs'),
+    studio.indexOf('Prev / Dropdown / Next Stepper'),
+  );
+  assert.match(queueBar, /data-queue="all"/);
+  assert.match(queueBar, /id="count-queue-all"/);
+  assert.match(queueBar, />All \(/);
+  assert.match(queueBar, /data-queue="needs_review"/);
+  assert.match(queueBar, /data-queue="approved"/);
+  assert.match(queueBar, /data-queue="rejected"/);
+  const rebuild = studio.slice(studio.indexOf('function rebuildQueue'), studio.indexOf('function updateQueueBadges'));
+  assert.match(rebuild, /if \(activeQueueFilter === 'all'\) return true;/);
+  assert.match(rebuild, /return getItemStatus\(item\) === activeQueueFilter;/);
+  assert.match(studio, /--awp-surface/);
+  assert.match(studio, /--awp-text/);
+  assert.doesNotMatch(queueBar, /\u2014|\u2013/);
+  assert.doesNotMatch(queueBar, /\([^)]*\)\s*\(/);
+});
+
+test('Merch studio can accept or reject each ratio without rejecting the SKU', () => {
+  const studio = fs.readFileSync('src/pages/admin/merch-studio.astro', 'utf8');
+  const actions = studio.slice(studio.indexOf('Primary Action Strip'), studio.indexOf('Left Controls Panel'));
+  assert.match(actions, /id="save-btn"/);
+  assert.match(actions, /id="reject-crop-btn"/);
+  assert.match(actions, /&times; Reject Crop/);
+  assert.match(actions, /id="reject-btn"/);
+  assert.match(actions, /&times; Reject SKU/);
+  assert.match(actions, /--awp-surface/);
+  assert.match(actions, /--awp-text/);
+  assert.match(actions, /--awp-border/);
+  assert.match(actions, /--awp-accent/);
+  assert.match(studio, /function cropDecisionForRatio\(crops, ratioKey\)/);
+  assert.match(studio, /function getItemStatus\(item\) \{[\s\S]*crops\.__rejected === true[\s\S]*RATIO_KEYS\.some\(\(key\) => cropDecisionForRatio\(crops, key\) === 'pending'\)[\s\S]*return pending \? 'needs_review' : 'approved';/);
+  assert.match(studio, /action = decision === 'rejected' \? 'restore-crop' : 'reject-crop'/);
+  assert.match(studio, /const action = isCurrentlyRejected \? 'unreject' : 'reject'/);
+  assert.match(studio, /class="ratio-pill-no/);
+  assert.doesNotMatch(actions, /\u2014|\u2013/);
+  assert.doesNotMatch(actions, /\([^)]*\)\s*\(/);
+  assert.doesNotMatch(actions, /seamless|leverage|robust|elevate|empower|unlock/i);
+});
+
 test('Internal admin links strictly use trailing slashes to avoid 307 redirects', () => {
   const loginAstro = fs.readFileSync('src/pages/admin/login.astro', 'utf8');
   assert.ok(loginAstro.includes('/admin/merch-studio/'));
@@ -362,4 +616,56 @@ test('Internal admin links strictly use trailing slashes to avoid 307 redirects'
 
   const syndicationAstro = fs.readFileSync('src/pages/admin/syndication.astro', 'utf8');
   assert.ok(syndicationAstro.includes('/admin/merch-studio/'));
+});
+
+test('safeDecodePathname decodes percent-encoded admin path variants', () => {
+  assert.equal(safeDecodePathname('/%61dmin/'), '/admin/');
+  assert.equal(safeDecodePathname('/admin/merch-studio/'), '/admin/merch-studio/');
+  // Double-encoded variants unwrap too (%2561 decodes to %61, then to 'a').
+  assert.equal(safeDecodePathname('/%2561dmin/'), '/admin/');
+  // A malformed percent sequence falls back instead of throwing.
+  assert.equal(safeDecodePathname('/admin/%'), '/admin/%');
+  assert.doesNotThrow(() => safeDecodePathname('/admin/%E0%A4%A'));
+});
+
+test('/%61dmin/ cannot bypass the admin gate once the pathname is decoded before the access check', async () => {
+  const encodedPath = '/%61dmin/merch-studio/';
+  const literalPath = '/admin/merch-studio/';
+
+  // Decoding first, as the middleware now does, routes the encoded path through
+  // the same gate as the literal /admin/ path.
+  const decoded = safeDecodePathname(encodedPath);
+  assert.equal(decoded, literalPath);
+  assert.equal(normalizeAdminPath(decoded).startsWith('/admin'), true);
+
+  const decidedFromDecoded = await decideAdminAccess({
+    pathname: decoded,
+    method: 'GET',
+    adminPassword: MASTER_PASSWORD,
+    sessionToken: undefined,
+  });
+  const decidedFromLiteral = await decideAdminAccess({
+    pathname: literalPath,
+    method: 'GET',
+    adminPassword: MASTER_PASSWORD,
+    sessionToken: undefined,
+  });
+  assert.equal(decidedFromDecoded.allow, false);
+  assert.deepEqual(decidedFromDecoded, decidedFromLiteral);
+});
+
+test('middleware decodes the pathname before the admin gate and attaches noindex, no-store headers to /admin/* responses', () => {
+  const middleware = fs.readFileSync('src/middleware.ts', 'utf8');
+  assert.match(middleware, /safeDecodePathname/);
+  assert.match(middleware, /decideAdminAccess\(\{\s*pathname:\s*decodedPathname/);
+  assert.match(middleware, /X-Robots-Tag['"],\s*['"]noindex, nofollow/);
+  assert.match(middleware, /Cache-Control['"],\s*['"]no-store/);
+});
+
+test('public/robots.txt disallows admin, api, checkout, and order-confirmation', () => {
+  const robots = fs.readFileSync('public/robots.txt', 'utf8');
+  assert.match(robots, /Disallow:\s*\/admin\//);
+  assert.match(robots, /Disallow:\s*\/api\//);
+  assert.match(robots, /Disallow:\s*\/checkout\//);
+  assert.match(robots, /Disallow:\s*\/order-confirmation\//);
 });

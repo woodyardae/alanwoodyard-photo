@@ -1,6 +1,8 @@
 /**
  * Cloudflare Pages Function: Stripe webhook listener.
- * Fail-closed signature verification; routes paid orders through src/lib/fulfillment.
+ * Fail-closed signature verification via handleStripeWebhook (missing/invalid
+ * stripe-signature → HTTP 400). Do not restore the legacy soft-open pattern of
+ * only verifying when both secret and signature are present.
  */
 
 import pricingMatrix from '../../src/content/pricing-matrix.json';
@@ -22,10 +24,10 @@ export async function onRequestPost(context: { request: Request; env: StripeWebh
       PRINT_MASTERS_BASE_URL: context.env.PRINT_MASTERS_BASE_URL,
       PRINT_MASTERS_EXTENSION: context.env.PRINT_MASTERS_EXTENSION,
       ALLOW_CLEAN_PREVIEW_ASSETS: context.env.ALLOW_CLEAN_PREVIEW_ASSETS,
-      RESEND_API_KEY: context.env.RESEND_API_KEY,
-      OPERATOR_EMAIL: context.env.OPERATOR_EMAIL,
-      RESEND_FROM: context.env.RESEND_FROM,
+      TELEGRAM_BOT_TOKEN: context.env.TELEGRAM_BOT_TOKEN,
+      TELEGRAM_CHAT_ID: context.env.TELEGRAM_CHAT_ID,
       pricingMatrix: pricingMatrix as Record<string, PricingMatrixEntry>,
+      SESSION: context.env.SESSION,
       // Never pass ALLOW_MOCK_DISPATCH from production webhook path.
     });
 

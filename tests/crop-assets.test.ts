@@ -85,6 +85,19 @@ test('size and ratio metadata select the crop master; uncropped raw file needs e
 
   const sized = resolveCropSelection({ size: '16x24', sku: 'GLOBAL-FAP-16x24', crops: {} });
   assert.equal(sized.ok, true);
+  const rejectedRatio = resolveCropSelection({
+    size: '16x24',
+    sku: 'GLOBAL-FAP-16x24',
+    crops: { '2:3': { rejected: true, rejected_at: '2026-01-01T00:00:00.000Z' } },
+  });
+  assert.equal(rejectedRatio.ok, false);
+  if (!rejectedRatio.ok) assert.match(rejectedRatio.error, /rejected for this image/i);
+  const acceptedRatio = resolveCropSelection({
+    size: '16x24',
+    sku: 'GLOBAL-FAP-16x24',
+    crops: { '2:3': { panX: 0, panY: 0, zoom: 1.1, approved_products: ['rag-16x24'] } },
+  });
+  assert.equal(acceptedRatio.ok, true);
   if (!sized.ok) return;
   assert.equal(sized.crop, '2-3');
   assert.equal(sized.ratio, '2:3');

@@ -14,6 +14,7 @@ declare global {
     umami?: {
       track: (eventName: string, eventData?: Record<string, unknown>) => void;
     };
+    dispatchAnalyticsEvent?: (eventName: string, eventData?: Record<string, unknown>) => void;
   }
 }
 
@@ -50,7 +51,7 @@ export interface InitiateCheckoutData {
 /**
  * Safe Umami event dispatcher
  */
-function safeTrack(eventName: string, eventData: Record<string, unknown>) {
+function safeTrack(eventName: string, eventData: Record<string, unknown> = {}) {
   if (typeof window !== 'undefined' && window.umami && typeof window.umami.track === 'function') {
     try {
       window.umami.track(eventName, eventData);
@@ -63,6 +64,10 @@ function safeTrack(eventName: string, eventData: Record<string, unknown>) {
       console.log(`[Telemetry Event: ${eventName}]`, eventData);
     }
   }
+}
+
+if (typeof window !== 'undefined' && typeof window.dispatchAnalyticsEvent !== 'function') {
+  window.dispatchAnalyticsEvent = safeTrack;
 }
 
 export function trackViewArtwork(data: ViewArtworkData) {

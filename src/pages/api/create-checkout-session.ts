@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 // @ts-ignore
 import { env } from 'cloudflare:workers';
 import pricingMatrix from '../../content/pricing-matrix.json';
+import { parseAllowedCountriesConfig, parseEnabledVendorsConfig } from '../../lib/checkout-catalog';
 import {
   createEmbeddedCheckoutSession,
   type CheckoutCartItem,
@@ -25,6 +26,7 @@ export const POST: APIRoute = async (context) => {
     const body = (await request.json()) as {
       items: CheckoutCartItem[];
       customerEmail?: string;
+      nonce?: string;
     };
 
     const result = await createEmbeddedCheckoutSession({
@@ -38,6 +40,9 @@ export const POST: APIRoute = async (context) => {
       printMastersBaseUrl: readEnv('PRINT_MASTERS_BASE_URL'),
       printMastersExtension: readEnv('PRINT_MASTERS_EXTENSION'),
       allowCleanPreviewAssets: readEnv('ALLOW_CLEAN_PREVIEW_ASSETS') === '1',
+      enabledVendors: parseEnabledVendorsConfig(readEnv('CHECKOUT_ENABLED_VENDORS')),
+      allowedCountries: parseAllowedCountriesConfig(readEnv('CHECKOUT_ALLOWED_COUNTRIES')),
+      attemptNonce: body.nonce,
     });
 
     return new Response(JSON.stringify(result.body), {

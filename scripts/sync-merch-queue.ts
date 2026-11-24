@@ -1,6 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
+import { artworkQueueStatus } from '../src/lib/merch-studio-shared';
+import { findSeeWhatSticksDir, requireSeeWhatSticksRoot } from './sws-paths';
 
 export interface SwsQueueItem {
   id: string;
@@ -17,7 +19,6 @@ export interface SwsQueueItem {
   status: 'needs_review' | 'approved' | 'rejected';
 }
 
-const SWS_REPO_ROOT = process.env.SWS_REPO_ROOT || 'C:/dev/repos/the_sweatshop';
 const OUT_IMG_DIR = path.resolve('public/images/sws-queue');
 const OUT_JSON_PATH = path.resolve('src/data/sws-queue.json');
 const VALID_EXTS = new Set(['.png', '.jpg', '.jpeg', '.webp']);
@@ -60,7 +61,7 @@ interface DiscoveredDesign {
   relSource: string;
 }
 
-function discoverSwsDesigns(): DiscoveredDesign[] {
+function discoverSwsDesigns(swsRepoRoot: string): DiscoveredDesign[] {
   const items: DiscoveredDesign[] = [];
   const usedIds = new Set<string>();
 
@@ -76,18 +77,18 @@ function discoverSwsDesigns(): DiscoveredDesign[] {
       title,
       category,
       absPath,
-      relSource: path.relative(SWS_REPO_ROOT, absPath).replace(/\\/g, '/'),
+      relSource: path.relative(swsRepoRoot, absPath).replace(/\\/g, '/'),
     });
   };
 
-  // 1. Canonical 4-SKU print-ready masters in data/products.json
-  const rootProductsPath = path.join(SWS_REPO_ROOT, 'data/products.json');
+  // 1. Canonical print-ready masters in the SeeWhatSticks checkout data/products.json
+  const rootProductsPath = path.join(swsRepoRoot, 'data/products.json');
   if (fs.existsSync(rootProductsPath)) {
     const products = JSON.parse(fs.readFileSync(rootProductsPath, 'utf8').replace(/^\uFEFF/, ''));
     for (const prod of products) {
       const relAsset = prod.print_ready_asset || prod.mockup_asset;
       if (!relAsset) continue;
-      const absPath = path.join(SWS_REPO_ROOT, relAsset);
+      const absPath = path.join(swsRepoRoot, relAsset);
       if (fs.existsSync(absPath)) {
         const id = `sws-master-${sanitizeSlug(prod.slug || prod.sku || path.parse(absPath).name)}`;
         pushUnique(id, prod.title || titleFromFilename(absPath), prod.pillar || 'Print-Ready Master', absPath);
@@ -95,15 +96,15 @@ function discoverSwsDesigns(): DiscoveredDesign[] {
     }
   }
 
-  // 2. Retro Graphic Pack in web/seewhatsticks-portal/assets/generated/
-  const retroDir = path.join(SWS_REPO_ROOT, 'web/seewhatsticks-portal/assets/generated');
+  // 2. Retro pack in seewhatsticks-portal/assets/generated
+  const retroDir = path.join(swsRepoRoot, 'web/seewhatsticks-portal/assets/generated');
   for (const absPath of walkImages(retroDir)) {
     const id = `sws-retro-${sanitizeSlug(path.parse(absPath).name)}`;
     pushUnique(id, titleFromFilename(absPath), 'Retro Pack', absPath);
   }
 
-  // 3. Niche POD Packs in apps/the-sweatshop/pod-assets/
-  const podAssetsDir = path.join(SWS_REPO_ROOT, 'apps/the-sweatshop/pod-assets');
+  // 3. Niche POD packs stored with the SeeWhatSticks checkout
+  const podAssetsDir = findSeeWhatSticksDir(swsRepoRoot, 'pod-assets');
   for (const absPath of walkImages(podAssetsDir)) {
     const rel = path.relative(podAssetsDir, absPath).replace(/\\/g, '/');
     const folderParts = rel.split('/');
@@ -113,8 +114,8 @@ function discoverSwsDesigns(): DiscoveredDesign[] {
     pushUnique(id, titleFromFilename(absPath), topFolder, absPath);
   }
 
-  // 4. Generated batch outputs & revisions in apps/the-sweatshop/public/outputs/
-  const outputsDir = path.join(SWS_REPO_ROOT, 'apps/the-sweatshop/public/outputs');
+  // 4. Generated batch outputs stored with the SeeWhatSticks checkout
+  const outputsDir = findSeeWhatSticksDir(swsRepoRoot, path.join('public', 'outputs'));
   for (const absPath of walkImages(outputsDir)) {
     const id = `sws-batch-${sanitizeSlug(path.parse(absPath).name)}`;
     pushUnique(id, titleFromFilename(absPath), 'Batch Output', absPath);
@@ -124,9 +125,7 @@ function discoverSwsDesigns(): DiscoveredDesign[] {
 }
 
 async function main() {
-  if (!fs.existsSync(SWS_REPO_ROOT)) {
-    throw new Error(`SeeWhatSticks repo not found at ${SWS_REPO_ROOT}`);
-  }
+  const swsRepoRoot = requireSeeWhatSticksRoot();
   if (!fs.existsSync(OUT_IMG_DIR)) {
     fs.mkdirSync(OUT_IMG_DIR, { recursive: true });
   }
@@ -147,7 +146,7 @@ async function main() {
     }
   }
 
-  const discovered = discoverSwsDesigns();
+  const discovered = discoverSwsDesigns(swsRepoRoot);
   const outputQueue: SwsQueueItem[] = [];
   let renderedCount = 0;
 
@@ -170,11 +169,7 @@ async function main() {
     const crops = prev?.crops || {};
     const approved = prev?.approved || [];
     const rejected = Boolean(prev?.rejected);
-    const status: SwsQueueItem['status'] = rejected
-      ? 'rejected'
-      : Object.keys(crops).length > 0 || approved.length > 0
-      ? 'approved'
-      : 'needs_review';
+    const status = artworkQueueStatus({ rejected, crops });
 
     outputQueue.push({
       id: d.id,

@@ -11,6 +11,8 @@ import { getPublishedArtworkSlugs } from './artwork-catalog';
 import {
   artworkCropsForSlug,
   catalogUnitAmountCents,
+  describeUnresolvedSku,
+  enabledStorefrontLabs,
   isArtworkSlug,
   labFromVendor,
   mapCategoryToSubstrate,
@@ -51,6 +53,16 @@ export interface CreateCheckoutSessionInput {
   /** Explicit opt-in. Leave unset so labs never receive the clean webp preview. */
   allowCleanPreviewAssets?: boolean;
   publishedSlugs?: ReadonlySet<string>;
+  /** Extra labs from CHECKOUT_ENABLED_VENDORS. Printful and Gelato stay off until named. */
+  enabledVendors?: readonly string[] | null;
+  /** Buyer shipping countries. Defaults to US-only; overridable via CHECKOUT_ALLOWED_COUNTRIES. */
+  allowedCountries?: readonly string[] | null;
+  /**
+   * Per-cart attempt nonce from the client. Combined with the cart contents into a
+   * deterministic Stripe idempotency key so page reloads or double-submits within
+   * the same cart reuse the same Checkout Session instead of creating duplicates.
+   */
+  attemptNonce?: string;
 }
 
 export interface CreateCheckoutSessionResult {
@@ -67,9 +79,18 @@ export interface PreparedCheckoutLine {
   productMetadata: Record<string, string>;
 }
 
+export type CheckoutSkuFailureCode = 'unresolved_sku' | 'unapproved_sku';
+
 export type PrepareCheckoutResult =
   | { ok: true; orderItems: OrderItem[]; lines: PreparedCheckoutLine[] }
-  | { ok: false; status: number; error: string };
+  | {
+      ok: false;
+      status: number;
+      error: string;
+      code?: CheckoutSkuFailureCode;
+      sku?: string;
+      itemId?: string;
+    };
 
 function isPlaceholderSecret(key: string | undefined): boolean {
   return !key || key.includes('placeholder') || key === 'sk_test_placeholder';
@@ -85,7 +106,24 @@ function clientPriceCents(price: number): number | null {
 export type CheckoutAssetConfig = PrintAssetConfig & {
   publishedSlugs?: ReadonlySet<string>;
   artworkCrops?: Record<string, Record<string, unknown>>;
+  enabledVendors?: readonly string[] | null;
 };
+
+function skuFailure(
+  code: CheckoutSkuFailureCode,
+  error: string,
+  item: CheckoutCartItem,
+  sku?: string
+): PrepareCheckoutResult {
+  return {
+    ok: false,
+    status: 400,
+    error,
+    code,
+    sku: (sku || item.sku || '').trim(),
+    itemId: (item.id || '').trim(),
+  };
+}
 
 /** Resolve cart rows to catalog-priced fulfillment items. Rejects unknown SKUs and price mismatches. */
 export function prepareCheckoutCart(
@@ -112,6 +150,7 @@ export function prepareCheckoutCart(
   }
 
   const lines: PreparedCheckoutLine[] = [];
+  const enabledLabs = enabledStorefrontLabs(config.enabledVendors);
 
   for (let index = 0; index < items.length; index++) {
     const item = items[index];
@@ -135,11 +174,7 @@ export function prepareCheckoutCart(
 
     const matrixSku = resolveMatrixSku(item.sku || '', matrix);
     if (!matrixSku) {
-      return {
-        ok: false,
-        status: 400,
-        error: `SKU is not in the pricing matrix: ${item.sku || '(missing)'}`,
-      };
+      return skuFailure('unresolved_sku', describeUnresolvedSku(item.sku || '', matrix), item);
     }
 
     const canonical = matrix[matrixSku];
@@ -147,7 +182,25 @@ export function prepareCheckoutCart(
     const lab = labFromVendor(canonical.vendor);
     const size = normalizeSize(canonical.size || '');
     if (unitPriceCents == null || !lab || !size) {
-      return { ok: false, status: 400, error: `Pricing matrix entry is incomplete: ${matrixSku}` };
+      return skuFailure(
+        'unresolved_sku',
+        `Pricing matrix entry is incomplete: ${matrixSku}`,
+        item,
+        matrixSku
+      );
+    }
+
+    if (!enabledLabs.has(lab)) {
+      const vendorName = (canonical.vendor || '').trim();
+      const reason = vendorName
+        ? `${vendorName} fulfillment is not enabled for this store.`
+        : 'Fulfillment for this lab is not enabled for this store.';
+      return skuFailure(
+        'unapproved_sku',
+        `Cart SKU ${item.sku || matrixSku} is not available. ${reason}`,
+        item,
+        item.sku || matrixSku
+      );
     }
 
     const submitted = clientPriceCents(item.price);
@@ -168,9 +221,9 @@ export function prepareCheckoutCart(
       crops: artworkCropsForSlug(artworkSlug, config.artworkCrops),
     });
     if (!selection.ok) {
-      return { ok: false, status: 400, error: selection.error };
+      return skuFailure('unapproved_sku', selection.error, item);
     }
-    const printAsset = resolvePrintAssetUrl(parsedOrigin.origin, artworkSlug, config, selection.crop);
+    const printAsset = resolvePrintAssetUrl(parsedOrigin.origin, artworkSlug, config, selection.crop, lab);
     if (!printAsset.ok) {
       return { ok: false, status: 400, error: printAsset.error };
     }
@@ -247,6 +300,72 @@ export function buildCheckoutSessionMetadata(orderItems: OrderItem[]): Record<st
   };
 }
 
+const DEFAULT_ALLOWED_COUNTRIES: readonly string[] = ['US'];
+const CHECKOUT_SESSION_EXPIRY_SECONDS = 4 * 60 * 60; // 4 hours, within Stripe's 30min-24h window.
+
+/**
+ * Deterministic idempotency key from the cart contents plus a per-cart attempt nonce.
+ * A page reload or double-submit with the same cart and nonce reuses the same
+ * Stripe Checkout Session instead of creating a duplicate.
+ */
+export async function computeCheckoutIdempotencyKey(
+  items: readonly CheckoutCartItem[],
+  attemptNonce: string
+): Promise<string> {
+  const normalized = items
+    .map((item) => `${item.id}:${item.sku}:${item.quantity}:${item.price}`)
+    .sort()
+    .join('|');
+  const encoder = new TextEncoder();
+  const data = encoder.encode(`${normalized}#${attemptNonce || ''}`);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  const hash = Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('');
+  return `awp_checkout_${hash.slice(0, 32)}`;
+}
+
+/**
+ * Pure Stripe session param builder, kept separate from the network call so the
+ * phone/expiry/shipping-country defaults are unit-testable without hitting Stripe.
+ */
+export function buildStripeSessionParams(
+  prepared: { lines: PreparedCheckoutLine[]; orderItems: OrderItem[] },
+  input: { origin: string; customerEmail?: string; allowedCountries?: readonly string[] | null },
+  nowMs = Date.now()
+): Stripe.Checkout.SessionCreateParams {
+  const allowedCountries =
+    input.allowedCountries && input.allowedCountries.length > 0
+      ? [...input.allowedCountries]
+      : [...DEFAULT_ALLOWED_COUNTRIES];
+
+  const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = prepared.lines.map((line) => ({
+    price_data: {
+      currency: 'usd',
+      unit_amount: line.orderItem.unitPriceCents,
+      product_data: {
+        name: `${line.orderItem.artworkTitle} - ${line.variantTitle}`,
+        metadata: line.productMetadata,
+      },
+    },
+    quantity: line.orderItem.quantity,
+  }));
+
+  return {
+    ui_mode: 'embedded',
+    mode: 'payment',
+    line_items,
+    customer_email: input.customerEmail || undefined,
+    shipping_address_collection: {
+      allowed_countries: allowedCountries as Stripe.Checkout.SessionCreateParams.ShippingAddressCollection.AllowedCountry[],
+    },
+    phone_number_collection: { enabled: true },
+    expires_at: Math.floor(nowMs / 1000) + CHECKOUT_SESSION_EXPIRY_SECONDS,
+    metadata: buildCheckoutSessionMetadata(prepared.orderItems),
+    return_url: `${input.origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`,
+  };
+}
+
 export async function createEmbeddedCheckoutSession(
   input: CreateCheckoutSessionInput
 ): Promise<CreateCheckoutSessionResult> {
@@ -257,11 +376,24 @@ export async function createEmbeddedCheckoutSession(
     printMastersExtension: input.printMastersExtension,
     allowCleanPreviewAssets: input.allowCleanPreviewAssets,
     publishedSlugs: input.publishedSlugs,
+    enabledVendors: input.enabledVendors,
   };
 
   const prepared = prepareCheckoutCart(items, pricingMatrix, origin, assetConfig);
   if (!prepared.ok) {
-    return { status: prepared.status, body: { error: prepared.error } };
+    return {
+      status: prepared.status,
+      body: {
+        error: prepared.error,
+        ...(prepared.code
+          ? {
+              code: prepared.code,
+              sku: prepared.sku || '',
+              itemId: prepared.itemId || '',
+            }
+          : {}),
+      },
+    };
   }
 
   if (isPlaceholderSecret(stripeSecretKey)) {
@@ -292,29 +424,13 @@ export async function createEmbeddedCheckoutSession(
     apiVersion: '2024-12-18.acacia' as any,
   });
 
-  const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = prepared.lines.map((line) => ({
-    price_data: {
-      currency: 'usd',
-      unit_amount: line.orderItem.unitPriceCents,
-      product_data: {
-        name: `${line.orderItem.artworkTitle} - ${line.variantTitle}`,
-        metadata: line.productMetadata,
-      },
-    },
-    quantity: line.orderItem.quantity,
-  }));
-
-  const session = await stripe.checkout.sessions.create({
-    ui_mode: 'embedded',
-    mode: 'payment',
-    line_items,
-    customer_email: customerEmail || undefined,
-    shipping_address_collection: {
-      allowed_countries: ['US', 'CA', 'GB', 'AU', 'DE', 'FR', 'NL', 'DK', 'SE', 'NO', 'CH'],
-    },
-    metadata: buildCheckoutSessionMetadata(prepared.orderItems),
-    return_url: `${origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`,
+  const sessionParams = buildStripeSessionParams(prepared, {
+    origin,
+    customerEmail,
+    allowedCountries: input.allowedCountries,
   });
+  const idempotencyKey = await computeCheckoutIdempotencyKey(items, input.attemptNonce || '');
+  const session = await stripe.checkout.sessions.create(sessionParams, { idempotencyKey });
 
   return {
     status: 200,

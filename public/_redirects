@@ -1,0 +1,16 @@
+# Legacy Fine Art America / Pixels path aliases on the apex storefront.
+# Exact rules before splats. All legacy gallery paths land on /artworks/.
+
+/art                /artworks/            301
+/art/               /artworks/            301
+/shop               /artworks/            301
+/shop/              /artworks/            301
+/featured           /artworks/            301
+/featured/          /artworks/            301
+/collections        /artworks/            301
+/collections/       /artworks/            301
+
+/art/*              /artworks/            301
+/shop/*             /artworks/            301
+/featured/*         /artworks/            301
+/collections/*      /artworks/            301

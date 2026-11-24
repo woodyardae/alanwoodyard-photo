@@ -14,16 +14,27 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 import { cropFileToken, printMasterRelativePath } from '../src/lib/checkout-catalog';
-import { resolveRatio } from '../src/lib/merch-studio-shared';
+import { isRejectedCropValue, resolveRatio } from '../src/lib/merch-studio-shared';
 
 const MANIFEST_DIR = path.resolve('src/content/artworks');
 const OUT_DIR = path.resolve('assets/print-ready');
 const onlyIds = new Set(process.argv.slice(2).filter((arg) => arg && !arg.startsWith('-')));
 
-const BLEED_INCHES = 0.125;
-const TARGET_PRINT_DPI = 300;
+/** Mirrored bleed required by paper/canvas lab prep. */
+export const BLEED_INCHES = 0.125;
+/**
+ * Output density floor: paper/canvas >= 300 DPI, ChromaLuxe metal >= 180 DPI.
+ * Masters are written at 300 DPI so both floors are satisfied.
+ */
+export const PAPER_CANVAS_DPI_FLOOR = 300;
+export const CHROMALUXE_METAL_DPI_FLOOR = 180;
+export const TARGET_PRINT_DPI = PAPER_CANVAS_DPI_FLOOR;
 const BLEED_PX = Math.round(BLEED_INCHES * TARGET_PRINT_DPI); // 38px per edge
 const MASTER_EXTENSIONS = new Set(['tif', 'tiff', 'jpg', 'jpeg', 'png']);
+
+if (TARGET_PRINT_DPI < PAPER_CANVAS_DPI_FLOOR || TARGET_PRINT_DPI < CHROMALUXE_METAL_DPI_FLOOR) {
+  throw new Error('Print crop DPI floors are misconfigured');
+}
 
 interface CropData {
   productKey: string;
@@ -42,13 +53,30 @@ function allowCleanPreviewAssets(): boolean {
   return process.env.ALLOW_CLEAN_PREVIEW_ASSETS === '1';
 }
 
+/**
+ * Printify and Printful pull a 300 DPI sRGB JPEG derivative alongside the archival
+ * master. The derivative is written to assets/print-ready/{slug}/{crop}.jpg and is
+ * never used as the archival file itself, even when PRINT_MASTERS_EXTENSION=jpg.
+ */
+async function writeSrgbJpegDerivative(
+  base: ReturnType<typeof sharp>,
+  jpgOutFile: string
+): Promise<void> {
+  await base
+    .clone()
+    .toColorspace('srgb')
+    .jpeg({ quality: 95, chromaSubsampling: '4:4:4' })
+    .withMetadata({ density: TARGET_PRINT_DPI })
+    .toFile(jpgOutFile);
+}
+
 async function writePrintMaster(
   sourcePath: string,
   extract: { left: number; top: number; width: number; height: number },
   outFile: string,
   extension: string
 ): Promise<{ width: number; height: number }> {
-  let pipeline = sharp(sourcePath, { limitInputPixels: false })
+  const base = sharp(sourcePath, { limitInputPixels: false })
     .extract(extract)
     .extend({
       top: BLEED_PX,
@@ -59,6 +87,7 @@ async function writePrintMaster(
     })
     .withMetadata({ density: TARGET_PRINT_DPI });
 
+  let pipeline = base.clone();
   if (extension === 'tif' || extension === 'tiff') {
     pipeline = pipeline.tiff({
       compression: 'deflate',
@@ -73,6 +102,15 @@ async function writePrintMaster(
   }
 
   const info = await pipeline.toFile(outFile);
+
+  // Archival file formats (tif/png) get a companion sRGB JPEG derivative for labs
+  // that require JPEG masters. When the archival extension is already jpg/jpeg,
+  // outFile is that derivative, so a second write is skipped.
+  if (extension !== 'jpg' && extension !== 'jpeg') {
+    const jpgOutFile = outFile.replace(new RegExp(`\\.${extension}$`), '.jpg');
+    await writeSrgbJpegDerivative(base, jpgOutFile);
+  }
+
   return {
     width: info.width || extract.width + BLEED_PX * 2,
     height: info.height || extract.height + BLEED_PX * 2,
@@ -141,6 +179,7 @@ async function renderCrop() {
     const origH = imageMetadata.height || 3000;
 
     for (const [productName, config] of Object.entries(data.merch_crops)) {
+      if (productName === '__rejected' || isRejectedCropValue(config)) continue;
       const cropToken = cropFileToken(productName);
       if (!cropToken) continue;
 

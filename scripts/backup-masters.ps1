@@ -7,7 +7,7 @@ param(
     [switch]$DryRun
 )
 
-$source = Join-Path (Get-Location) "assets\source-masters"
+$source = Join-Path (Split-Path $PSScriptRoot -Parent) "assets\source-masters"
 $remote = "b2-masters:alanwoodyard-photo-masters"
 
 if (-not (Test-Path $source)) {

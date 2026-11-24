@@ -1,8 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { requireSeeWhatSticksRoot } from './sws-paths';
 
 const SOURCE_FILE = path.resolve('src/lib/merch-studio-shared.ts');
-const TARGET_DIR = path.resolve('C:/dev/repos/the_sweatshop/packages/pod-merch-studio');
+const TARGET_DIR = path.join(requireSeeWhatSticksRoot(), 'packages', 'pod-merch-studio');
 const TARGET_FILE = path.join(TARGET_DIR, 'index.ts');
 
 function syncSharedStudio() {

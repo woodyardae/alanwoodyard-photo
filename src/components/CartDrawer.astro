@@ -11,7 +11,7 @@
     <div class="p-6 border-b border-[var(--theme-border)] flex items-center justify-between">
       <div>
         <h2 class="font-serif text-lg tracking-wider uppercase text-[var(--theme-text)]">Your Cart</h2>
-        <p class="text-xs font-mono text-[var(--theme-text-muted)] mt-0.5" id="cartHeaderSubtitle">Standard & Insured Shipping</p>
+        <p class="text-xs font-mono text-[var(--theme-text-muted)] mt-0.5" id="cartHeaderSubtitle">Tracked Studio Shipping</p>
       </div>
       <button type="button" id="closeCartBtn" class="p-2 text-[var(--theme-text-muted)] hover:text-[var(--theme-accent)] font-mono text-sm">
         &times; CLOSE
@@ -27,7 +27,7 @@
           <span class="font-bold uppercase tracking-wider">Consolidated Studio Shipping Available</span>
         </div>
         <p class="text-[11px] text-[var(--theme-text-muted)] leading-relaxed" id="consolidationText">
-          Switching your secondary item to the matching fine-art lab consolidates your order into a single shipment.
+          Switching your secondary item to the matching fine-art lab routes both pieces through the same fulfillment partner to reduce split-parcel shipping.
         </p>
         <button type="button" id="consolidateBtn" class="w-full mt-2 py-2 px-3 border border-[var(--theme-accent)] bg-[var(--theme-accent)]/10 text-[var(--theme-accent)] hover:bg-[var(--theme-accent)] hover:text-[var(--theme-bg)] transition-colors font-bold tracking-wider uppercase text-[11px]">
           ⇄ Consolidate & Save Freight
@@ -64,11 +64,15 @@
         <span class="font-serif text-xl text-[var(--theme-accent)]" id="totalVal">$0.00</span>
       </div>
 
+      <p class="holiday-ship-note">
+        <strong>Order by Dec. 7 for economy, or Dec. 9 for standard, for Christmas Delivery.&nbsp;</strong>
+        Contiguous-US orders submitted by Dec. 7 for economy shipping, or by Dec. 9 for standard shipping, have the best chance of arrival by Dec. 24. This is not a delivery guarantee. Printify adds a $0.40 US shipping surcharge from Oct. 15, 2026 through Jan. 17, 2027. Alaska, Hawaii, and US territories need extra transit time.
+      </p>
       <button type="button" id="checkoutBtn" class="w-full py-3.5 bg-[var(--theme-accent)] text-[var(--theme-bg)] hover:bg-[var(--theme-accent-hover)] font-mono text-xs uppercase tracking-widest font-bold transition-colors">
         Proceed to Secure Checkout &rarr;
       </button>
       <p class="text-[10px] text-center text-[var(--theme-text-muted)]">
-        Insured Fine-Art Delivery &bull; Certificate of Authenticity Included
+        Tracked Fulfillment &bull; Certificate of Authenticity Included with Archival Fine-Art Prints
       </p>
     </div>
   </aside>
@@ -156,7 +160,7 @@
     if (swappable && swappable.consolidationAlternative) {
       currentConsolidationTargetId = swappable.id;
       consolidationBanner.classList.remove('hidden');
-      consolidationText.textContent = `Your cart has items dispatching from separate labs. Switch ${swappable.artworkTitle} to the ${swappable.consolidationAlternative.variantTitle} to bundle into a single shipment and save $${swappable.consolidationAlternative.estimatedFreightSaved.toFixed(2)} in freight.`;
+      consolidationText.textContent = `Your cart has items dispatching from separate labs. Switch ${swappable.artworkTitle} to the ${swappable.consolidationAlternative.variantTitle} to route both pieces through the same fulfillment partner, reducing split-parcel shipping and saving $${swappable.consolidationAlternative.estimatedFreightSaved.toFixed(2)} in freight.`;
     } else {
       consolidationBanner.classList.add('hidden');
       currentConsolidationTargetId = null;

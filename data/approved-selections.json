@@ -1,0 +1,201 @@
+{
+  "source": "live",
+  "pulledAt": "2026-11-23T21:59:41.344Z",
+  "selections": [
+    {
+      "id": "a-dock-mono",
+      "products": [
+        "STEEL PLATE (PORTRAIT)"
+      ],
+      "crops": {
+        "STEEL PLATE (PORTRAIT)": {
+          "crop": {
+            "panX": 0,
+            "panY": 0,
+            "zoom": 1,
+            "ratio": 0.6896551724137931
+          },
+          "watermark": "none",
+          "approvedAt": "2026-11-08T23:30:30.366Z"
+        }
+      }
+    },
+    {
+      "id": "rhythm-and-flow",
+      "products": [
+        "prodigi-acrylic-block-4x4",
+        "prodigi-acrylic-block-6x6",
+        "prodigi-acrylic-block-8x8",
+        "prodigi-rag-12x12",
+        "prodigi-rag-20x20",
+        "prodigi-canvas-12x12",
+        "prodigi-canvas-20x20",
+        "printify-coasters-4pk",
+        "printify-cork-coasters-4pk",
+        "printify-pillow-18",
+        "printify-pillow-22",
+        "printful-tote-bag",
+        "prodigi-frame-8x10",
+        "prodigi-frame-16x20",
+        "prodigi-rag-8x10",
+        "prodigi-rag-16x20",
+        "prodigi-can-16x20",
+        "printful-can-24x30",
+        "printful-tee-chest",
+        "prodigi-frame-18x24",
+        "prodigi-rag-18x24",
+        "printify-puzzle-120",
+        "printify-puzzle-252",
+        "printify-puzzle-500",
+        "printify-puzzle-1000",
+        "gelato-wall-calendar",
+        "prodigi-met-18x32",
+        "prodigi-can-18x32",
+        "prodigi-acr-18x32",
+        "prodigi-panoramic-block",
+        "prodigi-blk-8x4",
+        "printify-deskmat-std",
+        "printify-deskmat-xl",
+        "printify-deskmat-xxl",
+        "prodigi-mug-11oz",
+        "prodigi-mug-15oz",
+        "printify-enamel-mug",
+        "printify-tumbler-20oz",
+        "printify-waterbottle-32oz",
+        "prodigi-post-10pk",
+        "prodigi-cards-10pk",
+        "prodigi-folio-5x7",
+        "prodigi-frame-11x14",
+        "displate-steel-m",
+        "displate-steel-l"
+      ],
+      "crops": {
+        "1:1": {
+          "panX": 46.5,
+          "panY": 0,
+          "zoom": 1,
+          "approved_products": [
+            "prodigi-acrylic-block-4x4",
+            "prodigi-acrylic-block-6x6",
+            "prodigi-acrylic-block-8x8",
+            "prodigi-rag-12x12",
+            "prodigi-rag-20x20",
+            "prodigi-canvas-12x12",
+            "prodigi-canvas-20x20",
+            "printify-coasters-4pk",
+            "printify-cork-coasters-4pk",
+            "printify-pillow-18",
+            "printify-pillow-22",
+            "printful-tote-bag"
+          ],
+          "excluded_products": [],
+          "approved_at": "2026-11-23T20:45:19.256Z"
+        },
+        "2:3": {
+          "rejected": true,
+          "rejected_at": "2026-11-23T21:54:21.408Z"
+        },
+        "4:5": {
+          "panX": 0,
+          "panY": 0,
+          "zoom": 1,
+          "approved_products": [
+            "prodigi-frame-8x10",
+            "prodigi-frame-16x20",
+            "prodigi-rag-8x10",
+            "prodigi-rag-16x20",
+            "prodigi-can-16x20",
+            "printful-can-24x30",
+            "printful-tee-chest"
+          ],
+          "excluded_products": [],
+          "approved_at": "2026-11-23T21:54:33.595Z"
+        },
+        "3:4": {
+          "panX": 0,
+          "panY": 0,
+          "zoom": 1,
+          "approved_products": [
+            "prodigi-frame-18x24",
+            "prodigi-rag-18x24",
+            "printify-puzzle-120",
+            "printify-puzzle-252",
+            "printify-puzzle-500",
+            "printify-puzzle-1000",
+            "gelato-wall-calendar"
+          ],
+          "excluded_products": [],
+          "approved_at": "2026-11-23T21:54:39.813Z"
+        },
+        "16:9": {
+          "panX": -1,
+          "panY": -19.5,
+          "zoom": 1,
+          "approved_products": [
+            "prodigi-met-18x32",
+            "prodigi-can-18x32",
+            "prodigi-acr-18x32",
+            "prodigi-panoramic-block"
+          ],
+          "excluded_products": [],
+          "approved_at": "2026-11-23T21:55:25.381Z"
+        },
+        "16:7": {
+          "panX": 0,
+          "panY": -70,
+          "zoom": 1,
+          "approved_products": [
+            "prodigi-blk-8x4",
+            "printify-deskmat-std",
+            "printify-deskmat-xl",
+            "printify-deskmat-xxl"
+          ],
+          "excluded_products": [],
+          "approved_at": "2026-11-23T21:55:46.856Z"
+        },
+        "17:7": {
+          "panX": -1.5,
+          "panY": -82,
+          "zoom": 1,
+          "approved_products": [
+            "prodigi-mug-11oz",
+            "prodigi-mug-15oz",
+            "printify-enamel-mug",
+            "printify-tumbler-20oz",
+            "printify-waterbottle-32oz"
+          ],
+          "excluded_products": [],
+          "approved_at": "2026-11-23T21:56:01.180Z"
+        },
+        "1:2": {
+          "rejected": true,
+          "rejected_at": "2026-11-23T21:56:09.634Z"
+        },
+        "5:7": {
+          "panX": 0,
+          "panY": 0,
+          "zoom": 1,
+          "approved_products": [
+            "prodigi-post-10pk",
+            "prodigi-cards-10pk",
+            "prodigi-folio-5x7",
+            "prodigi-frame-11x14"
+          ],
+          "excluded_products": [],
+          "approved_at": "2026-11-23T21:56:14.605Z"
+        },
+        "20:29": {
+          "panX": 0,
+          "panY": 0,
+          "zoom": 1,
+          "approved_products": [
+            "displate-steel-m",
+            "displate-steel-l"
+          ],
+          "excluded_products": [],
+          "approved_at": "2026-11-23T21:56:20.947Z"
+        }
+      }
+    }
+  ]
+}

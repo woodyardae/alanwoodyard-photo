@@ -8,7 +8,16 @@
 
 import { createRequire } from 'node:module';
 import type { OrderItem, PodLab } from './fulfillment';
-import { RATIO_KEYS, RATIO_MAP } from './merch-studio-shared';
+import {
+  isAcceptedCropValue,
+  isRejectedCropValue,
+  parseRetailDollars,
+  PHOTO_RATIO_PRODUCTS,
+  RATIO_KEYS,
+  RATIO_MAP,
+  type ProductRubricItem,
+  type RatioKey,
+} from './merch-studio-shared';
 
 export interface PricingMatrixEntry {
   retail: number;
@@ -208,7 +217,7 @@ function matchCropBySku(crops: Record<string, unknown>, sku?: string, size?: str
   if (wanted.size === 0) return null;
   const hits = new Set<string>();
   for (const [key, value] of Object.entries(crops)) {
-    if (key === '__rejected' || isUncroppedMasterKey(key)) continue;
+    if (key === '__rejected' || isUncroppedMasterKey(key) || isRejectedCropValue(value)) continue;
     const token = sanitizeCropToken(key);
     if (!token) continue;
     const hay = new Set<string>();
@@ -220,6 +229,78 @@ function matchCropBySku(crops: Record<string, unknown>, sku?: string, size?: str
     }
   }
   return hits.size === 1 ? [...hits][0] : null;
+}
+
+type SkuRatioBinding = { ratio: RatioKey; productId: string; matrixSku: string };
+
+let skuRatioBindings: Map<string, SkuRatioBinding> | null = null;
+
+function skuRatioIndex(): Map<string, SkuRatioBinding> {
+  if (skuRatioBindings) return skuRatioBindings;
+  const index = new Map<string, SkuRatioBinding>();
+  for (const row of listPhotoRubricCatalogSkus()) {
+    const binding: SkuRatioBinding = {
+      ratio: row.ratio,
+      productId: row.productId,
+      matrixSku: row.sku,
+    };
+    index.set(row.sku, binding);
+    index.set(row.sku.toLowerCase(), binding);
+    index.set(row.productId, binding);
+    index.set(row.productId.toLowerCase(), binding);
+  }
+  skuRatioBindings = index;
+  return index;
+}
+
+function bindingForCheckoutSku(sku: string | undefined): SkuRatioBinding | null {
+  if (!sku) return null;
+  const index = skuRatioIndex();
+  for (const part of sku.trim().split(/\s+/)) {
+    if (!part) continue;
+    const bare = splitLabSku(part).bare;
+    const hit = index.get(bare) || index.get(bare.toLowerCase());
+    if (hit) return hit;
+  }
+  return null;
+}
+
+function cropListsSku(entry: unknown, binding: SkuRatioBinding, sku?: string): boolean {
+  const products = readApprovedProducts(entry);
+  const record = entry && typeof entry === 'object' ? (entry as { approved_products?: unknown }) : null;
+  if (products.length === 0) return !Array.isArray(record?.approved_products);
+  const wanted = new Set<string>([binding.productId.toLowerCase(), binding.matrixSku.toLowerCase()]);
+  for (const part of (sku || '').split(/\s+/)) {
+    const bare = splitLabSku(part).bare.toLowerCase();
+    if (bare) wanted.add(bare);
+  }
+  return products.some((product) => {
+    const needle = product.trim().toLowerCase();
+    if (!needle) return false;
+    if (wanted.has(needle)) return true;
+    return wanted.has(splitLabSku(needle).bare.toLowerCase());
+  });
+}
+
+/**
+ * Desk mats, mugs, coasters, and puzzles do not carry a WxH ratio in the matrix size.
+ * Use the rubric RatioKey when that crop is saved and lists the product.
+ */
+function rubricCropForCheckoutSku(
+  sku: string | undefined,
+  crops: Record<string, unknown> | null | undefined
+): CropSelection | null {
+  const binding = bindingForCheckoutSku(sku);
+  if (!binding) return null;
+  const entry = (crops || {})[binding.ratio];
+  if (entry == null) return null;
+  if (isRejectedCropValue(entry)) {
+    return { ok: false, error: 'This ratio is rejected for this image' };
+  }
+  if (!isAcceptedCropValue(entry) || !cropListsSku(entry, binding, sku)) return null;
+  const ratioCrop = sanitizeCropToken(binding.ratio);
+  if (!ratioCrop) return null;
+  return { ok: true, crop: ratioCrop, ratio: binding.ratio };
 }
 
 export interface CropSelectionInput {
@@ -241,30 +322,40 @@ export type CropSelection =
 /**
  * Resolve the crop file id for a SKU.
  * A parsed size or an explicitly accepted ratio becomes /masters/{slug}/{crop}.{ext}.
+ * Rubric goods whose matrix size is not a WxH ratio (desk mats, mugs, coasters, puzzles)
+ * use the rubric RatioKey when that crop is saved on the artwork.
  * Artwork crop names apply when the size has no ratio and exactly one crop matches the SKU.
  * With no crop token, /masters/{slug}.{ext} is allowed only when __uncropped approves the SKU.
  */
 export function resolveCropSelection(input: CropSelectionInput): CropSelection {
   const rawRatio = (input.ratio || '').trim();
   const fromSize = ratioKeyFromSize(input.size);
+  const binding = bindingForCheckoutSku(input.sku);
+  // A desk mat's physical size can sit near another ratio. The rubric bucket is the crop.
+  const sizeRatio = binding && fromSize && binding.ratio !== fromSize ? null : fromSize;
   const declared = knownRatioKey(rawRatio);
   if (rawRatio && !declared) {
     return { ok: false, error: 'Crop ratio does not match the catalog size' };
   }
-  if (fromSize && declared && fromSize !== declared) {
+  if (sizeRatio && declared && sizeRatio !== declared) {
     return { ok: false, error: 'Crop ratio does not match the catalog size' };
   }
-  if (declared && !fromSize && !input.acceptDeclaredRatio) {
+  if (declared && !sizeRatio && !input.acceptDeclaredRatio) {
     return { ok: false, error: 'Crop ratio does not match the catalog size' };
   }
-  const ratio = fromSize || (input.acceptDeclaredRatio ? declared : null);
+  const ratio = sizeRatio || (input.acceptDeclaredRatio ? declared : null);
   if (ratio) {
     const ratioCrop = sanitizeCropToken(ratio);
     if (!ratioCrop) {
       return { ok: false, error: 'Crop ratio does not match the catalog size' };
     }
+    if (isRejectedCropValue((input.crops || {})[ratio])) {
+      return { ok: false, error: 'This ratio is rejected for this image' };
+    }
     return { ok: true, crop: ratioCrop, ratio };
   }
+  const catalogRatio = rubricCropForCheckoutSku(input.sku, input.crops);
+  if (catalogRatio) return catalogRatio;
   const crops = input.crops || {};
   const named = matchCropBySku(crops, input.sku, input.size);
   if (named) {
@@ -334,17 +425,31 @@ export function printMasterRelativePath(slug: string, crop?: string | null, exte
 }
 
 /**
+ * Printify and Printful pull the 300 DPI sRGB JPEG derivative (/masters/{slug}/{crop}.jpg)
+ * by default. Prodigi, Gelato, and any other lab keep the archival .tif master.
+ * PRINT_MASTERS_EXTENSION always wins when explicitly set, for every lab.
+ */
+const JPEG_DEFAULT_LABS: ReadonlySet<PodLab> = new Set(['printify', 'printful']);
+
+function defaultPrintMasterExtension(provider: PodLab | string | null | undefined): string {
+  return provider && JPEG_DEFAULT_LABS.has(provider as PodLab) ? 'jpg' : 'tif';
+}
+
+/**
  * Lab files come from PRINT_MASTERS_BASE_URL.
  * A resolved crop uses /masters/{slug}/{crop}.{ext}.
  * crop=null (explicitly approved uncropped SKU) uses /masters/{slug}.{ext}.
  * The clean webp preview is used only when allowCleanPreviewAssets is explicitly true
  * and no master base URL is configured.
+ * `provider` selects the per-lab default extension (Printify/Printful -> jpg,
+ * everyone else -> tif) when printMastersExtension is not explicitly configured.
  */
 export function resolvePrintAssetUrl(
   origin: string,
   slug: string,
   config: PrintAssetConfig = {},
-  crop: string | null
+  crop: string | null,
+  provider?: PodLab | string | null
 ): { ok: true; url: string } | { ok: false; error: string } {
   if (!SLUG_RE.test(slug)) {
     return { ok: false, error: 'Artwork slug is not a published print id' };
@@ -375,7 +480,8 @@ export function resolvePrintAssetUrl(
     if (parsed.username || parsed.password) {
       return { ok: false, error: 'PRINT_MASTERS_BASE_URL must not include credentials' };
     }
-    const ext = (config.printMastersExtension || 'tif').trim().toLowerCase().replace(/^\./, '');
+    const explicitExt = (config.printMastersExtension || '').trim().toLowerCase().replace(/^\./, '');
+    const ext = explicitExt || defaultPrintMasterExtension(provider);
     if (!PRINT_MASTER_EXTENSIONS.has(ext)) {
       return { ok: false, error: 'PRINT_MASTERS_EXTENSION must be tif, tiff, jpg, jpeg, or png' };
     }
@@ -407,10 +513,57 @@ export function labFromVendor(vendor: string | undefined): PodLab | null {
   return LABS.includes(lower as PodLab) ? (lower as PodLab) : null;
 }
 
+/** Labs this store can fulfill without an extra flag. */
+export const DEFAULT_STOREFRONT_LABS: readonly PodLab[] = ['prodigi', 'printify'];
+
+/** Labs that stay off the buyer catalog until CHECKOUT_ENABLED_VENDORS names them. */
+const OPT_IN_STOREFRONT_LABS = new Set<PodLab>(['printful', 'gelato', 'gooten']);
+
+/**
+ * Split a CHECKOUT_ENABLED_VENDORS value.
+ * Blank means the caller should use the default Prodigi and Printify labs.
+ */
+export function parseEnabledVendorsConfig(value: string | null | undefined): string[] | undefined {
+  if (typeof value !== 'string') return undefined;
+  const parts = value
+    .split(/[,|\s]+/)
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0);
+  return parts.length > 0 ? parts : undefined;
+}
+
+/**
+ * Split a CHECKOUT_ALLOWED_COUNTRIES value into ISO 3166-1 alpha-2 codes.
+ * Blank or unset means the caller should default to US-only shipping.
+ */
+export function parseAllowedCountriesConfig(value: string | null | undefined): string[] | undefined {
+  if (typeof value !== 'string') return undefined;
+  const parts = value
+    .split(/[,|\s]+/)
+    .map((part) => part.trim().toUpperCase())
+    .filter((part) => /^[A-Z]{2}$/.test(part));
+  return parts.length > 0 ? parts : undefined;
+}
+
+/**
+ * Buyer-facing labs. Prodigi and Printify stay on.
+ * Printful, Gelato, and Gooten are added only when the enabled-vendors flag names them.
+ */
+export function enabledStorefrontLabs(enabledVendors?: readonly string[] | null): ReadonlySet<PodLab> {
+  const enabled = new Set<PodLab>(DEFAULT_STOREFRONT_LABS);
+  if (!enabledVendors) return enabled;
+  for (const raw of enabledVendors) {
+    const lab = labFromVendor(raw);
+    if (lab && OPT_IN_STOREFRONT_LABS.has(lab)) enabled.add(lab);
+  }
+  return enabled;
+}
+
 export function mapCategoryToSubstrate(category: string): OrderItem['substrate'] {
   const c = (category || '').toLowerCase();
   if (c.includes('metal') || c.includes('aluminum')) return 'aluminum-panel';
-  if (c.includes('acrylic')) return 'acrylic-float';
+  // Desk Block / acrylic block SKUs (GLOBAL-BLK-*) before generic "desk" → desk-mat.
+  if (c.includes('acrylic') || c.includes('block')) return 'acrylic-float';
   if (c.includes('frame')) return 'framed-print';
   if (c.includes('canvas')) return 'stretched-canvas';
   if (c.includes('card')) return 'linen-art-cards';
@@ -448,4 +601,379 @@ export function resolveMatrixSku(
   if (!rag) return null;
   const paperKey = `GLOBAL-FAP-${rag[1]}`;
   return matrix[paperKey] ? paperKey : null;
+}
+
+/**
+ * Message for a cart SKU that did not resolve.
+ * A rag alias such as prodigi:rag-42x63 names the missing GLOBAL-FAP key when that size was never published.
+ */
+export function describeUnresolvedSku(
+  sku: string,
+  matrix: Record<string, PricingMatrixEntry>
+): string {
+  const raw = (sku || '').trim();
+  if (!raw) return 'SKU is missing';
+  if (raw.length > 120 || /[\s/\\]/.test(raw)) {
+    return `SKU is not in the pricing matrix: ${raw}`;
+  }
+  const colon = raw.indexOf(':');
+  let bare = raw;
+  if (colon >= 0) {
+    const prefix = raw.slice(0, colon);
+    if (!labFromVendor(prefix)) {
+      return `Cart SKU ${raw} uses an unknown lab prefix`;
+    }
+    bare = raw.slice(colon + 1);
+    if (!bare) return `Cart SKU ${raw} is missing a catalog id`;
+  }
+  const rag = /^rag-(\d+x\d+)$/i.exec(bare);
+  if (rag) {
+    const paperKey = `GLOBAL-FAP-${rag[1]}`;
+    if (!matrix[paperKey]) {
+      return `Cart SKU ${raw} is not a published catalog size (${paperKey})`;
+    }
+  }
+  return `SKU is not in the pricing matrix: ${raw}`;
+}
+
+export type StorefrontPackaging = 'rigid_tube' | 'flat_crate' | 'corrugated_box' | 'poly_mailer';
+
+export interface RubricCatalogSku {
+  productId: string;
+  ratio: RatioKey;
+  sku: string;
+  category: string;
+  size: string;
+  retail: number;
+  vendor: string;
+  packaging: StorefrontPackaging;
+  placement: 'goods' | 'print' | 'external';
+}
+
+export interface StorefrontGoodsItem {
+  productId: string;
+  title: string;
+  spec: string;
+  sku: string;
+  price: number;
+  provider: PodLab;
+  vendor: string;
+  packaging: StorefrontPackaging;
+  size: string;
+}
+
+export type StorefrontPrintItem = StorefrontGoodsItem;
+
+export interface StorefrontExternalItem {
+  productId: string;
+  title: string;
+  spec: string;
+  price: number;
+  href: string;
+}
+
+export interface ApprovedStorefront {
+  goods: StorefrontGoodsItem[];
+  prints: StorefrontPrintItem[];
+  external: StorefrontExternalItem[];
+}
+
+const DISPLATE_STORE_HREF = 'https://displate.com/alanwoodyard';
+
+const CHECKOUT_SKU_OVERRIDES: Record<string, string> = {
+  'prodigi-blk-8x4': 'GLOBAL-BLK-8x4',
+  'prodigi-panoramic-block': 'GLOBAL-BLK-8x45',
+  'prodigi-post-10pk': 'GLOBAL-POST-5x7',
+  'prodigi-cards-10pk': 'GLOBAL-CARD-5x7',
+  'prodigi-folio-5x7': 'GLOBAL-FOLIO-5x7',
+  'prodigi-mug-11oz': 'GLOBAL-MUG-11oz',
+  'prodigi-mug-15oz': 'GLOBAL-MUG-15oz',
+  'printful-tote-bag': 'PFL-TOTE',
+  'printful-tee-chest': 'PFL-TEE-CHEST',
+  'gelato-wall-calendar': 'GLT-CAL-WALL',
+};
+
+interface IndexedRubricProduct {
+  ratio: RatioKey;
+  item: ProductRubricItem;
+}
+
+const photoRubricById = new Map<string, IndexedRubricProduct>();
+for (const ratio of RATIO_KEYS) {
+  for (const item of PHOTO_RATIO_PRODUCTS[ratio]) {
+    if (!photoRubricById.has(item.id)) {
+      photoRubricById.set(item.id, { ratio, item });
+    }
+  }
+}
+
+/** Checkout matrix key for a photo-store rubric id. Displate stays off the cart. */
+export function checkoutSkuForRubricId(id: string): string | null {
+  if (id.startsWith('displate-')) return null;
+  const override = CHECKOUT_SKU_OVERRIDES[id];
+  if (override) return override;
+  const size = /(\d+x\d+)/.exec(id)?.[1];
+  if (id.startsWith('prodigi-rag-') && size) return `GLOBAL-FAP-${size}`;
+  if (id.startsWith('prodigi-frame-') && size) return `GLOBAL-CFP-${size}`;
+  if ((id.startsWith('prodigi-can-') || id.startsWith('prodigi-canvas-')) && size) return `GLOBAL-CAN-${size}`;
+  if (id.startsWith('prodigi-acr-') && size) return `GLOBAL-ACR-${size}`;
+  if (id.startsWith('prodigi-met-') && size) return `GLOBAL-MET-${size}`;
+  if (id.startsWith('prodigi-acrylic-block-') && size) return `GLOBAL-BLK-${size}`;
+  if (id.startsWith('printful-can-') && size) return `PFL-CAN-${size}`;
+  const prefix = id.startsWith('printify-')
+    ? 'PFY'
+    : id.startsWith('printful-')
+      ? 'PFL'
+      : id.startsWith('gelato-')
+        ? 'GLT'
+        : id.startsWith('prodigi-')
+          ? 'GLOBAL'
+          : null;
+  if (!prefix) return null;
+  const body = id
+    .replace(/^(printify|printful|gelato|prodigi)-/, '')
+    .replace(/[^a-z0-9]+/gi, '-')
+    .replace(/^-+|-+$/g, '')
+    .toUpperCase();
+  return body ? `${prefix}-${body}` : null;
+}
+
+export function isFineArtPaperListing(sku: string, substrate = ''): boolean {
+  const hay = `${sku} ${substrate}`.toLowerCase();
+  return (
+    hay.includes('-rag') ||
+    hay.includes('rag-') ||
+    hay.includes('fap') ||
+    hay.includes('hahnem') ||
+    hay.includes('fine art paper') ||
+    hay.includes('photo rag')
+  );
+}
+
+/** Orientation-insensitive inch key such as `12x18` from `12x18"` or `18 x 12`. */
+export function canonicalPrintSizeKey(size: string): string | null {
+  const match = /(\d+(?:\.\d+)?)\s*x\s*(\d+(?:\.\d+)?)/i.exec(size || '');
+  if (!match) return null;
+  const width = Number(match[1]);
+  const height = Number(match[2]);
+  if (!(width > 0) || !(height > 0)) return null;
+  const [lo, hi] = width <= height ? [width, height] : [height, width];
+  return `${lo}x${hi}`;
+}
+
+function rubricTokens(id: string): string[] {
+  return id.toLowerCase().split('-').filter(Boolean);
+}
+
+function categoryForRubricId(id: string): string {
+  const tokens = rubricTokens(id);
+  if (tokens.includes('rag')) return 'Fine Art Paper';
+  if (tokens.includes('frame')) return 'Framed Print';
+  if (tokens.includes('canvas') || tokens.includes('can')) return 'Canvas Wrap';
+  if (tokens.includes('acr')) return 'Acrylic Float';
+  if (tokens.includes('met')) return 'Metal Print';
+  if (tokens.includes('block') || tokens.includes('blk')) return 'Desk Block';
+  if (tokens.some((part) => part === 'mug' || part === 'tumbler' || part === 'bottle' || part === 'waterbottle' || part === 'enamel')) {
+    return 'Drinkware';
+  }
+  if (tokens.includes('coasters')) return 'Coaster Set';
+  if (tokens.includes('pillow')) return 'Throw Pillow';
+  if (tokens.includes('tote') || tokens.includes('tee')) return 'Apparel';
+  if (tokens.includes('puzzle')) return 'Jigsaw Puzzle';
+  if (tokens.includes('deskmat')) return 'Desk Mat';
+  if (tokens.includes('phone')) return 'Phone Case';
+  if (tokens.includes('calendar')) return 'Calendar';
+  if (tokens.includes('folio')) return 'Mini Print';
+  if (tokens.includes('post') || tokens.includes('cards')) return 'Stationery';
+  return 'Studio Goods';
+}
+
+function packagingForRubricId(id: string): StorefrontPackaging {
+  const tokens = rubricTokens(id);
+  if (tokens.includes('rag') || tokens.includes('folio')) return 'rigid_tube';
+  if (
+    tokens.includes('frame') ||
+    tokens.includes('canvas') ||
+    tokens.includes('can') ||
+    tokens.includes('acr') ||
+    tokens.includes('met')
+  ) {
+    return 'flat_crate';
+  }
+  if (
+    tokens.includes('deskmat') ||
+    tokens.includes('pillow') ||
+    tokens.includes('tote') ||
+    tokens.includes('tee') ||
+    tokens.includes('phone')
+  ) {
+    return 'poly_mailer';
+  }
+  return 'corrugated_box';
+}
+
+function placementForRubricId(id: string): RubricCatalogSku['placement'] {
+  const tokens = rubricTokens(id);
+  if (tokens.includes('displate') || id.startsWith('displate-')) return 'external';
+  if (tokens.includes('rag')) return 'print';
+  return 'goods';
+}
+
+function sizeForRubric(item: ProductRubricItem): string {
+  const inches = /(\d+(?:\.\d+)?)\s*x\s*(\d+(?:\.\d+)?)\s*"/i.exec(item.name);
+  if (inches) return `${inches[1]}x${inches[2]}"`;
+  const oz = /(\d+)\s*oz/i.exec(item.name);
+  if (oz) return `${oz[1]}oz`;
+  const pieces = /(\d+)\s*-?\s*pc/i.exec(item.name);
+  if (pieces) return `${pieces[1]}-pc`;
+  const pack = /(\d+)\s*-?\s*Pk/i.exec(item.name);
+  if (pack) return `${pack[1]}-Pk`;
+  if (item.id.includes('phone-iphone-max')) return 'iPhone Pro Max';
+  if (item.id.includes('phone-iphone-pro')) return 'iPhone Pro';
+  if (item.id.includes('phone-galaxy')) return 'Galaxy Ultra';
+  if (item.id.includes('tee')) return 'Chest print';
+  return 'One size';
+}
+
+function specForRubricId(id: string): string {
+  const tokens = rubricTokens(id);
+  if (tokens.includes('displate')) return 'Magnetic mount, external platform';
+  if (tokens.includes('rag') || tokens.includes('folio')) return 'Hahnemühle Photo Rag 308gsm';
+  if (tokens.includes('frame')) return 'Matted gallery frame';
+  if (tokens.includes('canvas') || tokens.includes('can')) return 'Museum stretched canvas';
+  if (tokens.includes('acr')) return 'Optical acrylic panel';
+  if (tokens.includes('met')) return 'Brushed aluminum plate';
+  if (tokens.includes('block') || tokens.includes('blk')) return 'Freestanding optical acrylic';
+  if (tokens.some((part) => part === 'mug' || part === 'tumbler' || part === 'bottle' || part === 'waterbottle' || part === 'enamel')) {
+    return 'Photo wrap, boxed';
+  }
+  if (tokens.includes('coasters')) return 'Heat-resistant top, cork base';
+  if (tokens.includes('pillow')) return 'Spun poly cover';
+  if (tokens.includes('tote') || tokens.includes('tee')) return 'Printed garment';
+  if (tokens.includes('puzzle')) return 'Die-cut board, boxed';
+  if (tokens.includes('deskmat')) return 'Natural rubber base, stitched border';
+  if (tokens.includes('phone')) return 'Tough printed shell';
+  if (tokens.includes('post') || tokens.includes('cards')) return 'Archival stock, boxed';
+  if (tokens.includes('calendar')) return 'Wire-O wall calendar';
+  return 'Studio goods';
+}
+
+/** One catalog row per photo rubric product. Existing GLOBAL keys stay shared with the hand matrix. */
+export function listPhotoRubricCatalogSkus(): RubricCatalogSku[] {
+  const rows: RubricCatalogSku[] = [];
+  for (const ratio of RATIO_KEYS) {
+    for (const item of PHOTO_RATIO_PRODUCTS[ratio]) {
+      const retail = parseRetailDollars(item.retail);
+      const sku = checkoutSkuForRubricId(item.id);
+      if (retail == null || !sku) continue;
+      rows.push({
+        productId: item.id,
+        ratio,
+        sku,
+        category: categoryForRubricId(item.id),
+        size: sizeForRubric(item),
+        retail,
+        vendor: item.vendor,
+        packaging: packagingForRubricId(item.id),
+        placement: placementForRubricId(item.id),
+      });
+    }
+  }
+  return rows;
+}
+
+export interface ApprovedStorefrontInput {
+  matrix: Record<string, PricingMatrixEntry>;
+  crops?: Record<string, unknown> | null;
+  /** Fine-art paper sizes already rendered in the prints column. */
+  listedPaperSizes?: readonly string[];
+  /** Fine-art paper SKUs already rendered in the prints column. */
+  listedPaperSkus?: readonly string[];
+  /**
+   * Extra labs named by CHECKOUT_ENABLED_VENDORS.
+   * Omitted: Prodigi and Printify only.
+   */
+  enabledVendors?: readonly string[] | null;
+}
+
+/**
+ * Turn merch_approved rubric ids into priced storefront rows.
+ * Rejected ratio crops are omitted. Fine-art paper sizes already in the prints
+ * column are omitted so the same sheet is not offered twice.
+ */
+export function resolveApprovedStorefront(
+  approvedIds: readonly string[],
+  input: ApprovedStorefrontInput
+): ApprovedStorefront {
+  const goods: StorefrontGoodsItem[] = [];
+  const prints: StorefrontPrintItem[] = [];
+  const external: StorefrontExternalItem[] = [];
+  const seen = new Set<string>();
+  const listedSizes = new Set(
+    (input.listedPaperSizes || [])
+      .map((size) => canonicalPrintSizeKey(size))
+      .filter((size): size is string => Boolean(size))
+  );
+  const listedSkus = new Set(
+    (input.listedPaperSkus || [])
+      .map((sku) => resolveMatrixSku(sku, input.matrix))
+      .filter((sku): sku is string => Boolean(sku))
+  );
+  const enabledLabs = enabledStorefrontLabs(input.enabledVendors);
+
+  for (const rawId of approvedIds) {
+    if (typeof rawId !== 'string') continue;
+    const productId = rawId.trim();
+    if (!productId || seen.has(productId)) continue;
+    const indexed = photoRubricById.get(productId);
+    if (!indexed) continue;
+    seen.add(productId);
+    const crops = input.crops || {};
+    if (isRejectedCropValue(crops[indexed.ratio])) continue;
+
+    if (indexed.item.vendor === 'Displate' || productId.startsWith('displate-')) {
+      const price = parseRetailDollars(indexed.item.retail);
+      if (price == null) continue;
+      external.push({
+        productId,
+        title: indexed.item.name,
+        spec: specForRubricId(productId),
+        price,
+        href: DISPLATE_STORE_HREF,
+      });
+      continue;
+    }
+
+    const sku = checkoutSkuForRubricId(productId);
+    if (!sku) continue;
+    const matrixSku = resolveMatrixSku(sku, input.matrix);
+    const entry = matrixSku ? input.matrix[matrixSku] : undefined;
+    const provider = entry ? labFromVendor(entry.vendor) : null;
+    if (!entry || !matrixSku || !provider || !enabledLabs.has(provider)) continue;
+    const size = entry.size || sizeForRubric(indexed.item);
+    const row: StorefrontGoodsItem = {
+      productId,
+      title: indexed.item.name,
+      spec: specForRubricId(productId),
+      sku: matrixSku,
+      price: entry.retail,
+      provider,
+      vendor: entry.vendor,
+      packaging: packagingForRubricId(productId),
+      size,
+    };
+
+    if (placementForRubricId(productId) === 'print') {
+      const sizeKey = canonicalPrintSizeKey(size);
+      if ((sizeKey && listedSizes.has(sizeKey)) || listedSkus.has(matrixSku)) continue;
+      if (sizeKey) listedSizes.add(sizeKey);
+      listedSkus.add(matrixSku);
+      prints.push(row);
+      continue;
+    }
+
+    goods.push(row);
+  }
+
+  return { goods, prints, external };
 }

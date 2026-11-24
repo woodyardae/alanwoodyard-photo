@@ -318,5 +318,355 @@
     "profit": 10,
     "marginPct": 45.5,
     "vendor": "Prodigi"
+  },
+  "GLOBAL-BLK-8x8": {
+    "category": "Desk Block",
+    "size": "8x8\"",
+    "wholesale": 19.04,
+    "shippingEst": 8.5,
+    "retail": 68,
+    "profit": 40.46,
+    "marginPct": 59.5,
+    "vendor": "Prodigi"
+  },
+  "GLOBAL-FAP-12x12": {
+    "category": "Fine Art Paper",
+    "size": "12x12\"",
+    "wholesale": 23.8,
+    "shippingEst": 8.5,
+    "retail": 85,
+    "profit": 52.7,
+    "marginPct": 62,
+    "vendor": "Prodigi"
+  },
+  "GLOBAL-FAP-20x20": {
+    "category": "Fine Art Paper",
+    "size": "20x20\"",
+    "wholesale": 49,
+    "shippingEst": 18,
+    "retail": 175,
+    "profit": 108,
+    "marginPct": 61.7,
+    "vendor": "Prodigi"
+  },
+  "GLOBAL-CAN-20x20": {
+    "category": "Canvas Wrap",
+    "size": "20x20\"",
+    "wholesale": 58.8,
+    "shippingEst": 18,
+    "retail": 210,
+    "profit": 133.2,
+    "marginPct": 63.4,
+    "vendor": "Prodigi"
+  },
+  "PFY-COASTERS-4PK": {
+    "category": "Coaster Set",
+    "size": "4-Pk",
+    "wholesale": 8.96,
+    "shippingEst": 5.5,
+    "retail": 32,
+    "profit": 17.54,
+    "marginPct": 54.8,
+    "vendor": "Printify"
+  },
+  "PFY-CORK-COASTERS-4PK": {
+    "category": "Coaster Set",
+    "size": "4-Pk",
+    "wholesale": 7.84,
+    "shippingEst": 5.5,
+    "retail": 28,
+    "profit": 14.66,
+    "marginPct": 52.4,
+    "vendor": "Printify"
+  },
+  "PFY-PILLOW-18": {
+    "category": "Throw Pillow",
+    "size": "18x18\"",
+    "wholesale": 11.76,
+    "shippingEst": 5.5,
+    "retail": 42,
+    "profit": 24.74,
+    "marginPct": 58.9,
+    "vendor": "Printify"
+  },
+  "PFY-PILLOW-22": {
+    "category": "Throw Pillow",
+    "size": "22x22\"",
+    "wholesale": 14.56,
+    "shippingEst": 5.5,
+    "retail": 52,
+    "profit": 31.94,
+    "marginPct": 61.4,
+    "vendor": "Printify"
+  },
+  "PFL-TOTE": {
+    "category": "Apparel",
+    "size": "One size",
+    "wholesale": 10.64,
+    "shippingEst": 5.5,
+    "retail": 38,
+    "profit": 21.86,
+    "marginPct": 57.5,
+    "vendor": "Printful"
+  },
+  "PFL-CAN-24x36": {
+    "category": "Canvas Wrap",
+    "size": "24x36\"",
+    "wholesale": 102.2,
+    "shippingEst": 18,
+    "retail": 365,
+    "profit": 244.8,
+    "marginPct": 67.1,
+    "vendor": "Printful"
+  },
+  "PFL-CAN-24x30": {
+    "category": "Canvas Wrap",
+    "size": "24x30\"",
+    "wholesale": 65.8,
+    "shippingEst": 18,
+    "retail": 235,
+    "profit": 151.2,
+    "marginPct": 64.3,
+    "vendor": "Printful"
+  },
+  "PFL-TEE-CHEST": {
+    "category": "Apparel",
+    "size": "Chest print",
+    "wholesale": 13.44,
+    "shippingEst": 5.5,
+    "retail": 48,
+    "profit": 29.06,
+    "marginPct": 60.5,
+    "vendor": "Printful"
+  },
+  "GLOBAL-CFP-18x24": {
+    "category": "Framed Print",
+    "size": "18x24\"",
+    "wholesale": 82.6,
+    "shippingEst": 18,
+    "retail": 295,
+    "profit": 194.4,
+    "marginPct": 65.9,
+    "vendor": "Prodigi"
+  },
+  "GLOBAL-FAP-18x24": {
+    "category": "Fine Art Paper",
+    "size": "18x24\"",
+    "wholesale": 51.8,
+    "shippingEst": 18,
+    "retail": 185,
+    "profit": 115.2,
+    "marginPct": 62.3,
+    "vendor": "Prodigi"
+  },
+  "PFY-PUZZLE-120": {
+    "category": "Jigsaw Puzzle",
+    "size": "120-pc",
+    "wholesale": 7.84,
+    "shippingEst": 5.5,
+    "retail": 28,
+    "profit": 14.66,
+    "marginPct": 52.4,
+    "vendor": "Printify"
+  },
+  "PFY-PUZZLE-252": {
+    "category": "Jigsaw Puzzle",
+    "size": "252-pc",
+    "wholesale": 9.52,
+    "shippingEst": 5.5,
+    "retail": 34,
+    "profit": 18.98,
+    "marginPct": 55.8,
+    "vendor": "Printify"
+  },
+  "PFY-PUZZLE-500": {
+    "category": "Jigsaw Puzzle",
+    "size": "500-pc",
+    "wholesale": 11.76,
+    "shippingEst": 5.5,
+    "retail": 42,
+    "profit": 24.74,
+    "marginPct": 58.9,
+    "vendor": "Printify"
+  },
+  "PFY-PUZZLE-1000": {
+    "category": "Jigsaw Puzzle",
+    "size": "1000-pc",
+    "wholesale": 15.12,
+    "shippingEst": 5.5,
+    "retail": 54,
+    "profit": 33.38,
+    "marginPct": 61.8,
+    "vendor": "Printify"
+  },
+  "GLT-CAL-WALL": {
+    "category": "Calendar",
+    "size": "11x8.5\"",
+    "wholesale": 10.64,
+    "shippingEst": 5.5,
+    "retail": 38,
+    "profit": 21.86,
+    "marginPct": 57.5,
+    "vendor": "Gelato"
+  },
+  "GLOBAL-MET-18x32": {
+    "category": "Metal Print",
+    "size": "18x32\"",
+    "wholesale": 123.2,
+    "shippingEst": 18,
+    "retail": 440,
+    "profit": 298.8,
+    "marginPct": 67.9,
+    "vendor": "Prodigi"
+  },
+  "GLOBAL-CAN-18x32": {
+    "category": "Canvas Wrap",
+    "size": "18x32\"",
+    "wholesale": 67.2,
+    "shippingEst": 18,
+    "retail": 240,
+    "profit": 154.8,
+    "marginPct": 64.5,
+    "vendor": "Prodigi"
+  },
+  "GLOBAL-ACR-18x32": {
+    "category": "Acrylic Float",
+    "size": "18x32\"",
+    "wholesale": 145.6,
+    "shippingEst": 18,
+    "retail": 520,
+    "profit": 356.4,
+    "marginPct": 68.5,
+    "vendor": "Prodigi"
+  },
+  "GLOBAL-BLK-8x45": {
+    "category": "Desk Block",
+    "size": "8x4.5\"",
+    "wholesale": 15.68,
+    "shippingEst": 5.5,
+    "retail": 56,
+    "profit": 34.82,
+    "marginPct": 62.2,
+    "vendor": "Prodigi"
+  },
+  "PFY-DESKMAT-STD": {
+    "category": "Desk Mat",
+    "size": "31.5x15.5\"",
+    "wholesale": 13.44,
+    "shippingEst": 5.5,
+    "retail": 48,
+    "profit": 29.06,
+    "marginPct": 60.5,
+    "vendor": "Printify"
+  },
+  "PFY-DESKMAT-XL": {
+    "category": "Desk Mat",
+    "size": "35.4x15.7\"",
+    "wholesale": 15.12,
+    "shippingEst": 5.5,
+    "retail": 54,
+    "profit": 33.38,
+    "marginPct": 61.8,
+    "vendor": "Printify"
+  },
+  "PFY-DESKMAT-XXL": {
+    "category": "Desk Mat",
+    "size": "39.4x17.7\"",
+    "wholesale": 17.92,
+    "shippingEst": 8.5,
+    "retail": 64,
+    "profit": 37.58,
+    "marginPct": 58.7,
+    "vendor": "Printify"
+  },
+  "GLOBAL-MUG-15oz": {
+    "category": "Drinkware",
+    "size": "15oz",
+    "wholesale": 7.28,
+    "shippingEst": 5.5,
+    "retail": 26,
+    "profit": 13.22,
+    "marginPct": 50.8,
+    "vendor": "Prodigi"
+  },
+  "PFY-ENAMEL-MUG": {
+    "category": "Drinkware",
+    "size": "12oz",
+    "wholesale": 7.84,
+    "shippingEst": 5.5,
+    "retail": 28,
+    "profit": 14.66,
+    "marginPct": 52.4,
+    "vendor": "Printify"
+  },
+  "PFY-TUMBLER-20OZ": {
+    "category": "Drinkware",
+    "size": "20oz",
+    "wholesale": 9.52,
+    "shippingEst": 5.5,
+    "retail": 34,
+    "profit": 18.98,
+    "marginPct": 55.8,
+    "vendor": "Printify"
+  },
+  "PFY-WATERBOTTLE-32OZ": {
+    "category": "Drinkware",
+    "size": "32oz",
+    "wholesale": 10.64,
+    "shippingEst": 5.5,
+    "retail": 38,
+    "profit": 21.86,
+    "marginPct": 57.5,
+    "vendor": "Printify"
+  },
+  "PFY-PHONE-IPHONE-PRO": {
+    "category": "Phone Case",
+    "size": "iPhone Pro",
+    "wholesale": 10.08,
+    "shippingEst": 5.5,
+    "retail": 36,
+    "profit": 20.42,
+    "marginPct": 56.7,
+    "vendor": "Printify"
+  },
+  "PFY-PHONE-IPHONE-MAX": {
+    "category": "Phone Case",
+    "size": "iPhone Pro Max",
+    "wholesale": 10.08,
+    "shippingEst": 5.5,
+    "retail": 36,
+    "profit": 20.42,
+    "marginPct": 56.7,
+    "vendor": "Printify"
+  },
+  "PFY-PHONE-GALAXY-ULTRA": {
+    "category": "Phone Case",
+    "size": "Galaxy Ultra",
+    "wholesale": 10.08,
+    "shippingEst": 5.5,
+    "retail": 36,
+    "profit": 20.42,
+    "marginPct": 56.7,
+    "vendor": "Printify"
+  },
+  "GLOBAL-CARD-5x7": {
+    "category": "Stationery",
+    "size": "5x7\"",
+    "wholesale": 11.76,
+    "shippingEst": 5.5,
+    "retail": 42,
+    "profit": 24.74,
+    "marginPct": 58.9,
+    "vendor": "Prodigi"
+  },
+  "GLOBAL-FOLIO-5x7": {
+    "category": "Mini Print",
+    "size": "5x7\"",
+    "wholesale": 18.2,
+    "shippingEst": 8.5,
+    "retail": 65,
+    "profit": 38.3,
+    "marginPct": 58.9,
+    "vendor": "Prodigi"
   }
 }

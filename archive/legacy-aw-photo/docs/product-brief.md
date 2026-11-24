@@ -71,4 +71,4 @@ All digital products are sold as **one-time purchases**. No membership tiers, no
 
 ## POD Integration
 
-Fulfillment connects to `the_sweatshop` (adventures-of-sparky-and-claw) POD automation flows where possible to reuse existing Printful/Printify adapter infrastructure.
+Fulfillment connects to `seewhatsticks` (adventures-of-sparky-and-claw) POD automation flows where possible to reuse existing Printful/Printify adapter infrastructure.

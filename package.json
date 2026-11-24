@@ -13,6 +13,8 @@
         "sync-pricing": "tsx scripts/sync-pricing.ts",
         "sync-queue": "tsx scripts/sync-merch-queue.ts",
         "sync-shared": "tsx scripts/sync-shared-studio.ts",
+        "pull-approvals": "tsx scripts/pull-merch-approvals.ts",
+        "apply-approvals": "tsx scripts/apply-merch-approvals.ts",
         "build": "npm run sync-pricing && astro build",
         "render-crops": "tsx scripts/render-print-crops.ts",
         "syndicate-printify": "tsx scripts/syndicate-printify.ts",

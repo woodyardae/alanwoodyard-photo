@@ -6,7 +6,13 @@
  */
 
 import { getPublishedArtworkSlugs } from './artwork-catalog';
-import { saveDispatchReceipt, readDispatchReceipt } from './dispatch-ledger';
+import {
+  readDispatchReceipt,
+  readParcelReceipts,
+  saveDispatchReceipt,
+  saveParcelReceipt,
+  type KVNamespaceLike,
+} from './dispatch-ledger';
 import {
   deliverOrderNotifications,
   type DispatchNotice,
@@ -14,11 +20,14 @@ import {
 } from './notifications';
 import { verifyWebhookSignature } from './security';
 import {
+  normalizeStateCode,
   routeOrder,
+  type DispatchedParcelResult,
   type FulfillmentEnv,
   type FulfillmentOrder,
   type OrderItem,
   type OrderRoutingResult,
+  type PodLab,
 } from './fulfillment';
 import {
   artworkCropsForSlug,
@@ -42,7 +51,14 @@ export interface StripeWebhookEnv extends FulfillmentEnv, NotificationEnv {
   pricingMatrix?: Record<string, PricingMatrixEntry>;
   publishedSlugs?: ReadonlySet<string>;
   artworkCrops?: Record<string, Record<string, unknown>>;
+  /** Cloudflare KV binding for durable webhook dispatch and per-lab parcel receipts. */
+  SESSION?: KVNamespaceLike;
 }
+
+const PAID_SESSION_EVENT_TYPES = new Set([
+  'checkout.session.completed',
+  'checkout.session.async_payment_succeeded',
+]);
 
 export interface HandleStripeWebhookResult {
   status: number;
@@ -216,7 +232,7 @@ function orderItemsFromLineItems(
       return { error: 'Line item crop does not match the catalog size' };
     }
 
-    const printAsset = resolvePrintAssetUrl(origin, artworkSlug, assetConfig, selection.crop);
+    const printAsset = resolvePrintAssetUrl(origin, artworkSlug, assetConfig, selection.crop, lab);
     if (!printAsset.ok) {
       return { error: printAsset.error };
     }
@@ -312,7 +328,7 @@ function buildOrderFromSession(
       address1: address?.line1 || '',
       address2: address?.line2 || '',
       city: address?.city || '',
-      state: address?.state || '',
+      state: normalizeStateCode(address?.state || '', address?.country || 'US'),
       postalCode: address?.postal_code || '',
       countryCode: address?.country || 'US',
     },
@@ -362,13 +378,47 @@ async function notifyAndRemember(
   if (alreadyNotified) return true;
   const delivery = await deliverOrderNotifications(env, notice);
   const notified = delivery.operatorSent || delivery.operatorSkipped;
-  saveDispatchReceipt({
-    sessionId: notice.sessionId,
-    notice,
-    fulfillment,
-    notified,
-  });
+  await saveDispatchReceipt(
+    {
+      sessionId: notice.sessionId,
+      notice,
+      fulfillment,
+      notified,
+    },
+    env.SESSION
+  );
   return notified;
+}
+
+/**
+ * Loads any parcel receipts already saved for this session's labs so a retried
+ * webhook delivery only redispatches the labs that previously failed.
+ */
+async function loadRecoveredParcels(
+  sessionId: string,
+  items: OrderItem[],
+  kv: KVNamespaceLike | undefined
+): Promise<Partial<Record<PodLab, DispatchedParcelResult>>> {
+  const labs = [...new Set(items.map((item) => item.lab))];
+  const receipts = await readParcelReceipts(sessionId, labs, kv);
+  const recovered: Partial<Record<PodLab, DispatchedParcelResult>> = {};
+  for (const lab of labs) {
+    const receipt = receipts[lab];
+    if (receipt) recovered[lab] = receipt.result;
+  }
+  return recovered;
+}
+
+/** Persists a receipt for every newly dispatched (not already recovered) parcel. */
+async function rememberSucceededParcels(
+  sessionId: string,
+  parcels: DispatchedParcelResult[],
+  kv: KVNamespaceLike | undefined
+): Promise<void> {
+  for (const parcel of parcels) {
+    if (parcel.status !== 'dispatched') continue;
+    await saveParcelReceipt({ sessionId, lab: parcel.lab, result: parcel }, kv);
+  }
 }
 
 export async function handleStripeWebhook(
@@ -377,7 +427,9 @@ export async function handleStripeWebhook(
 ): Promise<HandleStripeWebhookResult> {
   const webhookSecret = env.STRIPE_WEBHOOK_SECRET?.trim();
   const stripeSecret = env.STRIPE_SECRET_KEY?.trim();
-  const signature = request.headers.get('stripe-signature');
+  // Fail-closed: missing/blank signature must never fall through to { received: true }.
+  // (Legacy Pages Function only verified when both secret and signature were present.)
+  const signature = request.headers.get('stripe-signature')?.trim() || '';
   const rawBody = await request.text();
 
   if (!webhookSecret) {
@@ -412,7 +464,7 @@ export async function handleStripeWebhook(
     };
   }
 
-  if (event.type !== 'checkout.session.completed') {
+  if (!PAID_SESSION_EVENT_TYPES.has(event.type || '')) {
     return {
       status: 200,
       body: { received: true },
@@ -448,7 +500,7 @@ export async function handleStripeWebhook(
     };
   }
 
-  const existing = readDispatchReceipt(session.id);
+  const existing = await readDispatchReceipt(session.id, env.SESSION);
   if (existing) {
     await notifyAndRemember(env, existing.notice, existing.fulfillment, existing.notified);
     return {
@@ -508,11 +560,14 @@ export async function handleStripeWebhook(
     }
   }
 
+  // Stripe Tax and shipping fees land in amount_total but never change amount_subtotal,
+  // so the subtotal must match exactly while the total is allowed to be >= the catalog sum.
   const expectedCents = built.items.reduce(
     (sum, item) => sum + item.unitPriceCents * item.quantity,
     0
   );
-  if (session.amount_subtotal !== expectedCents || session.amount_total !== expectedCents) {
+  const amountTotal = session.amount_total ?? 0;
+  if (session.amount_subtotal !== expectedCents || amountTotal < expectedCents) {
     return {
       status: 200,
       body: { received: true, routed: false, error: 'Paid total does not match catalog line items' },
@@ -520,7 +575,11 @@ export async function handleStripeWebhook(
   }
 
   const order = buildOrderFromSession(session, built.items);
-  const fulfillment = await routeOrder(order, liveFulfillmentEnv(env));
+  // A prior delivery of this same session may have already dispatched some labs
+  // successfully (e.g. Prodigi) while another lab failed (e.g. Printify). Recovering
+  // those receipts keeps this retry from double-ordering the succeeded lab.
+  const recoveredParcels = await loadRecoveredParcels(session.id, order.items, env.SESSION);
+  const fulfillment = await routeOrder(order, liveFulfillmentEnv(env), { recoveredParcels });
 
   if (fulfillment.parcels.some((parcel) => parcel.status === 'mocked')) {
     return {
@@ -532,6 +591,10 @@ export async function handleStripeWebhook(
       },
     };
   }
+
+  // Persist every newly succeeded parcel before evaluating overall success so a
+  // partial failure still protects the labs that just dispatched from a re-order.
+  await rememberSucceededParcels(session.id, fulfillment.parcels, env.SESSION);
 
   if (!fulfillment.success) {
     const failureNotice = noticeFromOrder('failure', order, fulfillment);
@@ -547,12 +610,15 @@ export async function handleStripeWebhook(
   }
 
   const notice = noticeFromOrder('dispatch', order, fulfillment);
-  saveDispatchReceipt({
-    sessionId: session.id,
-    notice,
-    fulfillment,
-    notified: false,
-  });
+  await saveDispatchReceipt(
+    {
+      sessionId: session.id,
+      notice,
+      fulfillment,
+      notified: false,
+    },
+    env.SESSION
+  );
   const notified = await notifyAndRemember(env, notice, fulfillment, false);
 
   return {

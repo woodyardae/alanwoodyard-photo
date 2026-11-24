@@ -29,7 +29,8 @@
   },
   "merch_approved": [
     "Displate Steel Poster (portrait)",
-    "Displate Steel Poster"
+    "Displate Steel Poster",
+    "STEEL PLATE (PORTRAIT)"
   ],
   "print_variants": [
     {
@@ -63,6 +64,16 @@
       },
       "watermark": "none",
       "approved_at": "2026-11-06T22:09:33.020Z"
+    },
+    "STEEL PLATE (PORTRAIT)": {
+      "crop": {
+        "panX": 0,
+        "panY": 0,
+        "zoom": 1,
+        "ratio": 0.6896551724137931
+      },
+      "watermark": "none",
+      "approvedAt": "2026-11-08T23:30:30.366Z"
     }
   }
 }

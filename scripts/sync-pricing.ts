@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { listPhotoRubricCatalogSkus } from '../src/lib/checkout-catalog';
 
 interface SkuDefinition {
   sku: string;
@@ -8,6 +9,7 @@ interface SkuDefinition {
   retail: number;
   mockWholesale: number;
   mockShipEst: number;
+  vendor?: string;
 }
 
 const PRODIGI_CATALOG: SkuDefinition[] = [
@@ -56,13 +58,35 @@ const PRODIGI_CATALOG: SkuDefinition[] = [
   { sku: 'GLOBAL-MUG-11oz', category: 'Drinkware', size: '11oz', retail: 22.00, mockWholesale: 6.50, mockShipEst: 5.50 }
 ];
 
+function mockCosts(retail: number): { wholesale: number; ship: number } {
+  const ship = retail >= 150 ? 18 : retail >= 60 ? 8.5 : 5.5;
+  const wholesale = Math.round(retail * 0.28 * 100) / 100;
+  return { wholesale, ship };
+}
+
+const seenSkus = new Set(PRODIGI_CATALOG.map((item) => item.sku));
+for (const row of listPhotoRubricCatalogSkus()) {
+  if (seenSkus.has(row.sku)) continue;
+  seenSkus.add(row.sku);
+  const costs = mockCosts(row.retail);
+  PRODIGI_CATALOG.push({
+    sku: row.sku,
+    category: row.category,
+    size: row.size,
+    retail: row.retail,
+    mockWholesale: costs.wholesale,
+    mockShipEst: costs.ship,
+    vendor: row.vendor,
+  });
+}
+
 console.log('\n========================================================================================');
 console.log('       ALANWOODYARD.PHOTO: AUTOMATED VENDOR PRICING SYNC ENGINE (PRODIGI)');
 console.log('========================================================================================\n');
-console.log(`[SYNC] Synchronizing pricing and margin health for ${PRODIGI_CATALOG.length} Prodigi SKUs...\n`);
+console.log(`[SYNC] Synchronizing pricing and margin health for ${PRODIGI_CATALOG.length} catalog SKUs...\n`);
 
-console.log('SKU                   SIZE       WHOLESALE  SHIP(EST)  RETAIL     PROFIT     MARGIN   STATUS');
-console.log('----------------------------------------------------------------------------------------');
+console.log('SKU                          SIZE              WHOLESALE  SHIP(EST)  RETAIL     PROFIT     MARGIN   STATUS');
+console.log('------------------------------------------------------------------------------------------------');
 
 const matrixOutput: Record<string, any> = {};
 
@@ -73,8 +97,8 @@ for (const item of PRODIGI_CATALOG) {
   const isHealthy = marginPct >= 65.0;
 
   console.log(
-    `${item.sku.padEnd(21)} ` +
-    `${item.size.padEnd(10)} ` +
+    `${item.sku.padEnd(28)} ` +
+    `${item.size.padEnd(17)} ` +
     `$ ${item.mockWholesale.toFixed(2).padStart(6)}   ` +
     `$ ${item.mockShipEst.toFixed(2).padStart(5)}   ` +
     `$${item.retail.toFixed(2).padStart(7)} ` +
@@ -91,11 +115,11 @@ for (const item of PRODIGI_CATALOG) {
     retail: item.retail,
     profit: Math.round(profit * 100) / 100,
     marginPct: Math.round(marginPct * 10) / 10,
-    vendor: 'Prodigi'
+    vendor: item.vendor || 'Prodigi'
   };
 }
 
-console.log('----------------------------------------------------------------------------------------');
+console.log('------------------------------------------------------------------------------------------------');
 
 const outPath = path.resolve('src/content/pricing-matrix.json');
 fs.writeFileSync(outPath, JSON.stringify(matrixOutput, null, 2), 'utf-8');

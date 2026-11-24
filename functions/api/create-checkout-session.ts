@@ -5,6 +5,7 @@
  */
 
 import pricingMatrix from '../../src/content/pricing-matrix.json';
+import { parseAllowedCountriesConfig, parseEnabledVendorsConfig } from '../../src/lib/checkout-catalog';
 import {
   createEmbeddedCheckoutSession,
   type CheckoutCartItem,
@@ -19,6 +20,8 @@ interface Env {
   PRINT_MASTERS_BASE_URL?: string;
   PRINT_MASTERS_EXTENSION?: string;
   ALLOW_CLEAN_PREVIEW_ASSETS?: string;
+  CHECKOUT_ENABLED_VENDORS?: string;
+  CHECKOUT_ALLOWED_COUNTRIES?: string;
 }
 
 export async function onRequestPost(context: { request: Request; env: Env }) {
@@ -28,6 +31,7 @@ export async function onRequestPost(context: { request: Request; env: Env }) {
     const body = (await request.json()) as {
       items: CheckoutCartItem[];
       customerEmail?: string;
+      nonce?: string;
     };
 
     const result = await createEmbeddedCheckoutSession({
@@ -41,6 +45,9 @@ export async function onRequestPost(context: { request: Request; env: Env }) {
       printMastersBaseUrl: env.PRINT_MASTERS_BASE_URL,
       printMastersExtension: env.PRINT_MASTERS_EXTENSION,
       allowCleanPreviewAssets: env.ALLOW_CLEAN_PREVIEW_ASSETS === '1',
+      enabledVendors: parseEnabledVendorsConfig(env.CHECKOUT_ENABLED_VENDORS),
+      allowedCountries: parseAllowedCountriesConfig(env.CHECKOUT_ALLOWED_COUNTRIES),
+      attemptNonce: body.nonce,
     });
 
     return new Response(JSON.stringify(result.body), {

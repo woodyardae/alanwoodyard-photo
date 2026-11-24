@@ -44,6 +44,10 @@ import Header from '../components/Header.astro';
           <span class="text-[10px] uppercase tracking-widest text-[var(--theme-accent)] block">
             Fulfillment & Packaging
           </span>
+          <p class="holiday-ship-note">
+            <strong>Order by Dec. 7 for economy, or Dec. 9 for standard, for Christmas Delivery.&nbsp;</strong>
+            Contiguous-US orders submitted by Dec. 7 for economy shipping, or by Dec. 9 for standard shipping, have the best chance of arrival by Dec. 24. This is not a delivery guarantee. Printify adds a $0.40 US shipping surcharge from Oct. 15, 2026 through Jan. 17, 2027. Alaska, Hawaii, and US territories need extra transit time.
+          </p>
           <div id="checkoutPackageCards" class="space-y-2"></div>
         </div>
 
@@ -84,6 +88,31 @@ import Header from '../components/Header.astro';
         <!-- Real Stripe Embedded Checkout Mount Target -->
         <div id="stripe-checkout" class="w-full"></div>
 
+        <div id="checkoutRecovery" class="hidden py-8 px-6 text-center space-y-5 font-mono">
+          <h2 class="text-sm font-bold uppercase tracking-wider text-[var(--theme-text)]">
+            Item unavailable
+          </h2>
+          <p id="checkoutRecoveryMessage" class="text-xs text-[var(--theme-text-muted)] max-w-md mx-auto leading-relaxed"></p>
+          <p id="checkoutRecoveryItem" class="text-xs text-[var(--theme-text)]"></p>
+          <p id="checkoutRecoveryDetail" class="text-[11px] text-[var(--theme-text-muted)] max-w-md mx-auto leading-relaxed"></p>
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button
+              type="button"
+              id="removeUnavailableBtn"
+              class="px-6 py-3 bg-[var(--theme-accent)] text-[var(--theme-bg)] hover:bg-[var(--theme-accent-hover)] font-mono text-xs uppercase tracking-widest font-bold transition-colors"
+            >
+              Remove Unavailable Item
+            </button>
+            <button
+              type="button"
+              id="resetCartBtn"
+              class="px-6 py-3 border border-[var(--theme-accent)] text-[var(--theme-accent)] hover:bg-[var(--theme-accent)] hover:text-[var(--theme-bg)] font-mono text-xs uppercase tracking-widest font-bold transition-colors"
+            >
+              Reset Cart
+            </button>
+          </div>
+        </div>
+
         <!-- Fallback Sandbox Mode -->
         <div id="simulatedPaymentPanel" class="hidden py-8 px-6 text-center space-y-6 font-mono">
           <div class="inline-block p-3 rounded-full bg-[var(--theme-accent)]/10 text-[var(--theme-accent)] text-xl">
@@ -117,8 +146,20 @@ import Header from '../components/Header.astro';
     $cartItems, 
     $cartSubtotal, 
     $fulfillmentPackages, 
-    $totalShipping 
+    $totalShipping,
+    removeItem,
+    type CartItem,
   } from '../stores/cart';
+  import {
+    createCheckoutFlightGuard,
+    escapeCheckoutText,
+    getOrCreateCheckoutNonce,
+    identifyUnavailableCartItem,
+    isRecoverableCartFailure,
+    readStoredCartItems,
+    storedCartNeedsHeal,
+    type CheckoutSkuFailure,
+  } from '../lib/checkout-recovery';
 
   const emptyContainer = document.getElementById('emptyCheckout')!;
   const activeContainer = document.getElementById('activeCheckout')!;
@@ -130,94 +171,219 @@ import Header from '../components/Header.astro';
   const loading = document.getElementById('paymentLoading')!;
   const simPanel = document.getElementById('simulatedPaymentPanel')!;
   const mockBtn = document.getElementById('mockAcquireBtn')!;
+  const recovery = document.getElementById('checkoutRecovery')!;
+  const recoveryMessage = document.getElementById('checkoutRecoveryMessage')!;
+  const recoveryItem = document.getElementById('checkoutRecoveryItem')!;
+  const recoveryDetail = document.getElementById('checkoutRecoveryDetail')!;
+  const removeBtn = document.getElementById('removeUnavailableBtn') as HTMLButtonElement;
+  const resetBtn = document.getElementById('resetCartBtn') as HTMLButtonElement;
+  const stripeMount = document.getElementById('stripe-checkout')!;
+  const loadingMarkup = loading.innerHTML;
+  const flight = createCheckoutFlightGuard();
 
-  async function init() {
-    const items = $cartItems.get();
-    if (!items || items.length === 0) {
-      emptyContainer.classList.remove('hidden');
-      activeContainer.classList.add('hidden');
+  let unavailableItemId = '';
+  let stripeCheckout: { destroy?: () => void } | null = null;
+
+  function loadCartItems(): CartItem[] {
+    if (typeof localStorage !== 'undefined') {
+      const raw = localStorage.getItem('awp_cart_items');
+      if (storedCartNeedsHeal(raw)) {
+        const healed = readStoredCartItems(raw);
+        $cartItems.set(healed);
+        return healed;
+      }
+    }
+    const current = $cartItems.get();
+    return Array.isArray(current) ? current : [];
+  }
+
+  function showEmpty() {
+    emptyContainer.classList.remove('hidden');
+    activeContainer.classList.add('hidden');
+    recovery.classList.add('hidden');
+    unavailableItemId = '';
+  }
+
+  function showLoading() {
+    loading.classList.remove('hidden', 'text-red-400');
+    loading.innerHTML = loadingMarkup;
+    recovery.classList.add('hidden');
+    simPanel.classList.add('hidden');
+  }
+
+  function showFatal(message: string) {
+    loading.classList.remove('hidden');
+    loading.classList.add('text-red-400');
+    loading.textContent = message;
+    recovery.classList.add('hidden');
+  }
+
+  function clearStripeMount() {
+    if (stripeCheckout && typeof stripeCheckout.destroy === 'function') {
+      stripeCheckout.destroy();
+    }
+    stripeCheckout = null;
+    stripeMount.innerHTML = '';
+  }
+
+  function showRecovery(items: CartItem[], failure: CheckoutSkuFailure) {
+    const match = identifyUnavailableCartItem(items, failure);
+    unavailableItemId = match?.id || '';
+    loading.classList.add('hidden');
+    simPanel.classList.add('hidden');
+    recovery.classList.remove('hidden');
+    recoveryMessage.textContent = match
+      ? 'This item is not available for checkout. Remove it to continue, or reset the cart.'
+      : 'Checkout could not price a cart item. Reset the cart and add the pieces again.';
+    recoveryItem.textContent = match
+      ? `${match.artworkTitle || 'Cart item'} · ${match.variantTitle || match.sku}`
+      : '';
+    recoveryDetail.textContent = failure.error || '';
+    removeBtn.classList.toggle('hidden', !match);
+    removeBtn.disabled = false;
+    resetBtn.disabled = false;
+  }
+
+  async function mountCheckout(items: CartItem[]) {
+    clearStripeMount();
+    showLoading();
+    // A per-cart attempt nonce reused via sessionStorage so a reload or a double
+    // submit within the same cart reuses the same Stripe idempotency key. The
+    // nonce is invalidated automatically whenever the cart contents change.
+    const nonce =
+      typeof sessionStorage !== 'undefined' ? getOrCreateCheckoutNonce(items, sessionStorage) : '';
+    const res = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items, nonce }),
+    });
+
+    let data: CheckoutSkuFailure & {
+      simulated?: boolean;
+      returnUrl?: string;
+      clientSecret?: string;
+      publishableKey?: string;
+    } = {};
+    try {
+      data = await res.json();
+    } catch {
+      throw new Error('Checkout failed');
+    }
+
+    if (!res.ok || data.error) {
+      if (isRecoverableCartFailure(data)) {
+        showRecovery(items, data);
+        return;
+      }
+      throw new Error(data.error || 'Failed to initialize session');
+    }
+
+    loading.classList.add('hidden');
+
+    if (data.simulated) {
+      if (import.meta.env.PROD) {
+        throw new Error('Secure checkout is unavailable.');
+      }
+      simPanel.classList.remove('hidden');
+      mockBtn.onclick = () => {
+        if (data.returnUrl) window.location.href = data.returnUrl;
+      };
       return;
     }
 
-    // 1. Render Order Review Summary
-    itemsList.innerHTML = items.map((item) => `
-      <div class="flex items-center gap-4 py-2">
-        <img src="${item.imageSrc}" alt="${item.artworkTitle}" class="w-14 h-14 object-cover border border-white/10" />
-        <div class="flex-1 min-w-0">
-          <h3 class="font-serif text-sm text-[var(--theme-text)] truncate">${item.artworkTitle}</h3>
-          <p class="text-[11px] font-mono text-[var(--theme-text-muted)]">${item.variantTitle}</p>
-          <p class="text-[11px] font-mono text-[var(--theme-accent)]">$${item.price.toFixed(2)} &times; ${item.quantity}</p>
-        </div>
-      </div>
-    `).join('');
+    if (data.clientSecret && data.publishableKey) {
+      if (!(window as any).Stripe) {
+        await new Promise<void>((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://js.stripe.com/v3/';
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error('Failed to load Stripe.js'));
+          document.head.appendChild(script);
+        });
+      }
 
-    const packages = $fulfillmentPackages.get();
-    packageCards.innerHTML = packages.map((pkg, idx) => `
-      <div class="p-2.5 border border-[var(--theme-border)] bg-[var(--theme-bg)] text-[11px]">
-        <div class="flex justify-between font-bold text-[var(--theme-text)]">
-          <span>Package ${idx + 1}: ${pkg.providerName}</span>
-          <span class="${pkg.estimatedShipping === 0 ? 'text-[var(--theme-accent)]' : ''}">
-            ${pkg.estimatedShipping === 0 ? 'Complimentary' : '$' + pkg.estimatedShipping.toFixed(2)}
-          </span>
-        </div>
-        <p class="text-[10px] text-[var(--theme-text-muted)] mt-0.5">${pkg.packagingDescription}</p>
-      </div>
-    `).join('');
-
-    const subtotal = $cartSubtotal.get();
-    const freight = $totalShipping.get();
-    summarySubtotal.textContent = `$${subtotal.toFixed(2)}`;
-    summaryFreight.textContent = freight === 0 ? 'Included' : `$${freight.toFixed(2)}`;
-    summaryTotal.textContent = `$${(subtotal + freight).toFixed(2)}`;
-
-    // 2. Fetch Session from Backend
-    try {
-      const res = await fetch('/api/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items }),
+      const stripe = (window as any).Stripe(data.publishableKey);
+      const checkout = await stripe.initEmbeddedCheckout({
+        clientSecret: data.clientSecret,
       });
-
-      const data = await res.json();
-      loading.classList.add('hidden');
-
-      if (data.simulated) {
-        if (import.meta.env.PROD) {
-          throw new Error('Secure checkout is unavailable.');
-        }
-        simPanel.classList.remove('hidden');
-        mockBtn.addEventListener('click', () => {
-          window.location.href = data.returnUrl;
-        });
-        return;
-      }
-
-      if (data.clientSecret && data.publishableKey) {
-        if (!(window as any).Stripe) {
-          await new Promise<void>((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = 'https://js.stripe.com/v3/';
-            script.onload = () => resolve();
-            script.onerror = () => reject(new Error('Failed to load Stripe.js'));
-            document.head.appendChild(script);
-          });
-        }
-
-        const stripe = (window as any).Stripe(data.publishableKey);
-        const checkout = await stripe.initEmbeddedCheckout({
-          clientSecret: data.clientSecret,
-        });
-
-        checkout.mount('#stripe-checkout');
-      } else {
-        throw new Error(data.error || 'Failed to initialize session');
-      }
-    } catch (err: any) {
-      loading.classList.remove('hidden');
-      loading.classList.add('text-red-400');
-      loading.textContent = `Failed to mount checkout: ${err?.message || 'Checkout failed'}`;
+      stripeCheckout = checkout;
+      checkout.mount('#stripe-checkout');
+      return;
     }
+
+    throw new Error('Failed to initialize session');
   }
 
-  init();
+  async function init() {
+    return flight.start(async () => {
+      removeBtn.disabled = true;
+      resetBtn.disabled = true;
+      try {
+        const items = loadCartItems();
+        if (!items.length) {
+          showEmpty();
+          return;
+        }
+
+        emptyContainer.classList.add('hidden');
+        activeContainer.classList.remove('hidden');
+
+        itemsList.innerHTML = items.map((item) => `
+          <div class="flex items-center gap-4 py-2">
+            <img src="${escapeCheckoutText(item.imageSrc)}" alt="${escapeCheckoutText(item.artworkTitle)}" class="w-14 h-14 object-cover border border-white/10" />
+            <div class="flex-1 min-w-0">
+              <h3 class="font-serif text-sm text-[var(--theme-text)] truncate">${escapeCheckoutText(item.artworkTitle)}</h3>
+              <p class="text-[11px] font-mono text-[var(--theme-text-muted)]">${escapeCheckoutText(item.variantTitle)}</p>
+              <p class="text-[11px] font-mono text-[var(--theme-accent)]">$${item.price.toFixed(2)} &times; ${item.quantity}</p>
+            </div>
+          </div>
+        `).join('');
+
+        const packages = $fulfillmentPackages.get();
+        packageCards.innerHTML = packages.map((pkg, idx) => `
+          <div class="p-2.5 border border-[var(--theme-border)] bg-[var(--theme-bg)] text-[11px]">
+            <div class="flex justify-between font-bold text-[var(--theme-text)]">
+              <span>Package ${idx + 1}: ${escapeCheckoutText(pkg.providerName)}</span>
+              <span class="${pkg.estimatedShipping === 0 ? 'text-[var(--theme-accent)]' : ''}">
+                ${pkg.estimatedShipping === 0 ? 'Complimentary' : '$' + pkg.estimatedShipping.toFixed(2)}
+              </span>
+            </div>
+            <p class="text-[10px] text-[var(--theme-text-muted)] mt-0.5">${escapeCheckoutText(pkg.packagingDescription)}</p>
+          </div>
+        `).join('');
+
+        const subtotal = $cartSubtotal.get();
+        const freight = $totalShipping.get();
+        summarySubtotal.textContent = `$${subtotal.toFixed(2)}`;
+        summaryFreight.textContent = freight === 0 ? 'Included' : `$${freight.toFixed(2)}`;
+        summaryTotal.textContent = `$${(subtotal + freight).toFixed(2)}`;
+
+        await mountCheckout(items);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Checkout failed';
+        showFatal(`Failed to mount checkout: ${message}`);
+      } finally {
+        if (!recovery.classList.contains('hidden')) {
+          removeBtn.disabled = false;
+          resetBtn.disabled = false;
+        }
+      }
+    });
+  }
+
+  removeBtn.addEventListener('click', () => {
+    if (!unavailableItemId) return;
+    const id = unavailableItemId;
+    unavailableItemId = '';
+    removeItem(id);
+    void init();
+  });
+
+  resetBtn.addEventListener('click', () => {
+    unavailableItemId = '';
+    $cartItems.set([]);
+    void init();
+  });
+
+  void init();
 </script>

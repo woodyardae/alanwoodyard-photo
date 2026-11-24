@@ -17,6 +17,88 @@
 
 export type PodLab = 'prodigi' | 'printify' | 'printful' | 'gelato' | 'gooten';
 
+/** Full US state and territory names mapped to their 2-letter USPS code. */
+const US_STATE_NAME_TO_CODE: Readonly<Record<string, string>> = {
+  alabama: 'AL',
+  alaska: 'AK',
+  arizona: 'AZ',
+  arkansas: 'AR',
+  california: 'CA',
+  colorado: 'CO',
+  connecticut: 'CT',
+  delaware: 'DE',
+  florida: 'FL',
+  georgia: 'GA',
+  hawaii: 'HI',
+  idaho: 'ID',
+  illinois: 'IL',
+  indiana: 'IN',
+  iowa: 'IA',
+  kansas: 'KS',
+  kentucky: 'KY',
+  louisiana: 'LA',
+  maine: 'ME',
+  maryland: 'MD',
+  massachusetts: 'MA',
+  michigan: 'MI',
+  minnesota: 'MN',
+  mississippi: 'MS',
+  missouri: 'MO',
+  montana: 'MT',
+  nebraska: 'NE',
+  nevada: 'NV',
+  'new hampshire': 'NH',
+  'new jersey': 'NJ',
+  'new mexico': 'NM',
+  'new york': 'NY',
+  'north carolina': 'NC',
+  'north dakota': 'ND',
+  ohio: 'OH',
+  oklahoma: 'OK',
+  oregon: 'OR',
+  pennsylvania: 'PA',
+  'rhode island': 'RI',
+  'south carolina': 'SC',
+  'south dakota': 'SD',
+  tennessee: 'TN',
+  texas: 'TX',
+  utah: 'UT',
+  vermont: 'VT',
+  virginia: 'VA',
+  washington: 'WA',
+  'west virginia': 'WV',
+  wisconsin: 'WI',
+  wyoming: 'WY',
+  'district of columbia': 'DC',
+  'puerto rico': 'PR',
+  guam: 'GU',
+  'american samoa': 'AS',
+  'u.s. virgin islands': 'VI',
+  'virgin islands': 'VI',
+  'northern mariana islands': 'MP',
+  'armed forces americas': 'AA',
+  'armed forces europe': 'AE',
+  'armed forces pacific': 'AP',
+};
+
+/**
+ * Converts a full US state or territory name (e.g. "Texas") to its 2-letter USPS
+ * code (e.g. "TX") so Printify `region` and Gelato `state` never fail with HTTP 422.
+ * Already-coded values (2 letters) and non-US addresses pass through unchanged.
+ */
+export function normalizeStateCode(
+  state: string | undefined | null,
+  countryCode: string | undefined | null
+): string {
+  const raw = (state || '').trim();
+  if (!raw) return raw;
+  const country = (countryCode || 'US').trim().toUpperCase();
+  if (country !== 'US') return raw;
+  if (/^[a-z]{2}$/i.test(raw)) return raw.toUpperCase();
+  const key = raw.toLowerCase().replace(/\s+/g, ' ').trim();
+  return US_STATE_NAME_TO_CODE[key] || raw;
+}
+
 export interface OrderRecipient {
   name: string;
   email: string;
@@ -614,15 +696,28 @@ async function dispatchGootenOrder(
   };
 }
 
+export interface RouteOrderOptions {
+  /**
+   * Parcels already dispatched successfully for this session on a prior webhook
+   * delivery. A mixed-lab order that partially succeeded (e.g. Prodigi dispatched,
+   * Printify failed) must recover the succeeded lab instead of double-ordering it
+   * when the webhook retries.
+   */
+  recoveredParcels?: Partial<Record<PodLab, DispatchedParcelResult>>;
+}
+
 /**
- * Main Order Router: routeOrder(order, env)
+ * Main Order Router: routeOrder(order, env, options)
  *
  * Directs line items to their respective lab adapters, executes discrete dispatches,
- * and compiles the combined multi-parcel fulfillment report.
+ * and compiles the combined multi-parcel fulfillment report. Labs named in
+ * options.recoveredParcels are not redispatched; their saved result is replayed
+ * with status 'recovered_idempotent'.
  */
 export async function routeOrder(
   order: FulfillmentOrder,
-  env: FulfillmentEnv
+  env: FulfillmentEnv,
+  options: RouteOrderOptions = {}
 ): Promise<OrderRoutingResult> {
   // Group items by lab
   const labGroups = new Map<PodLab, OrderItem[]>();
@@ -636,6 +731,11 @@ export async function routeOrder(
   const errors: string[] = [];
 
   for (const [lab, items] of labGroups.entries()) {
+    const recovered = options.recoveredParcels?.[lab];
+    if (recovered) {
+      parcelResults.push({ ...recovered, status: 'recovered_idempotent' });
+      continue;
+    }
     try {
       const externalId = await generateExternalOrderId(order.sessionId, lab);
       let result: DispatchedParcelResult;

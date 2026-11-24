@@ -4,10 +4,16 @@ import Header from '../../components/Header.astro';
 import { getCollection } from 'astro:content';
 import pricingMatrixRaw from '../../content/pricing-matrix.json';
 import {
+  enabledStorefrontLabs,
+  isFineArtPaperListing,
   labFromVendor,
+  parseEnabledVendorsConfig,
+  resolveApprovedStorefront,
   resolveMatrixSku,
   type PricingMatrixEntry,
+  type StorefrontPackaging,
 } from '../../lib/checkout-catalog';
+import type { PodLab } from '../../lib/fulfillment';
 
 export async function getStaticPaths() {
   const artworks = await getCollection('artworks');
@@ -29,55 +35,20 @@ const {
   capture = {} 
 } = artwork.data;
 
-const hasDisplate = merch_approved.some((p: string) => p.toLowerCase().includes('displate'));
 const matrix = pricingMatrixRaw as Record<string, PricingMatrixEntry>;
+const enabledVendors = parseEnabledVendorsConfig(
+  (import.meta.env as Record<string, string | undefined>).CHECKOUT_ENABLED_VENDORS
+);
+const enabledLabs = enabledStorefrontLabs(enabledVendors);
 
-const allMerchCatalog = [
-  {
-    matchKey: 'mug',
-    skuKey: 'AWP-PFY-MUG',
-    title: 'Ceramic Waterfront Mug (11oz)',
-    spec: 'Dishwasher safe • Full wrap finish',
-    packaging: 'corrugated_box',
-  },
-  {
-    matchKey: 'coaster',
-    skuKey: 'AWP-PFY-COASTERS',
-    title: 'Hardwood Coaster Set (4-Pk)',
-    spec: 'High-gloss heat-resistant top • Cork base',
-    packaging: 'corrugated_box',
-  },
-  {
-    matchKey: 'desk',
-    skuKey: 'AWP-PFY-DESKMAT',
-    title: 'Studio Panoramic Desk Mat',
-    spec: 'Natural rubber base • Stitched border',
-    packaging: 'poly_mailer',
-  },
-  {
-    matchKey: 'acrylic',
-    skuKey: 'AWP-GTN-ACRYLIC',
-    title: 'Optical Acrylic Desk Block (6x6")',
-    spec: '1" thick optical acrylic • Freestanding',
-    packaging: 'corrugated_box',
-  },
-];
-
-const approvedGoods = allMerchCatalog.flatMap((item) => {
-  const approved = merch_approved.some((name: string) => name.toLowerCase().includes(item.matchKey));
-  if (!approved) return [];
-  const sku = `${item.skuKey}-${artwork.id}`;
-  const matrixSku = resolveMatrixSku(sku, matrix);
-  const entry = matrixSku ? matrix[matrixSku] : undefined;
-  const provider = entry ? labFromVendor(entry.vendor) : null;
-  if (!entry || !provider) return [];
-  return [{
-    ...item,
-    sku,
-    price: entry.retail,
-    provider,
-  }];
-});
+interface PrintRow {
+  sku: string;
+  size: string;
+  substrate: string;
+  price: number;
+  provider: PodLab;
+  packaging: StorefrontPackaging;
+}
 
 const nativeRatio = capture?.aspect_ratio || 'Native';
 const rawVariants = print_variants.length > 0 
@@ -88,20 +59,46 @@ const rawVariants = print_variants.length > 0
       { size: '24x36"', substrate: 'Hahnemühle Photo Rag', price_cents: 34000, sku: 'GLOBAL-FAP-24x36' },
     ];
 
-const prints = rawVariants.flatMap((v: { sku: string; size?: string; substrate?: string }) => {
+const nativePrints: PrintRow[] = rawVariants.flatMap((v: { sku: string; size?: string; substrate?: string }) => {
   const matrixSku = resolveMatrixSku(v.sku, matrix);
   const entry = matrixSku ? matrix[matrixSku] : undefined;
   const provider = entry ? labFromVendor(entry.vendor) : null;
-  if (!entry || !provider) return [];
+  if (!entry || !provider || !enabledLabs.has(provider)) return [];
   return [{
     sku: v.sku,
     size: v.size || entry.size,
     substrate: v.substrate || entry.category || 'Hahnemühle Photo Rag 308gsm',
     price: entry.retail,
     provider,
-    packaging: 'rigid_tube',
+    packaging: 'rigid_tube' as const,
   }];
 });
+
+const listedPaper = nativePrints.filter((print) => isFineArtPaperListing(print.sku, print.substrate));
+const storefront = resolveApprovedStorefront(merch_approved, {
+  matrix,
+  crops: (artwork.data.merch_crops || null) as Record<string, unknown> | null,
+  listedPaperSizes: listedPaper.map((print) => print.size),
+  listedPaperSkus: listedPaper.map((print) => print.sku),
+  enabledVendors,
+});
+
+const prints: PrintRow[] = [
+  ...nativePrints,
+  ...storefront.prints.map((item) => ({
+    sku: item.sku,
+    size: item.size,
+    substrate: item.spec,
+    price: item.price,
+    provider: item.provider,
+    packaging: item.packaging,
+  })),
+];
+
+const approvedGoods = storefront.goods;
+const legacyDisplate =
+  storefront.external.length === 0 &&
+  merch_approved.some((name: string) => name.toLowerCase().includes('displate'));
 
 const pricedAmounts = [...approvedGoods.map((item) => item.price), ...prints.map((print) => print.price)];
 const lowestPrice = pricedAmounts.length > 0 ? Math.min(...pricedAmounts) : null;
@@ -179,6 +176,9 @@ const lowestPrice = pricedAmounts.length > 0 ? Math.min(...pricedAmounts) : null
           <h2 class="font-serif text-2xl text-[var(--theme-text)] font-light">
             Available Physical Formats
           </h2>
+          <p class="text-[11px] font-mono text-[var(--theme-text-muted)] max-w-2xl mx-auto mt-3 leading-relaxed">
+            Backlit sRGB screen previews differ slightly from matte cotton rag pigment and dye-sublimation prints. Digital mockups shown here illustrate the approved crop ratio, not final color.
+          </p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
@@ -234,7 +234,7 @@ const lowestPrice = pricedAmounts.length > 0 ? Math.min(...pricedAmounts) : null
             </div>
 
             <div class="space-y-3">
-              {prints.map((print: any) => (
+              {prints.map((print) => (
                 <div class="p-3.5 border border-[var(--theme-border)] bg-[var(--theme-surface)] flex items-center justify-between hover:border-[var(--theme-accent)]/50 transition-colors">
                   <div class="pr-3">
                     <div class="flex items-center gap-2">
@@ -257,7 +257,28 @@ const lowestPrice = pricedAmounts.length > 0 ? Math.min(...pricedAmounts) : null
                 </div>
               ))}
 
-              {hasDisplate && (
+              {storefront.external.map((item) => (
+                <div class="p-3.5 border border-[var(--theme-border)] bg-[var(--theme-surface)] flex items-center justify-between">
+                  <div class="pr-3 min-w-0">
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs font-mono font-medium text-[var(--theme-text)] truncate">{item.title}</span>
+                      <span class="text-sm font-sans font-bold text-[var(--theme-accent)]">${item.price}</span>
+                    </div>
+                    <p class="text-[10px] font-mono text-[var(--theme-text-muted)] mt-0.5">{item.spec}</p>
+                  </div>
+                  <a
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="shrink-0 px-3.5 py-2 text-xs font-mono border border-white/20 text-[var(--theme-text)] hover:border-[var(--theme-accent)] hover:text-[var(--theme-accent)] transition-colors inline-flex items-center gap-1.5 uppercase tracking-wider"
+                  >
+                    <span>Displate</span>
+                    <span class="text-xs">&nearr;</span>
+                  </a>
+                </div>
+              ))}
+
+              {legacyDisplate && (
                 <div class="p-3.5 border border-[var(--theme-border)] bg-[var(--theme-surface)] flex items-center justify-between">
                   <div>
                     <p class="text-xs font-mono font-medium text-[var(--theme-text)]">Displate Metal Poster</p>

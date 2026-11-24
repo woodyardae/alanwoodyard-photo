@@ -1,7 +1,8 @@
 import { persistentAtom } from '@nanostores/persistent';
 import { atom, computed } from 'nanostores';
+import { readStoredCartItems } from '../lib/checkout-recovery';
 
-export type ProviderId = 'prodigi' | 'printful' | 'printify' | 'gooten';
+export type ProviderId = 'prodigi' | 'printful' | 'printify' | 'gelato' | 'gooten';
 
 export interface CartItem {
   id: string;
@@ -35,7 +36,7 @@ export interface PackageGroup {
 
 export const $cartItems = persistentAtom<CartItem[]>('awp_cart_items', [], {
   encode: JSON.stringify,
-  decode: JSON.parse,
+  decode: (raw) => readStoredCartItems(raw),
 });
 
 export const $isCartOpen = atom<boolean>(false);
@@ -67,6 +68,12 @@ const PROVIDER_METADATA: Record<ProviderId, { name: string; packaging: string; d
     defaultFreight: 12.00,
     freeThreshold: 150,
   },
+  gelato: {
+    name: 'Gelato Print Facility',
+    packaging: 'Locally Produced Postal Carton',
+    defaultFreight: 7.00,
+    freeThreshold: 75,
+  },
   gooten: {
     name: 'Gooten Optical Specialty Lab',
     packaging: 'Foam-Lined Presentation Box',
@@ -80,6 +87,7 @@ export const $fulfillmentPackages = computed($cartItems, (items): PackageGroup[]
     prodigi: [],
     printful: [],
     printify: [],
+    gelato: [],
     gooten: [],
   };
 

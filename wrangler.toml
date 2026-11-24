@@ -6,3 +6,10 @@ routes = [
   { pattern = "alanwoodyard.photo", custom_domain = true },
   { pattern = "www.alanwoodyard.photo", custom_domain = true }
 ]
+
+# SESSION holds merch crop approvals. The studio writes crops:{id} and
+# crops:_modified_list. A full-map snapshot also lives at awp_merch_crops.
+# npm run pull-approvals reads this binding. It does not deploy the site.
+[[kv_namespaces]]
+binding = "SESSION"
+id = "827681c606fe44debcc1e26d13355e9e"

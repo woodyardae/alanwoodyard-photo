@@ -7,12 +7,19 @@ import { handleStripeWebhook } from '../../lib/handle-stripe-webhook';
 
 export const prerender = false;
 
+/** Astro SSR twin of functions/api/stripe-webhook.ts. Fail-closed via handleStripeWebhook. */
+
 function readEnv(key: string): string | undefined {
   return (
     (env as Record<string, string | undefined>)?.[key] ||
     (import.meta.env as Record<string, string | undefined>)?.[key] ||
     process.env[key]
   );
+}
+
+function readSessionKv() {
+  // @ts-ignore cloudflare:workers binding is absent in local Node and tests.
+  return (env as { SESSION?: { get: (key: string) => Promise<string | null>; put: (key: string, value: string) => Promise<void> } } | undefined)?.SESSION;
 }
 
 export const POST: APIRoute = async (context) => {
@@ -32,10 +39,10 @@ export const POST: APIRoute = async (context) => {
       PRINT_MASTERS_BASE_URL: readEnv('PRINT_MASTERS_BASE_URL'),
       PRINT_MASTERS_EXTENSION: readEnv('PRINT_MASTERS_EXTENSION'),
       ALLOW_CLEAN_PREVIEW_ASSETS: readEnv('ALLOW_CLEAN_PREVIEW_ASSETS'),
-      RESEND_API_KEY: readEnv('RESEND_API_KEY'),
-      OPERATOR_EMAIL: readEnv('OPERATOR_EMAIL'),
-      RESEND_FROM: readEnv('RESEND_FROM'),
+      TELEGRAM_BOT_TOKEN: readEnv('TELEGRAM_BOT_TOKEN'),
+      TELEGRAM_CHAT_ID: readEnv('TELEGRAM_CHAT_ID'),
       pricingMatrix: pricingMatrix as Record<string, PricingMatrixEntry>,
+      SESSION: readSessionKv(),
       // Never pass ALLOW_MOCK_DISPATCH from production webhook path.
     });
 

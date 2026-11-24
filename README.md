@@ -19,7 +19,7 @@ Fine-Art Photography Storefront, Automated Pre-Flight Asset Engine & Multi-Provi
   - `gooten:*` -> Gooten API v1 (Acrylic blocks, home decor)
   - Split-cart multi-package shipping calculation logic
 - **Telemetry:** Sovereign Umami analytics on `chantecler-01:3008`
-- **Lead Capture:** Cloudflare Pages Function `functions/api/subscribe.ts` using Resend API to deliver 4K wallpaper welcome packages.
+- **Order alerts:** Optional Telegram Bot API message when `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` are both set. Otherwise the paid-order summary is logged.
 
 ## Subdomain & DNS Configuration
 
