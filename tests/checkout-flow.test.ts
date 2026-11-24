@@ -1383,7 +1383,7 @@ test('PRINT_MASTERS_EXTENSION explicitly set wins over the per-lab default for e
   assert.equal(forcedJpg.orderItems[0].printAssetUrl, `${masters}/masters/norderney-62/2-3.jpg`);
 });
 
-test('buildStripeSessionParams enables phone collection, a 4 hour expiry, and US-only default shipping countries', () => {
+test('buildStripeSessionParams enables phone collection, promotion codes, a 4 hour expiry, and US-only default shipping countries', () => {
   const prepared = prepareCheckoutCart([cartItem()], matrix, origin, assetConfig);
   assert.equal(prepared.ok, true);
   if (!prepared.ok) return;
@@ -1391,6 +1391,7 @@ test('buildStripeSessionParams enables phone collection, a 4 hour expiry, and US
   const params = buildStripeSessionParams(prepared, { origin }, nowMs);
 
   assert.deepEqual(params.phone_number_collection, { enabled: true });
+  assert.equal(params.allow_promotion_codes, true);
   assert.deepEqual(params.shipping_address_collection?.allowed_countries, ['US']);
   assert.equal(params.expires_at, Math.floor(nowMs / 1000) + 4 * 60 * 60);
   assert.equal(params.ui_mode, 'embedded');

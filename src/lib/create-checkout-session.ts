@@ -360,6 +360,7 @@ export function buildStripeSessionParams(
       allowed_countries: allowedCountries as Stripe.Checkout.SessionCreateParams.ShippingAddressCollection.AllowedCountry[],
     },
     phone_number_collection: { enabled: true },
+    allow_promotion_codes: true,
     expires_at: Math.floor(nowMs / 1000) + CHECKOUT_SESSION_EXPIRY_SECONDS,
     metadata: buildCheckoutSessionMetadata(prepared.orderItems),
     return_url: `${input.origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`,
